@@ -1,0 +1,5 @@
+scenario:
+  name: ""  # Invalid empty name
+  grid_file: "nonexistent.yaml"
+  start: [0, 0]
+  goal: [0, 0]  # Same as start - invalid!

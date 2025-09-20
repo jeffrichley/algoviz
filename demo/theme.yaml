@@ -1,0 +1,9 @@
+theme:
+  colors:
+    frontier: '#2196F3'
+    goal: '#FF9800'
+    grid: '#E0E0E0'
+    obstacle: '#424242'
+    path: '#E91E63'
+    visited: '#4CAF50'
+  name: custom

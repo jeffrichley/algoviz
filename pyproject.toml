@@ -1,0 +1,224 @@
+[build-system]
+requires = ["hatchling>=1.25.0", "hatch-vcs>=0.4.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agloviz"
+dynamic = ["version"]
+description = "A modular framework for generating narrated algorithm visualization videos"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "ALGOViz Team", email = "contact@algoviz.dev"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Education",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+requires-python = ">=3.12"
+dependencies = [
+    # Core rendering engine
+    "manim>=0.19.0",
+    # CLI framework
+    "typer>=0.18.0",
+    # Configuration and validation
+    "pydantic>=2.11.9",
+    "pydantic-settings>=2.10.0",
+    # Dependency injection and configuration management
+    "hydra-core>=1.3.0",
+    "hydra-zen>=0.15.0",
+    "omegaconf>=2.3.0",
+    # Rich logging and UI
+    "rich>=14.0.0",
+    # YAML parsing
+    "pyyaml>=6.0",
+    # Audio processing (for future voiceover)
+    "numpy>=2.3.0",
+    "manim-voiceover>=0.3.7",
+    "hypothesis>=6.139.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4.0",
+    "pytest-cov>=7.0.0",
+    "pytest-mock>=3.15.0",
+    "ruff>=0.8.0",
+    "mypy>=1.18.0",
+    "pre-commit>=4.3.0",
+]
+
+[project.scripts]
+agloviz = "agloviz.cli:app"
+
+[tool.hatch.version]
+path = "src/agloviz/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agloviz"]
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+# Assume Python 3.12
+target-version = "py312"
+
+[tool.ruff.lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+select = [
+    "E4",      # pycodestyle errors
+    "E7",      # pycodestyle errors  
+    "E9",      # pycodestyle errors
+    "F",       # pyflakes
+    "W",       # pycodestyle warnings
+    "B",       # flake8-bugbear
+    "C4",      # flake8-comprehensions
+    "UP",      # pyupgrade
+    "I",       # isort
+]
+ignore = [
+    "E501",    # line too long, handled by black
+    "B008",    # do not perform function calls in argument defaults
+    "C901",    # too complex
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+# Tests can use magic values, assertions, and relative imports
+"tests/**/*.py" = ["PLR2004", "S101", "TID252"]
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "manim.*",
+    "typer.*",
+    "hydra.*",
+    "omegaconf.*",
+    "rich.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src/agloviz",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "system: System tests",
+    "slow: Slow running tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["src/agloviz"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/.*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[dependency-groups]
+dev = [
+    "hypothesis[cli]>=6.139.2",
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+]

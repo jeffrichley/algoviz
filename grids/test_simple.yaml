@@ -1,0 +1,8 @@
+# Simple 3x3 grid for testing
+width: 3
+height: 3
+default_cost: 1.0
+
+obstacles: []
+
+weights: []

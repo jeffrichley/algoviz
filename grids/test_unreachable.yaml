@@ -1,0 +1,13 @@
+# Test grid with unreachable goal
+width: 3
+height: 3
+default_cost: 1.0
+
+obstacles:
+  - [0, 1]
+  - [1, 0]
+  - [1, 1]
+  - [1, 2]
+  - [2, 1]
+
+weights: []

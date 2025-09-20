@@ -1,0 +1,68 @@
+acts:
+  - title: "Introduction"
+    shots:
+      - beats:
+          - action: show_title
+            args: 
+              text: "Breadth-First Search"
+              subtitle: "Finding the shortest path in unweighted graphs"
+            narration: "This video explains Breadth-First Search, a fundamental graph traversal algorithm."
+          - action: show_grid
+            args:
+              width: 10
+              height: 10
+            narration: "Here is our grid environment where we'll demonstrate the algorithm."
+  
+  - title: "Algorithm Execution"
+    shots:
+      - beats:
+          - action: place_start
+            args:
+              pos: [0, 0]
+            narration: "We start at position zero-zero."
+          - action: place_goal
+            args:
+              pos: [9, 9]
+            narration: "Our goal is to reach position nine-nine."
+          - action: place_obstacles
+            args:
+              positions: [[2, 2], [2, 3], [3, 2], [7, 7], [7, 8], [8, 7]]
+            narration: "These obstacles block certain paths."
+          - action: show_widgets
+            args: 
+              queue: true
+              hud: true
+              legend: true
+            narration: "We maintain a queue for the frontier and display our progress."
+          - action: play_events
+            args: 
+              routing: "bfs_routing"
+              algorithm: "bfs"
+            narration: "We enqueue and dequeue nodes level by level until we reach the goal."
+            bookmarks:
+              enqueue: "queue.highlight_frontier"
+              dequeue: "queue.highlight_head"
+              goal_found: "grid.flash_goal"
+              explore: "grid.highlight_explored"
+  
+  - title: "Results"
+    shots:
+      - beats:
+          - action: trace_path
+            args:
+              highlight_color: "#00ff00"
+              animate: true
+            narration: "Here is the shortest path we discovered."
+          - action: show_complexity
+            args:
+              time_complexity: "O(V + E)"
+              space_complexity: "O(V)"
+            narration: "BFS has linear time and space complexity."
+          - action: celebrate_goal
+            args:
+              effect: "confetti"
+            narration: "We successfully found the goal!"
+          - action: outro
+            args:
+              fade_duration: 2.0
+            narration: "Thank you for watching this Breadth-First Search demonstration."

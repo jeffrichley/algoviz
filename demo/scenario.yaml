@@ -1,0 +1,11 @@
+scenario:
+  goal:
+  - 9
+  - 9
+  grid_file: grids/demo.yaml
+  name: demo_maze
+  obstacles: []
+  start:
+  - 0
+  - 0
+  weighted: false

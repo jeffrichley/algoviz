@@ -1,0 +1,6 @@
+scenario:
+  name: test_error
+  start: [0, 0] 
+  goal: [0, 0]  # Same as start - should error
+timing:
+  mode: fase  # Typo - should be "fast"

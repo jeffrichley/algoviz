@@ -1,0 +1,54 @@
+render:
+  format: !!python/object/apply:agloviz.config.models.RenderFormat
+  - mp4
+  frame_rate: 30
+  quality: !!python/object/apply:agloviz.config.models.RenderQuality
+  - medium
+  resolution: !!python/tuple
+  - 1920
+  - 1080
+scenario:
+  goal: !!python/tuple
+  - 9
+  - 9
+  grid_file: grids/demo.yaml
+  name: demo_maze
+  obstacles: []
+  start: !!python/tuple
+  - 0
+  - 0
+  weighted: false
+subtitles:
+  burn_in: false
+  enabled: false
+  format: !!python/object/apply:agloviz.config.models.SubtitleFormat
+  - srt
+  mode: !!python/object/apply:agloviz.config.models.SubtitleMode
+  - baseline
+theme:
+  colors:
+    frontier: '#2196F3'
+    goal: '#FF9800'
+    grid: '#E0E0E0'
+    obstacle: '#424242'
+    path: '#E91E63'
+    visited: '#4CAF50'
+  name: custom
+timing:
+  effects: 0.5
+  events: 0.8
+  mode: !!python/object/apply:agloviz.config.models.TimingMode
+  - normal
+  multipliers:
+    draft: 0.5
+    fast: 0.25
+    normal: 1.0
+  ui: 1.0
+  waits: 0.5
+voiceover:
+  backend: !!python/object/apply:agloviz.config.models.VoiceoverBackend
+  - coqui
+  enabled: false
+  lang: en
+  speed: 1.0
+  voice: en_US

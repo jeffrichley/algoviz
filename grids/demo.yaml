@@ -1,0 +1,15 @@
+# Demo grid file for ALGOViz - Updated to match SDD format
+width: 10
+height: 10
+default_cost: 1.0
+
+obstacles:
+  - [2, 2]
+  - [2, 3]
+  - [3, 2]
+  - [7, 7]
+  - [7, 8]
+  - [8, 7]
+
+# Optional: per-edge weight overrides
+weights: []

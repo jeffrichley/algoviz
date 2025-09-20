@@ -1,0 +1,6 @@
+timing:
+  effects: 0.5
+  events: 0.8
+  mode: normal
+  ui: 1.0
+  waits: 0.5

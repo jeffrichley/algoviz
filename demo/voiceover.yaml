@@ -1,0 +1,6 @@
+voiceover:
+  backend: coqui
+  enabled: false
+  lang: en
+  speed: 1.0
+  voice: en_US
