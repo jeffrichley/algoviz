@@ -50,19 +50,34 @@ def render(
     scenario: str = typer.Option(
         "demo.yaml", "--scenario", "-s", help="Scenario configuration file"
     ),
+    storyboard: str = typer.Option(
+        None, "--storyboard", help="Storyboard YAML file"
+    ),
+    timing_mode: str = typer.Option(
+        "normal", "--timing-mode", help="Timing mode: draft, normal, fast"
+    ),
+    with_voiceover: bool = typer.Option(
+        False, "--with-voiceover", help="Enable voiceover"
+    ),
     quality: str = typer.Option(
         "medium", "--quality", "-q", help="Render quality: draft, medium, high"
     ),
     output_dir: str = typer.Option(
-        "./output", "--output-dir", "-o", help="Output directory"
+        "./renders", "--output-dir", "-o", help="Output directory"
     ),
 ) -> None:
     """Render an algorithm visualization video."""
-    console.print(
-        f"[bold blue]Rendering {algorithm} with scenario {scenario}[/bold blue]"
+    from pathlib import Path
+    from agloviz.cli.render import render_with_director
+    
+    render_with_director(
+        algorithm=algorithm,
+        scenario_path=Path(scenario),
+        storyboard_path=Path(storyboard) if storyboard else None,
+        timing_mode=timing_mode,
+        with_voice=with_voiceover,
+        output_dir=Path(output_dir)
     )
-    console.print(f"Quality: {quality}, Output: {output_dir}")
-    console.print("[yellow]This command will be fully implemented in Phase 1[/yellow]")
 
 
 @app.command()
@@ -71,14 +86,28 @@ def preview(
     scenario: str = typer.Option(
         "demo.yaml", "--scenario", "-s", help="Scenario configuration file"
     ),
+    storyboard: str = typer.Option(
+        None, "--storyboard", help="Storyboard YAML file"
+    ),
     frames: int = typer.Option(
         120, "--frames", "-f", help="Number of frames to render"
     ),
+    timing_mode: str = typer.Option(
+        "draft", "--timing-mode", help="Timing mode: draft, normal, fast"
+    ),
 ) -> None:
     """Preview an algorithm visualization (quick render)."""
-    console.print(f"[bold blue]Previewing {algorithm} with {frames} frames[/bold blue]")
-    console.print(f"Scenario: {scenario}")
-    console.print("[yellow]This command will be fully implemented in Phase 1[/yellow]")
+    from pathlib import Path
+    from agloviz.cli.render import render_with_director
+    
+    render_with_director(
+        algorithm=algorithm,
+        scenario_path=Path(scenario),
+        storyboard_path=Path(storyboard) if storyboard else None,
+        timing_mode=timing_mode,
+        with_voice=False,  # No voiceover for previews
+        output_dir=Path("previews")
+    )
 
 
 @app.command()
@@ -338,6 +367,58 @@ def validate_events(
         console.print(f"[red]Error: {e}[/red]")
         if debug:
             console.print_exception()
+        raise typer.Exit(1)
+
+
+@app.command("list-widgets")
+def list_widgets() -> None:
+    """List all registered widgets."""
+    try:
+        from agloviz.widgets import component_registry
+        
+        widgets = component_registry.list_widgets()
+        if not widgets:
+            console.print("[yellow]No widgets registered[/yellow]")
+            return
+        
+        console.print("[bold]Registered Widgets:[/bold]")
+        for widget_name in widgets:
+            console.print(f"  • {widget_name}")
+            
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command("validate-widgets")
+def validate_widgets() -> None:
+    """Validate widget registry and instantiation."""
+    try:
+        from agloviz.widgets import component_registry
+        
+        widgets = component_registry.list_widgets()
+        console.print(f"[bold]Validating {len(widgets)} widgets...[/bold]")
+        
+        errors = []
+        for widget_name in widgets:
+            try:
+                widget = component_registry.get(widget_name)
+                # Validate widget implements protocol
+                if not hasattr(widget, 'show') or not hasattr(widget, 'update') or not hasattr(widget, 'hide'):
+                    errors.append(f"Widget '{widget_name}' missing required methods")
+            except Exception as e:
+                errors.append(f"Widget '{widget_name}' instantiation failed: {e}")
+        
+        if errors:
+            console.print("[red]Validation errors:[/red]")
+            for error in errors:
+                console.print(f"  ❌ {error}")
+            raise typer.Exit(1)
+        else:
+            console.print("[green]✅ All widgets valid[/green]")
+            
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
         raise typer.Exit(1)
 
 

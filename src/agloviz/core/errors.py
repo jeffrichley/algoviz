@@ -566,6 +566,24 @@ class RegistryError(AGLOVizError):
             metadata=metadata,
         )
 
+    @classmethod
+    def missing_component(cls, name: str, available: list[str]) -> "RegistryError":
+        """Factory method for missing component errors."""
+        return cls(
+            issue=f"Widget '{name}' not registered",
+            component_type="widget",
+            component_name=name,
+            available_options=available,
+        )
+
+    @classmethod
+    def collision(cls, message: str) -> "RegistryError":
+        """Factory method for component collision errors."""
+        return cls(
+            issue=message,
+            component_type="widget",
+        )
+
 
 class RenderError(AGLOVizError):
     """Rendering pipeline and export errors."""
@@ -721,4 +739,56 @@ def create_invalid_enum_error(
         config_key=key,
         valid_options=valid_options,
         suggestions=suggestions,
+    )
+
+
+# Registry error factory methods
+def create_missing_component_error(
+    component_name: str,
+    component_type: str,
+    available_options: list[str],
+) -> RegistryError:
+    """Factory for missing component errors."""
+    return RegistryError(
+        issue=f"{component_type.capitalize()} '{component_name}' not registered",
+        component_type=component_type,
+        component_name=component_name,
+        available_options=available_options,
+    )
+
+
+def create_component_collision_error(
+    component_name: str,
+    component_type: str,
+) -> RegistryError:
+    """Factory for component collision errors."""
+    return RegistryError(
+        issue=f"{component_type.capitalize()} '{component_name}' is already registered",
+        component_type=component_type,
+        component_name=component_name,
+    )
+
+
+class DirectorError(AGLOVizError):
+    """Errors during Director execution."""
+    pass
+
+
+def create_director_error(context: str, issue: str, remedy: str = None) -> DirectorError:
+    """Factory for Director errors."""
+    return DirectorError(
+        category="DirectorError",
+        context=context,
+        issue=issue,
+        remedy=remedy
+    )
+
+
+def create_action_error(action: str, location: str, issue: str, remedy: str = None) -> DirectorError:
+    """Factory for action execution errors."""
+    return DirectorError(
+        category="ActionError",
+        context=f"Action '{action}' at {location}",
+        issue=issue,
+        remedy=remedy
     )

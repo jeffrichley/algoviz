@@ -41,8 +41,6 @@ dependencies = [
     "pyyaml>=6.0",
     # Audio processing (for future voiceover)
     "numpy>=2.3.0",
-    "manim-voiceover>=0.3.7",
-    "hypothesis>=6.139.2",
 ]
 
 [project.optional-dependencies]
@@ -53,6 +51,7 @@ dev = [
     "ruff>=0.8.0",
     "mypy>=1.18.0",
     "pre-commit>=4.3.0",
+    "hypothesis>=6.139.2",
 ]
 
 [project.scripts]
