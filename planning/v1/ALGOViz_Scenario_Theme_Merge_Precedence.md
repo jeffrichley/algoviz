@@ -1,14 +1,6 @@
 
 
-# 🔀 Scenario/Theme Merge Precedence v2.0
-
-**Owner:** Development Team  
-**Status:** Current (Architecture v2.0)  
-**Last Updated:** 2025-09-21
-**Version:** v2.0 (No changes from v1.0 - no conflicts with Widget Architecture v2.0)
-**Supersedes:** planning/v1/ALGOViz_Scenario_Theme_Merge_Precedence.md
-
----
+# 🔀 Scenario/Theme Merge Precedence
 
 ## Purpose
 

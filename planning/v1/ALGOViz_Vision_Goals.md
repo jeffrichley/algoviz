@@ -1,12 +1,4 @@
-# ALGOViz Vision & Goals Document v2.0
-
-**Owner:** Development Team  
-**Status:** Current (Architecture v2.0)  
-**Last Updated:** 2025-09-21
-**Version:** v2.0 (No changes from v1.0 - no conflicts with Widget Architecture v2.0)
-**Supersedes:** planning/v1/ALGOViz_Vision_Goals.md
-
----
+# ALGOViz Vision & Goals Document
 
 ## 1. Vision
 ALGOViz is a **modular, event-driven framework for algorithm visualization videos**.  

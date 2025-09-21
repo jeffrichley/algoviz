@@ -1,10 +1,8 @@
-# ALGOViz Error Taxonomy & Messages v2.0
+# ALGOViz Error Taxonomy & Messages
 
-**Owner:** Development Team  
-**Status:** Current (Architecture v2.0)  
-**Last Updated:** 2025-09-21
-**Version:** v2.0 (No changes from v1.0 - no conflicts with Widget Architecture v2.0)
-**Supersedes:** planning/v1/ALGOViz_Error_Taxonomy.md
+**Owner:** Iris  
+**Status:** Draft (approved by Jeff)  
+**Last Updated:** AUTO
 
 ---
 

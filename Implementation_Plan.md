@@ -21,7 +21,7 @@ Establish the core architectural foundation and basic CLI tooling to enable rapi
 ### Tasks
 
 #### 0.1 Project Structure & Dependencies ✅ COMPLETED
-**Source**: [ALGOViz_SDD.md#3-High-Level-Architecture](planning/ALGOViz_SDD.md#3-high-level-architecture)
+**Source**: [ALGOViz_SDD_v2.md#3-High-Level-Architecture](planning/v2/ALGOViz_SDD_v2.md#3-high-level-architecture)
 
 - [x] **Set up project structure**
   - ✅ Created package layout: `src/agloviz/adapters/`, `src/agloviz/core/`, `src/agloviz/widgets/`, `src/agloviz/config/`, `src/agloviz/plugins/`, `src/agloviz/cli/`
@@ -46,7 +46,7 @@ Establish the core architectural foundation and basic CLI tooling to enable rapi
 - ✅ **Working CLI**: All basic commands functional with Rich console
 
 #### 0.2 Configuration System Foundation ✅ COMPLETED
-**Source**: [ALGOViz_Design_Config_System.md](planning/ALGOViz_Design_Config_System.md)
+**Source**: [ALGOViz_Design_Config_System.md](planning/v2/ALGOViz_Design_Config_System.md)
 
 - [x] **Implement ConfigManager**
   - ✅ Create `VideoConfig` Pydantic models (ScenarioConfig, ThemeConfig, VoiceoverConfig, etc.)
@@ -70,7 +70,7 @@ Establish the core architectural foundation and basic CLI tooling to enable rapi
 - ✅ **Rich Error Messages**: Helpful validation errors with context and suggestions
 
 #### 0.3 Basic CLI Implementation 🔄 PARTIALLY COMPLETED
-**Source**: [ALGOViz_Design_CLI_DevUX.md](planning/ALGOViz_Design_CLI_DevUX.md)
+**Source**: [ALGOViz_Design_CLI_DevUX.md](planning/v2/ALGOViz_Design_CLI_DevUX.md)
 
 - [x] **Implement CLI framework and basic commands**
   - ✅ `agloviz version` - show version information (fully working)
@@ -96,7 +96,7 @@ Establish the core architectural foundation and basic CLI tooling to enable rapi
 - ⚠️ **Algorithm Integration**: No actual algorithms implemented yet
 
 #### 0.4 Timing System Foundation ✅ COMPLETED
-**Source**: [ALGOViz_Design_TimingConfig.md](planning/ALGOViz_Design_TimingConfig.md)
+**Source**: [ALGOViz_Design_TimingConfig.md](planning/v2/ALGOViz_Design_TimingConfig.md)
 
 - [x] **Implement TimingConfig and TimingTracker**
   - ✅ Create timing buckets: ui, events, effects, waits
@@ -111,7 +111,7 @@ Establish the core architectural foundation and basic CLI tooling to enable rapi
 - ✅ **Performance Analysis**: Mean variance tracking and color-coded accuracy reporting
 
 #### 0.5 Error Taxonomy Implementation ✅ COMPLETED
-**Source**: [ALGOViz_Error_Taxonomy.md](planning/ALGOViz_Error_Taxonomy.md)
+**Source**: [ALGOViz_Error_Taxonomy.md](planning/v2/ALGOViz_Error_Taxonomy.md)
 
 - [x] **Create error classification system**
   - ✅ Implement `AGLOVizError` base class with category, context, issue, remedy
@@ -212,7 +212,7 @@ Implement the core architectural components, migrate the existing BFS algorithm 
 ### Tasks
 
 #### 1.1 Storyboard DSL Implementation ✅ COMPLETED
-**Source**: [ALGOViz_Design_Storyboard_DSL.md](planning/ALGOViz_Design_Storyboard_DSL.md)
+**Source**: [ALGOViz_Design_Storyboard_DSL.md](planning/v2/ALGOViz_Design_Storyboard_DSL_v2.md)
 
 - [x] **Create Storyboard data models**
   - ✅ Implemented `Beat`, `Shot`, `Act`, `Storyboard` Pydantic models (not dataclasses)
@@ -267,7 +267,7 @@ Implement the core architectural components, migrate the existing BFS algorithm 
 - ✅ **Grid Format**: Updated to SDD specification with test scenarios
 
 #### 1.2 VizEvent System & BFS Adapter ✅ COMPLETED
-**Source**: [ALGOViz_Design_Adapters_VizEvents.md](planning/ALGOViz_Design_Adapters_VizEvents.md)
+**Source**: [ALGOViz_Design_Adapters_VizEvents_v2.md](planning/v2/ALGOViz_Design_Adapters_VizEvents_v2.md)
 
 - [x] **Implement VizEvent schema**
   - ✅ Created `VizEvent` Pydantic model with type, payload, step_index, metadata
@@ -289,7 +289,7 @@ Implement the core architectural components, migrate the existing BFS algorithm 
   - ✅ Created test grids: simple, maze, unreachable scenarios
 
 #### 1.3 Component Registry & Basic Widgets ✅ COMPLETED
-**Source**: [ALGOViz_Design_Widgets_Registry.md](planning/ALGOViz_Design_Widgets_Registry.md)
+**Source**: [ALGOViz_Design_Widgets_Registry.md](planning/v2/ALGOViz_Design_Widgets_Registry_v2.md)
 
 - [x] **Implement ComponentRegistry**
   - ✅ Create registry with `register()` and `get()` methods
@@ -331,7 +331,7 @@ Implement the core architectural components, migrate the existing BFS algorithm 
 - Error handling integrated with existing taxonomy
 
 #### 1.4 Director Implementation ✅ COMPLETED
-**Source**: [ALGOViz_Design_Director.md](planning/ALGOViz_Design_Director.md)
+**Source**: [ALGOViz_Design_Director.md](planning/v2/ALGOViz_Design_Director_v2.md)
 
 - [x] **Implement Director class**
   - Load and validate storyboards
@@ -346,7 +346,7 @@ Implement the core architectural components, migrate the existing BFS algorithm 
   - Handle act/shot transitions with fades/waits
 
 #### 1.4.1 Director Architecture Cleanup
-**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/ALGOViz_Design_Widget_Architecture_v2.md)
+**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/v1/ALGOViz_Design_Widget_Architecture_v2.md)
 
 - [ ] **Remove BFS-specific actions from Director core**
   - Remove `place_start`, `place_goal`, `place_obstacles`, `celebrate_goal`, `show_complexity`
@@ -360,7 +360,7 @@ Implement the core architectural components, migrate the existing BFS algorithm 
   - Update error handling for generic action resolution
 
 #### 1.4.2 Basic Scene Configuration System  
-**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/ALGOViz_Design_Widget_Architecture_v2.md)
+**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/v1/ALGOViz_Design_Widget_Architecture_v2.md)
 
 - [ ] **Implement scene configuration models**
   - Create `SceneConfig`, `EventBinding`, `WidgetSpec` Pydantic models
@@ -375,7 +375,7 @@ Implement the core architectural components, migrate the existing BFS algorithm 
   - Test complete storyboard execution with scene configurations
 
 #### 1.4.3 Manim Integration Foundation
-**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/ALGOViz_Design_Widget_Architecture_v2.md)
+**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/v1/ALGOViz_Design_Widget_Architecture_v2.md)
 
 - [ ] **Create Manim wrapper system**
   - Implement wrapper classes around Manim primitives (Rectangle, Circle, Text, Line, Arrow, Dot)
@@ -390,7 +390,7 @@ Implement the core architectural components, migrate the existing BFS algorithm 
   - Validate integration with existing BFS workflow using new widgets
 
 #### 1.5 Basic Rendering Pipeline
-**Source**: [ALGOViz_Design_Rendering_Export.md](planning/ALGOViz_Design_Rendering_Export.md)
+**Source**: [ALGOViz_Design_Rendering_Export.md](planning/v2/ALGOViz_Design_Rendering_Export.md)
 **Dependencies**: Requires clean widget architecture from Phase 1.4.1-1.4.3
 
 - [ ] **Implement FrameRenderer**
@@ -405,7 +405,7 @@ Implement the core architectural components, migrate the existing BFS algorithm 
   - Add ffmpeg integration with reproducible settings
 
 #### 1.6 CLI Integration & User Commands
-**Source**: [ALGOViz_Design_CLI_DevUX.md](planning/ALGOViz_Design_CLI_DevUX.md)
+**Source**: [ALGOViz_Design_CLI_DevUX.md](planning/v2/ALGOViz_Design_CLI_DevUX.md)
 **Dependencies**: Requires scene configuration system from Phase 1.4.2
 
 - [ ] **Complete render command implementation**
@@ -421,7 +421,7 @@ Implement the core architectural components, migrate the existing BFS algorithm 
   - Integration with rendering pipeline
 
 #### 1.7 Testing Infrastructure
-**Source**: [ALGOViz_SDD.md#9-Testing--CI](planning/ALGOViz_SDD.md#9-testing--ci)
+**Source**: [ALGOViz_SDD_v2.md#9-Testing--CI](planning/v2/ALGOViz_SDD_v2.md#9-testing--ci)
 
 - [ ] **Set up testing framework**
   - Unit tests for adapters with deterministic VizEvents
@@ -459,7 +459,7 @@ Complete the widget architecture redesign and establish a clean, generic framewo
 ### Tasks
 
 #### 2.1 Widget Architecture Foundation
-**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/ALGOViz_Design_Widget_Architecture_v2.md)
+**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/v1/ALGOViz_Design_Widget_Architecture_v2.md)
 
 - [ ] **Implement multi-level widget hierarchy**
   - Level 1: Manim primitive wrappers (TokenWidget, MarkerWidget, ConnectionWidget)
@@ -486,7 +486,7 @@ Complete the widget architecture redesign and establish a clean, generic framewo
   - Ensure visual output maintains quality with new architecture
 
 #### 2.2 Plugin System for Widgets
-**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/ALGOViz_Design_Widget_Architecture_v2.md)
+**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/v1/ALGOViz_Design_Widget_Architecture_v2.md)
 
 - [ ] **Implement widget plugin architecture**
   - PluginRegistry and PluginManager for widget plugins
@@ -503,7 +503,7 @@ Complete the widget architecture redesign and establish a clean, generic framewo
 **Note**: Additional Algorithm Adapters (DFS, Dijkstra, A*) moved to Phase 3 to ensure clean widget architecture foundation is completed first.
 
 #### 2.3 Enhanced Scenarios & Themes
-**Source**: [ALGOViz_Design_Config_System.md](planning/ALGOViz_Design_Config_System.md)
+**Source**: [ALGOViz_Design_Config_System.md](planning/v2/ALGOViz_Design_Config_System.md)
 
 - [ ] **Create multiple scenario configurations**
   - Different grid sizes and obstacle patterns
@@ -516,7 +516,7 @@ Complete the widget architecture redesign and establish a clean, generic framewo
   - Theme validation and merging
 
 #### 2.4 Improved CLI Experience
-**Source**: [ALGOViz_Design_CLI_DevUX.md](planning/ALGOViz_Design_CLI_DevUX.md)
+**Source**: [ALGOViz_Design_CLI_DevUX.md](LGOViz_Design_CLI_DevUX.md)
 
 - [ ] **Enhance CLI commands**
   - `agloviz test` with golden regression tests
@@ -529,7 +529,7 @@ Complete the widget architecture redesign and establish a clean, generic framewo
   - `--profile` for performance analysis
 
 #### 2.5 Rendering Enhancements
-**Source**: [ALGOViz_Design_Rendering_Export.md](planning/ALGOViz_Design_Rendering_Export.md)
+**Source**: [ALGOViz_Design_Rendering_Export.md](planning/v2/ALGOViz_Design_Rendering_Export.md)
 
 - [ ] **Expand output formats**
   - GIF generation with palette optimization
@@ -561,7 +561,7 @@ Add additional algorithm implementations using the clean widget architecture fou
 ### Tasks
 
 #### 3.1 Additional Algorithm Adapters
-**Source**: [ALGOViz_PRD.md#Phase-2](planning/ALGOViz_PRD.md#phase-2)
+**Source**: [ALGOViz_PRD_v2.md#Phase-2](planning/v2/ALGOViz_PRD_v2.md#phase-2)
 **Dependencies**: Requires clean widget architecture from Phase 2.1
 
 - [ ] **Implement DFS Adapter**
@@ -583,7 +583,7 @@ Add additional algorithm implementations using the clean widget architecture fou
   - Use same widget architecture as Dijkstra
 
 #### 3.2 Algorithm-Specific Scene Configurations
-**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/ALGOViz_Design_Widget_Architecture_v2.md)
+**Source**: [ALGOViz_Design_Widget_Architecture_v2.md](planning/v1/ALGOViz_Design_Widget_Architecture_v2.md)
 
 - [ ] **Create algorithm-specific scene configurations**
   - DFSSceneConfig using StackWidget and PathfindingGrid
@@ -615,7 +615,7 @@ Add full voiceover support with CoquiTTS and automatic subtitle generation.
 ### Tasks
 
 #### 6.1 Voiceover Engine Implementation
-**Source**: [ALGOViz_Design_Voiceover.md](planning/ALGOViz_Design_Voiceover.md)
+**Source**: [ALGOViz_Design_Voiceover.md](planning/v2/ALGOViz_Design_Voiceover.md)
 
 - [ ] **Implement CoquiTTS integration**
   - Create `VoiceoverEngine` protocol and CoquiTTS implementation
@@ -630,7 +630,7 @@ Add full voiceover support with CoquiTTS and automatic subtitle generation.
   - Integrate with TimingTracker
 
 #### 6.2 Director Voiceover Integration
-**Source**: [ALGOViz_Design_Director.md](planning/ALGOViz_Design_Director.md)
+**Source**: [ALGOViz_Design_Director.md](planning/v2/ALGOViz_Design_Director_v2.md)
 
 - [ ] **Enhance Director for voiceover**
   - Wrap beats with narration in `voiceover()` context
@@ -639,7 +639,7 @@ Add full voiceover support with CoquiTTS and automatic subtitle generation.
   - Handle voiceover failures with fallback
 
 #### 6.3 Subtitle Generation System
-**Source**: [ALGOViz_Design_Rendering_Export.md#7.4-Subtitles-Exporter](planning/ALGOViz_Design_Rendering_Export.md#74-subtitles-exporter)
+**Source**: [ALGOViz_Design_Rendering_Export.md#7.4-Subtitles-Exporter](planning/v2/ALGOViz_Design_Rendering_Export.md#74-subtitles-exporter)
 
 - [ ] **Implement SubtitleExporter**
   - Generate SRT files from narration text and TimingTracker
@@ -653,7 +653,7 @@ Add full voiceover support with CoquiTTS and automatic subtitle generation.
   - Integration with rendering pipeline
 
 #### 6.4 Enhanced Storyboard Support
-**Source**: [ALGOViz_Design_Storyboard_DSL.md](planning/ALGOViz_Design_Storyboard_DSL.md)
+**Source**: [ALGOViz_Design_Storyboard_DSL.md](planning/v2/ALGOViz_Design_Storyboard_DSL_v2.md)
 
 - [ ] **Improve narration features**
   - Support per-beat narration with timing control
@@ -662,7 +662,7 @@ Add full voiceover support with CoquiTTS and automatic subtitle generation.
   - Support external narration files (localization prep)
 
 #### 6.5 Audio Pipeline Integration
-**Source**: [ALGOViz_Design_Rendering_Export.md](planning/ALGOViz_Design_Rendering_Export.md)
+**Source**: [ALGOViz_Design_Rendering_Export.md](planning/v2/ALGOViz_Design_Rendering_Export.md)
 
 - [ ] **Implement audio muxing**
   - Integrate TTS audio with video rendering
@@ -689,7 +689,7 @@ Enable third-party extensions and add advanced rendering features.
 ### Tasks
 
 #### 6.1 Advanced Plugin System Implementation
-**Source**: [ALGOViz_Design_Plugin_System.md](planning/ALGOViz_Design_Plugin_System.md)
+**Source**: [ALGOViz_Design_Plugin_System.md](planning/v2/ALGOViz_Design_Plugin_System_v2.md)
 
 - [ ] **Create PluginManager**
   - Discover plugins via Python entry points
@@ -709,7 +709,7 @@ Enable third-party extensions and add advanced rendering features.
   - Support plugin-specific rendering
 
 #### 6.2 Dependency Injection System
-**Source**: [ALGOViz_Design_DI_Strategy.md](planning/ALGOViz_Design_DI_Strategy.md)
+**Source**: [ALGOViz_Design_DI_Strategy.md](planning/v2/ALGOViz_Design_DI_Strategy_v2.md)
 
 - [ ] **Implement Hydra-based DI**
   - Use `_target_` for config-driven instantiation
@@ -723,7 +723,7 @@ Enable third-party extensions and add advanced rendering features.
   - Swappable implementations via YAML/CLI
 
 #### 6.3 Advanced Rendering Features
-**Source**: [ALGOViz_Design_Rendering_Export.md](planning/ALGOViz_Design_Rendering_Export.md)
+**Source**: [ALGOViz_Design_Rendering_Export.md](planning/v2/ALGOViz_Design_Rendering_Export.md)
 
 - [ ] **Implement advanced encoding**
   - Support libx265 for better compression
@@ -738,7 +738,7 @@ Enable third-party extensions and add advanced rendering features.
   - Progress tracking and cancellation
 
 #### 6.4 Expanded Algorithm Library
-**Source**: [ALGOViz_PRD.md#Phase-4](planning/ALGOViz_PRD.md#phase-4)
+**Source**: [ALGOViz_PRD_v2.md#Phase-4](planning/v2/ALGOViz_PRD_v2.md#phase-4)
 
 - [ ] **Add sorting algorithms**
   - Bubble Sort, Quick Sort, Merge Sort
@@ -756,7 +756,7 @@ Enable third-party extensions and add advanced rendering features.
   - Storyboard authoring guidelines
 
 #### 6.5 Advanced Scenarios
-**Source**: [ALGOViz_SDD.md#8-Scenario-Runtime-Contract](planning/ALGOViz_SDD.md#8-scenario-runtime-contract)
+**Source**: [ALGOViz_SDD_v2.md#8-Scenario-Runtime-Contract](planning/v2/ALGOViz_SDD_v2.md#8-scenario-runtime-contract)
 
 - [ ] **Support complex graphs**
   - Weighted directed graphs
@@ -787,7 +787,7 @@ Add advanced features like bookmark routing, localization, and educator tools.
 ### Tasks
 
 #### 6.1 Bookmark Routing System
-**Source**: [ALGOViz_Design_Voiceover.md#7-Bookmarks-Scaffold-Now](planning/ALGOViz_Design_Voiceover.md#7-bookmarks-scaffold-now)
+**Source**: [ALGOViz_Design_Voiceover.md#7-Bookmarks-Scaffold-Now](planning/v2/ALGOViz_Design_Voiceover.md#7-bookmarks-scaffold-now)
 
 - [ ] **Implement word-level synchronization**
   - Replace literal word matching with phoneme alignment
@@ -801,7 +801,7 @@ Add advanced features like bookmark routing, localization, and educator tools.
   - Add bookmark validation and error handling
 
 #### 6.2 Localization Support
-**Source**: [ALGOViz_PRD.md#Phase-5](planning/ALGOViz_PRD.md#phase-5)
+**Source**: [ALGOViz_PRD_v2.md#Phase-5](planning/v2/ALGOViz_PRD_v2.md#phase-5)
 
 - [ ] **Implement multi-language support**
   - External narration file loading
@@ -815,7 +815,7 @@ Add advanced features like bookmark routing, localization, and educator tools.
   - Quality assurance for translations
 
 #### 6.3 Educator Tools
-**Source**: [ALGOViz_PRD.md#Phase-5](planning/ALGOViz_PRD.md#phase-5)
+**Source**: [ALGOViz_PRD_v2.md#Phase-5](planning/v2/ALGOViz_PRD_v2.md#phase-5)
 
 - [ ] **Create educator packs**
   - Pre-built video sets with consistent branding
@@ -828,7 +828,7 @@ Add advanced features like bookmark routing, localization, and educator tools.
   - Batch rendering capabilities
 
 #### 6.4 Advanced CLI Features
-**Source**: [ALGOViz_Design_CLI_DevUX.md](planning/ALGOViz_Design_CLI_DevUX.md)
+**Source**: [ALGOViz_Design_CLI_DevUX.md](planning/v2/ALGOViz_Design_CLI_DevUX.md)
 
 - [ ] **Add interactive features**
   - `--interactive` mode for step-by-step exploration
@@ -841,7 +841,7 @@ Add advanced features like bookmark routing, localization, and educator tools.
   - `--debug-render` for frame-by-frame analysis
 
 #### 6.5 Quality Assurance & Performance
-**Source**: [ALGOViz_Vision_Goals.md](planning/ALGOViz_Vision_Goals.md)
+**Source**: [ALGOViz_Vision_Goals.md](planning/v2/ALGOViz_Vision_Goals.md)
 
 - [ ] **Implement comprehensive testing**
   - Golden test updates for all algorithms
@@ -1013,35 +1013,35 @@ agloviz validate-events bfs --scenario demo/scenario.yaml  # ✅ Still works wit
 ## 📚 Reference Documentation
 
 ### Core Architecture Documents
-- [ALGOViz_Vision_Goals.md](planning/ALGOViz_Vision_Goals.md) - Project vision and principles
-- [ALGOViz_PRD.md](planning/ALGOViz_PRD.md) - Product requirements and phases
-- [ALGOViz_SDD.md](planning/ALGOViz_SDD.md) - System design and architecture
+- [ALGOViz_Vision_Goals.md](planning/v2/ALGOViz_Vision_Goals.md) - Project vision and principles
+- [ALGOViz_PRD_v2.md](planning/v2/ALGOViz_PRD_v2.md) - Product requirements and phases
+- [ALGOViz_SDD_v2.md](planning/v2/ALGOViz_SDD_v2.md) - System design and architecture
 
 ### Component Design Documents
-- [ALGOViz_Design_Storyboard_DSL.md](planning/ALGOViz_Design_Storyboard_DSL.md) - Storyboard language
-- [ALGOViz_Design_Director.md](planning/ALGOViz_Design_Director.md) - Orchestration component
-- [ALGOViz_Design_Adapters_VizEvents.md](planning/ALGOViz_Design_Adapters_VizEvents.md) - Algorithm adapters
-- [ALGOViz_Design_Widgets_Registry.md](planning/ALGOViz_Design_Widgets_Registry.md) - UI components
-- [ALGOViz_Design_Voiceover.md](planning/ALGOViz_Design_Voiceover.md) - Narration system
+- [ALGOViz_Design_Storyboard_DSL.md](planning/v2/ALGOViz_Design_Storyboard_DSL_v2.md) - Storyboard language
+- [ALGOViz_Design_Director.md](planning/v2/ALGOViz_Design_Director_v2.md) - Orchestration component
+- [ALGOViz_Design_Adapters_VizEvents.md](planning/v2/ALGOViz_Design_Adapters_VizEvents_v2.md) - Algorithm adapters
+- [ALGOViz_Design_Widgets_Registry.md](planning/v2/ALGOViz_Design_Widgets_Registry_v2.md) - UI components
+- [ALGOViz_Design_Voiceover.md](planning/v2/ALGOViz_Design_Voiceover.md) - Narration system
 
 ### Infrastructure Documents
-- [ALGOViz_Design_Config_System.md](planning/ALGOViz_Design_Config_System.md) - Configuration management
-- [ALGOViz_Design_TimingConfig.md](planning/ALGOViz_Design_TimingConfig.md) - Timing system
-- [ALGOViz_Design_Rendering_Export.md](planning/ALGOViz_Design_Rendering_Export.md) - Rendering pipeline
-- [ALGOViz_Design_Plugin_System.md](planning/ALGOViz_Design_Plugin_System.md) - Extension framework
-- [ALGOViz_Design_DI_Strategy.md](planning/ALGOViz_Design_DI_Strategy.md) - Dependency injection
+- [ALGOViz_Design_Config_System.md](planning/v2/ALGOViz_Design_Config_System.md) - Configuration management
+- [ALGOViz_Design_TimingConfig.md](planning/v2/ALGOViz_Design_TimingConfig.md) - Timing system
+- [ALGOViz_Design_Rendering_Export.md](planning/v2/ALGOViz_Design_Rendering_Export.md) - Rendering pipeline
+- [ALGOViz_Design_Plugin_System.md](planning/v2/ALGOViz_Design_Plugin_System_v2.md) - Extension framework
+- [ALGOViz_Design_DI_Strategy.md](planning/v2/ALGOViz_Design_DI_Strategy_v2.md) - Dependency injection
 
 ### Developer Experience Documents
-- [ALGOViz_Design_CLI_DevUX.md](planning/ALGOViz_Design_CLI_DevUX.md) - CLI design
-- [ALGOViz_Error_Taxonomy.md](planning/ALGOViz_Error_Taxonomy.md) - Error handling
-- [ALGOViz_Scenario_Theme_Merge_Precedence.md](planning/ALGOViz_Scenario_Theme_Merge_Precedence.md) - Config merging
+- [ALGOViz_Design_CLI_DevUX.md](planning/v2/ALGOViz_Design_CLI_DevUX.md) - CLI design
+- [ALGOViz_Error_Taxonomy.md](planning/v2/ALGOViz_Error_Taxonomy.md) - Error handling
+- [ALGOViz_Scenario_Theme_Merge_Precedence.md](planning/v2/ALGOViz_Scenario_Theme_Merge_Precedence.md) - Config merging
 
 ---
 
 ## 🚀 Getting Started
 
-1. **Read the Vision & Goals**: Start with [ALGOViz_Vision_Goals.md](planning/ALGOViz_Vision_Goals.md) to understand the project's purpose
-2. **Review the Architecture**: Study [ALGOViz_SDD.md](planning/ALGOViz_SDD.md) for the overall system design
+1. **Read the Vision & Goals**: Start with [ALGOViz_Vision_Goals.md](planning/v2/ALGOViz_Vision_Goals.md) to understand the project's purpose
+2. **Review the Architecture**: Study [ALGOViz_SDD_v2.md](planning/v2/ALGOViz_SDD_v2.md) for the overall system design
 3. **Follow Phase 0**: Begin with foundation setup and basic CLI implementation
 4. **Iterate and Test**: Use `agloviz preview` for rapid iteration during development
 5. **Contribute**: Follow the established patterns and add comprehensive tests
