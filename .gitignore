@@ -140,6 +140,7 @@ dmypy.json
 
 # ALGOViz specific
 output/
+outputs/
 *.mp4
 *.gif
 *.png
