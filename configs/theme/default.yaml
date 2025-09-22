@@ -1,0 +1,10 @@
+# @package theme
+_target_: agloviz.config.models.ThemeConfig
+name: "default"
+colors:
+  visited: "#4CAF50"
+  frontier: "#2196F3"
+  goal: "#FF9800"
+  path: "#E91E63"
+  obstacle: "#424242"
+  grid: "#E0E0E0"

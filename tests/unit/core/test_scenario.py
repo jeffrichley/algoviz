@@ -2,32 +2,16 @@
 
 import pytest
 
-from agloviz.config.models import ScenarioConfig
-from agloviz.core.scenario import ContractTestHarness, GridScenario, ScenarioLoader
+from agloviz.core.scenario import GridScenario
 
 
 @pytest.mark.unit
 class TestGridScenario:
     """Test GridScenario implementation."""
 
-    def test_create_simple_scenario(self):
+    def test_create_simple_scenario(self, simple_scenario_config, simple_grid_data):
         """Test creating a simple grid scenario."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
-
-        grid_data = {
-            "width": 3,
-            "height": 3,
-            "default_cost": 1.0,
-            "obstacles": [],
-            "weights": []
-        }
-
-        scenario = GridScenario(config, grid_data)
+        scenario = GridScenario(simple_scenario_config, simple_grid_data)
 
         assert scenario.width == 3
         assert scenario.height == 3
@@ -35,47 +19,17 @@ class TestGridScenario:
         assert scenario.goal == (2, 2)
         assert len(scenario.obstacles) == 0
 
-    def test_scenario_with_obstacles(self):
+    def test_scenario_with_obstacles(self, simple_scenario_config, grid_data_with_obstacles):
         """Test scenario with obstacles."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
-
-        grid_data = {
-            "width": 3,
-            "height": 3,
-            "default_cost": 1.0,
-            "obstacles": [[1, 1]],
-            "weights": []
-        }
-
-        scenario = GridScenario(config, grid_data)
+        scenario = GridScenario(simple_scenario_config, grid_data_with_obstacles)
 
         assert (1, 1) in scenario.obstacles
         assert not scenario.passable((1, 1))
         assert scenario.passable((0, 0))
 
-    def test_in_bounds(self):
+    def test_in_bounds(self, simple_scenario_config, simple_grid_data):
         """Test in_bounds checking."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
-
-        grid_data = {
-            "width": 3,
-            "height": 3,
-            "default_cost": 1.0,
-            "obstacles": [],
-            "weights": []
-        }
-
-        scenario = GridScenario(config, grid_data)
+        scenario = GridScenario(simple_scenario_config, simple_grid_data)
 
         # Valid positions
         assert scenario.in_bounds((0, 0))
@@ -88,24 +42,9 @@ class TestGridScenario:
         assert not scenario.in_bounds((3, 2))
         assert not scenario.in_bounds((2, 3))
 
-    def test_neighbors(self):
+    def test_neighbors(self, simple_scenario_config, grid_data_with_obstacles):
         """Test neighbor generation."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
-
-        grid_data = {
-            "width": 3,
-            "height": 3,
-            "default_cost": 1.0,
-            "obstacles": [[1, 1]],
-            "weights": []
-        }
-
-        scenario = GridScenario(config, grid_data)
+        scenario = GridScenario(simple_scenario_config, grid_data_with_obstacles)
 
         # Corner position - should have 2 neighbors
         neighbors = scenario.neighbors((0, 0))
@@ -123,26 +62,9 @@ class TestGridScenario:
         actual_expected = [pos for pos in expected if scenario.passable(pos)]
         assert set(neighbors) == set(actual_expected)
 
-    def test_cost_function(self):
+    def test_cost_function(self, simple_scenario_config, grid_data_with_weights):
         """Test cost function."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
-
-        grid_data = {
-            "width": 3,
-            "height": 3,
-            "default_cost": 2.0,
-            "obstacles": [],
-            "weights": [
-                {"from": [0, 0], "to": [1, 0], "cost": 5.0}
-            ]
-        }
-
-        scenario = GridScenario(config, grid_data)
+        scenario = GridScenario(simple_scenario_config, grid_data_with_weights)
 
         # Custom edge weight
         assert scenario.cost((0, 0), (1, 0)) == 5.0
@@ -158,136 +80,51 @@ class TestGridScenario:
 class TestScenarioLoader:
     """Test ScenarioLoader factory."""
 
-    def test_from_config(self):
+    def test_from_config(self, scenario_from_loader):
         """Test loading scenario from config."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
+        assert scenario_from_loader.width == 3
+        assert scenario_from_loader.height == 3
+        assert scenario_from_loader.start == (0, 0)
+        assert scenario_from_loader.goal == (2, 2)
 
-        scenario = ScenarioLoader.from_config(config)
-
-        assert scenario.width == 3
-        assert scenario.height == 3
-        assert scenario.start == (0, 0)
-        assert scenario.goal == (2, 2)
-
-    def test_from_config_with_demo_grid(self):
+    def test_from_config_with_demo_grid(self, large_scenario_from_loader):
         """Test loading demo grid."""
-        config = ScenarioConfig(
-            name="demo",
-            grid_file="grids/demo.yaml",
-            start=(0, 0),
-            goal=(9, 9)
-        )
-
-        scenario = ScenarioLoader.from_config(config)
-
-        assert scenario.width == 10
-        assert scenario.height == 10
-        assert len(scenario.obstacles) > 0  # Demo has obstacles
+        assert large_scenario_from_loader.width == 10
+        assert large_scenario_from_loader.height == 10
+        assert len(large_scenario_from_loader.obstacles) > 0  # Demo has obstacles
 
 
 @pytest.mark.unit
 class TestContractTestHarness:
     """Test contract validation harness."""
 
-    def test_valid_scenario_passes(self):
+    def test_valid_scenario_passes(self, valid_scenario_for_validation):
         """Test that valid scenario passes contract validation."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
+        assert valid_scenario_for_validation["violations"] == []
 
-        scenario = ScenarioLoader.from_config(config)
-        harness = ContractTestHarness()
-
-        violations = harness.verify_scenario(scenario)
-        assert violations == []
-
-    def test_out_of_bounds_start_fails(self):
+    def test_out_of_bounds_start_fails(self, invalid_start_scenario_for_validation):
         """Test that out-of-bounds start position fails validation."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(-1, 0),  # Out of bounds
-            goal=(2, 2)
-        )
-
-        grid_data = {
-            "width": 3,
-            "height": 3,
-            "default_cost": 1.0,
-            "obstacles": [],
-            "weights": []
-        }
-
-        scenario = GridScenario(config, grid_data)
-        harness = ContractTestHarness()
-
-        violations = harness.verify_scenario(scenario)
+        violations = invalid_start_scenario_for_validation["violations"]
         assert len(violations) > 0
         assert any("start position out of bounds" in v for v in violations)
 
-    def test_out_of_bounds_goal_fails(self):
+    def test_out_of_bounds_goal_fails(self, invalid_goal_scenario_for_validation):
         """Test that out-of-bounds goal position fails validation."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test.yaml",
-            start=(0, 0),
-            goal=(5, 5)  # Out of bounds for 3x3 grid
-        )
-
-        grid_data = {
-            "width": 3,
-            "height": 3,
-            "default_cost": 1.0,
-            "obstacles": [],
-            "weights": []
-        }
-
-        scenario = GridScenario(config, grid_data)
-        harness = ContractTestHarness()
-
-        violations = harness.verify_scenario(scenario)
+        violations = invalid_goal_scenario_for_validation["violations"]
         assert len(violations) > 0
         assert any("goal position out of bounds" in v for v in violations)
 
-    def test_neighbor_contract_validation(self):
+    def test_neighbor_contract_validation(self, valid_scenario_for_validation):
         """Test validation of neighbor contract compliance."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
-
-        scenario = ScenarioLoader.from_config(config)
-        harness = ContractTestHarness()
-
-        violations = harness.verify_scenario(scenario)
+        violations = valid_scenario_for_validation["violations"]
 
         # Should pass - neighbors should only return valid, passable positions
         neighbor_violations = [v for v in violations if "neighbors(" in v]
         assert len(neighbor_violations) == 0
 
-    def test_cost_function_validation(self):
+    def test_cost_function_validation(self, valid_scenario_for_validation):
         """Test validation of cost function."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
-
-        scenario = ScenarioLoader.from_config(config)
-        harness = ContractTestHarness()
-
-        violations = harness.verify_scenario(scenario)
+        violations = valid_scenario_for_validation["violations"]
 
         # Should pass - cost function should work correctly
         cost_violations = [v for v in violations if "cost(" in v]

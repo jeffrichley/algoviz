@@ -1,16 +1,16 @@
 # ALGOViz Design Doc — Storyboard DSL v2.0
 
 **Owner:** Development Team  
-**Status:** Current (Architecture v2.0)  
+**Status:** Current (Architecture v2.0 - Hydra-zen First)  
 **Last Updated:** 2025-09-21
-**Version:** v2.0 (Complete rewrite for Widget Architecture v2.0 - generic actions with scene configuration)
+**Version:** v2.0 (Complete rewrite for Widget Architecture v2.0 - hydra-zen first storyboard system)
 **Supersedes:** planning/v1/ALGOViz_Design_Storyboard_DSL.md
 
 ---
 
-## 1. Purpose (Updated for v2.0)
+## 1. Purpose (Updated for Hydra-zen First)
 
-Define a **declarative DSL** for describing algorithm visualizations using scene configurations as *Acts → Shots → Beats*. The DSL removes imperative scene sprawl, enables reuse across algorithm types, and serves as the bridge between **data (VizEvents)** and **presentation (multi-level widgets)** through configuration-driven event binding.
+Define a **declarative DSL** for describing algorithm visualizations using **hydra-zen first storyboard configurations** as *Acts → Shots → Beats*. The DSL removes imperative scene sprawl, enables reuse across algorithm types, and serves as the bridge between **data (VizEvents)** and **presentation (multi-level widgets)** through hydra-zen structured config event binding and ConfigStore-based template composition.
 
 ## 2. Non‑Goals
 - Rendering specifics of Manim objects (left to Director & Widgets)
@@ -18,19 +18,24 @@ Define a **declarative DSL** for describing algorithm visualizations using scene
 - Algorithm semantics (Adapters & VizEvents doc)
 - Widget-specific event handling (Scene Configuration handles this)
 
-## 3. Requirements
-- Human‑readable YAML/JSON with strict validation
+## 3. Requirements (Enhanced for Hydra-zen)
+- **Hydra-zen First**: All storyboard components use structured configs and ConfigStore
+- **Template System**: Reusable storyboard templates via ConfigStore groups
+- Human‑readable YAML/JSON with hydra-zen composition syntax
 - Minimal surface area: each **Beat** is one *action* + *args*
 - Optional **narration** and **bookmarks** per Beat
-- **Generic actions only** in core DSL - algorithm-specific actions via scene configurations
-- Forward‑compatible for future actions
+- **Generic actions only** in core DSL - algorithm-specific actions via hydra-zen scene configurations
+- **Configuration Composition**: Support for storyboard template inheritance and overrides
 
-## 4. Core Concepts & Schema
+## 4. Core Concepts & Schema (Hydra-zen First)
 
-### 4.1 Types (Python)
+### 4.1 Types (Python with Complete Hydra-zen Integration)
 ```python
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Dict, List, Optional
+from hydra_zen import builds, make_config, instantiate
+from hydra.core.config_store import ConfigStore
+from omegaconf import DictConfig
 
 @dataclass
 class Beat:
@@ -57,45 +62,240 @@ class Act:
 @dataclass
 class Storyboard:
     acts: list[Act]
+
+# Enhanced hydra-zen structured configs for storyboard components
+BeatConfigZen = builds(
+    Beat,
+    action="${beat.action}",
+    args="${beat.args:{}}",
+    narration="${beat.narration:null}",
+    bookmarks="${beat.bookmarks:{}}",
+    min_duration="${beat.min_duration:null}",
+    max_duration="${beat.max_duration:null}",
+    zen_partial=True,
+    populate_full_signature=True
+)
+
+ShotConfigZen = builds(
+    Shot,
+    beats="${shot.beats:[]}",
+    zen_partial=True,
+    populate_full_signature=True
+)
+
+ActConfigZen = builds(
+    Act,
+    title="${act.title}",
+    shots="${act.shots:[]}",
+    zen_partial=True,
+    populate_full_signature=True
+)
+
+StoryboardConfigZen = builds(
+    Storyboard,
+    acts="${storyboard.acts:[]}",
+    zen_partial=True,
+    populate_full_signature=True
+)
+
+# Storyboard template configurations using make_config
+IntroActConfigZen = make_config(
+    title="Introduction",
+    shots=[
+        builds(Shot,
+              beats=[
+                  builds(Beat, action="show_title", args={"text": "${title}", "subtitle": "${subtitle}"}, narration="${intro.narration}"),
+                  builds(Beat, action="show_widgets", args={"${widget_names}"}, narration="Here is our visualization setup.")
+              ])
+    ],
+    hydra_defaults=["_self_"]
+)
+
+SetupActConfigZen = make_config(
+    title="Setup", 
+    shots=[
+        builds(Shot,
+              beats=[
+                  builds(Beat, action="place_start", args={"pos": "${scenario.start}"}, narration="We start from ${start_description}."),
+                  builds(Beat, action="place_goal", args={"pos": "${scenario.goal}"}, narration="Our goal is ${goal_description}.")
+              ])
+    ],
+    hydra_defaults=["_self_"]
+)
+
+AlgorithmActConfigZen = make_config(
+    title="Algorithm Execution",
+    shots=[
+        builds(Shot,
+              beats=[
+                  builds(Beat, 
+                        action="play_events", 
+                        args={"algorithm": "${algorithm}", "scene": "${scene_config}"}, 
+                        narration="${algorithm_description}",
+                        bookmarks="${algorithm_bookmarks:{}}")
+              ])
+    ],
+    hydra_defaults=["_self_"]
+)
+
+ResultsActConfigZen = make_config(
+    title="Results",
+    shots=[
+        builds(Shot,
+              beats=[
+                  builds(Beat, action="trace_path", narration="Here is the ${result_type} we discovered."),
+                  builds(Beat, action="outro", args={"text": "${outro_text:Thank you for watching}"})
+              ])
+    ],
+    hydra_defaults=["_self_"]
+)
 ```
 
-### 4.2 YAML Example (Updated for v2.0)
+### 4.2 ConfigStore Registration for Storyboard Templates
+```python
+def register_storyboard_configs():
+    """Register all storyboard structured configs with ConfigStore."""
+    cs = ConfigStore.instance()
+    
+    # Register base storyboard components
+    cs.store(name="beat_base", node=BeatConfigZen)
+    cs.store(name="shot_base", node=ShotConfigZen)
+    cs.store(name="act_base", node=ActConfigZen)
+    cs.store(name="storyboard_base", node=StoryboardConfigZen)
+    
+    # Register act templates
+    cs.store(group="act", name="intro", node=IntroActConfigZen)
+    cs.store(group="act", name="setup", node=SetupActConfigZen)
+    cs.store(group="act", name="algorithm", node=AlgorithmActConfigZen)
+    cs.store(group="act", name="results", node=ResultsActConfigZen)
+    
+    # Register complete storyboard templates
+    cs.store(group="storyboard", name="pathfinding_template", node=make_config(
+        acts=[
+            IntroActConfigZen,
+            SetupActConfigZen, 
+            AlgorithmActConfigZen,
+            ResultsActConfigZen
+        ],
+        defaults={
+            "title": "Pathfinding Algorithm",
+            "subtitle": "Graph Traversal Visualization",
+            "algorithm": "bfs",
+            "scene_config": "bfs_pathfinding",
+            "widget_names": {"grid": True, "queue": True, "legend": True},
+            "start_description": "the top-left corner",
+            "goal_description": "the bottom-right corner", 
+            "algorithm_description": "We explore nodes level by level until we reach the goal.",
+            "result_type": "shortest path"
+        },
+        hydra_defaults=["_self_"]
+    ))
+    
+    cs.store(group="storyboard", name="sorting_template", node=make_config(
+        acts=[
+            IntroActConfigZen,
+            builds(Act, title="Setup", shots=[
+                builds(Shot, beats=[
+                    builds(Beat, action="setup_array", args={"size": "${array.size:10}", "values": "${array.values:random}"})
+                ])
+            ]),
+            AlgorithmActConfigZen,
+            ResultsActConfigZen
+        ],
+        defaults={
+            "title": "Sorting Algorithm",
+            "subtitle": "Array Sorting Visualization", 
+            "algorithm": "quicksort",
+            "scene_config": "quicksort",
+            "widget_names": {"array": True, "call_stack": True},
+            "algorithm_description": "We partition and sort the array recursively.",
+            "result_type": "sorted array"
+        },
+        hydra_defaults=["_self_"]
+    ))
+    
+    # Register beat templates for common actions
+    cs.store(group="beat", name="show_title", node=builds(
+        Beat,
+        action="show_title",
+        args={"text": "${title}", "subtitle": "${subtitle}"},
+        narration="${title_narration}",
+        zen_partial=True
+    ))
+    
+    cs.store(group="beat", name="show_widgets", node=builds(
+        Beat,
+        action="show_widgets", 
+        args="${widget_config}",
+        narration="Here is our visualization setup.",
+        zen_partial=True
+    ))
+    
+    cs.store(group="beat", name="play_events", node=builds(
+        Beat,
+        action="play_events",
+        args={"algorithm": "${algorithm}", "scene": "${scene_config}"},
+        narration="${algorithm_narration}",
+        bookmarks="${algorithm_bookmarks:{}}",
+        zen_partial=True
+    ))
+```
+
+### 4.3 Hydra Configuration Files for Storyboards
 ```yaml
-acts:
-  - title: "Intro"
-    shots:
-      - beats:
-          - action: show_title
-            args: {text: "Breadth-First Search", subtitle: "Graph Traversal Algorithm"}
+# config/storyboard/bfs_demo.yaml
+# @package _global_
+defaults:
+  - storyboard: pathfinding_template
+  - _self_
+
+# Override template defaults
+title: "Breadth-First Search"
+subtitle: "Graph Traversal Algorithm"
+algorithm: "bfs"
+scene_config: "bfs_pathfinding"
+intro:
             narration: "This video explains Breadth-First Search."
-          - action: show_widgets
-            args: {grid: true, queue: true, hud: true}
-            narration: "Here is our visualization setup."
-  - title: "Setup"
-    shots:
-      - beats:
-          - action: place_start
-            args: {pos: [0, 0]}
-            narration: "We start from the top-left corner."
-          - action: place_goal
-            args: {pos: [9, 9]}
-            narration: "Our goal is the bottom-right corner."
-  - title: "Algorithm Execution"
-    shots:
-      - beats:
-          - action: play_events
-            args: {algorithm: "bfs", scene_config: "pathfinding.bfs"}
-            narration: "We explore nodes level by level until we reach the goal."
-            bookmarks:
-              enqueue: "queue.highlight_frontier"
-              dequeue: "queue.highlight_head"
-              goal: "grid.flash_goal"
-  - title: "Results"
-    shots:
-      - beats:
-          - action: trace_path
-            narration: "Here is the shortest path we discovered."
-          - action: outro
+widget_names:
+  grid: true
+  queue: true
+  legend: true
+start_description: "the top-left corner"
+goal_description: "the bottom-right corner"
+algorithm_description: "We explore nodes level by level until we reach the goal."
+algorithm_bookmarks:
+  enqueue: "queue.add_element"
+  dequeue: "queue.remove_element" 
+  goal: "grid.mark_goal"
+result_type: "shortest path"
+outro_text: "BFS guarantees the shortest path!"
+```
+
+```yaml
+# config/storyboard/quicksort_demo.yaml
+# @package _global_
+defaults:
+  - storyboard: sorting_template
+  - _self_
+
+# Override template defaults
+title: "QuickSort Algorithm"
+subtitle: "Divide and Conquer Sorting"
+algorithm: "quicksort"
+scene_config: "quicksort"
+widget_names:
+  array: true
+  call_stack: true
+array:
+  size: 12
+  values: "random"
+algorithm_description: "We partition around a pivot and sort recursively."
+algorithm_bookmarks:
+  compare: "array.compare_highlight"
+  swap: "array.swap_elements"
+  partition: "array.partition_marker"
+result_type: "sorted array"
+outro_text: "QuickSort is efficient on average!"
 ```
 
 ## 5. Core Actions (Updated - Generic Only)
@@ -105,363 +305,575 @@ acts:
 |---|---|---|
 | `show_title` | Show title card | `text: str`, `subtitle: str` |
 | `show_widgets` | Show widgets from scene config | widget names: `queue: true`, `grid: true` |
-| `play_events` | Stream adapter events via scene routing | `routing_override: dict` (optional) |
+| `play_events` | Stream adapter events via scene routing | `algorithm: str`, `scene: str` |
 | `outro` | Fade out/credits | `text: str` (optional) |
 
 ### 5.2 Removed Algorithm-Specific Actions
 **No longer in core actions (moved to scene configurations):**
-- ❌ `place_start` - Now in PathfindingSceneConfig
-- ❌ `place_goal` - Now in PathfindingSceneConfig
-- ❌ `place_obstacles` - Now in PathfindingSceneConfig
-- ❌ `show_complexity` - Now in AlgorithmAnalysisSceneConfig
-- ❌ `celebrate_goal` - Now in PathfindingSceneConfig
+- ❌ `place_start` - Now in PathfindingSceneConfig via hydra-zen
+- ❌ `place_goal` - Now in PathfindingSceneConfig via hydra-zen
+- ❌ `setup_array` - Now in SortingSceneConfig via hydra-zen
+- ❌ `trace_path` - Now resolved via scene configuration templates
 
-### 5.3 Action Resolution Process
-1. Check if action is core generic action
-2. If not, resolve through scene configuration
-3. Scene configuration provides action implementation
-4. Parameter templates resolve event data
+These actions are now **resolved through scene configurations** using hydra-zen instantiation, making the core DSL truly generic while maintaining algorithm-specific functionality.
 
+## 6. Storyboard Loading and Instantiation (Hydra-zen Native)
+
+### 6.1 Hydra-zen Storyboard Loader
 ```python
-def resolve_action(action_name: str, scene_config: SceneConfig) -> Callable:
-    """Resolve action through core registry or scene configuration."""
+from hydra_zen import instantiate
+from hydra.core.config_store import ConfigStore
+from omegaconf import OmegaConf
+import hydra
+
+class StoryboardLoader:
+    """Loads storyboards using hydra-zen configuration system."""
     
-    # Core actions (generic orchestration)
-    core_actions = ["show_title", "show_widgets", "play_events", "outro"]
+    def __init__(self):
+        self.cs = ConfigStore.instance()
+        # Register all storyboard configs
+        register_storyboard_configs()
     
-    if action_name in core_actions:
-        return get_core_action_handler(action_name)
+    @hydra.main(version_base=None, config_path="config/storyboard", config_name="bfs_demo")
+    def load_with_hydra(self, cfg: DictConfig) -> Storyboard:
+        """Load storyboard using Hydra's composition system."""
+        # Instantiate storyboard from structured config
+        storyboard = instantiate(cfg)
+        
+        # Validate and return
+        if not isinstance(storyboard, Storyboard):
+            storyboard = Storyboard(**OmegaConf.to_container(cfg, resolve=True))
+        
+        return storyboard
     
-    # Scene configuration actions (algorithm-specific)
-    if action_name in scene_config.action_handlers:
-        return scene_config.action_handlers[action_name]
+    def load_from_template(self, template_name: str, **overrides) -> Storyboard:
+        """Load storyboard from ConfigStore template with overrides."""
+        config_key = f"storyboard/{template_name}"
+        
+        repo = self.cs.get_repo()
+        if config_key not in repo:
+            raise ValueError(f"Storyboard template '{template_name}' not found")
+        
+        storyboard_config = repo[config_key].node
+        
+        # Apply overrides if provided
+        if overrides:
+            override_config = OmegaConf.create(overrides)
+            storyboard_config = OmegaConf.merge(storyboard_config, override_config)
+        
+        # Instantiate using hydra-zen
+        return instantiate(storyboard_config)
     
-    raise ValueError(f"Unknown action: {action_name}")
+    def create_custom_storyboard(self, acts_config: List[DictConfig]) -> Storyboard:
+        """Create custom storyboard from act configurations."""
+        acts = []
+        for act_config in acts_config:
+            act = instantiate(act_config)
+            acts.append(act)
+        
+        return Storyboard(acts=acts)
+    
+    def get_available_templates(self) -> Dict[str, str]:
+        """Get all available storyboard templates from ConfigStore."""
+        repo = self.cs.get_repo()
+        templates = {}
+        
+        for config_name in repo:
+            if config_name.startswith("storyboard/"):
+                template_name = config_name[11:]  # Remove "storyboard/" prefix
+                templates[template_name] = config_name
+        
+        return templates
 ```
 
-## 6. Scene Configuration Actions (New Section)
-
-### 6.1 Algorithm-Specific Actions in Scene Configs
-Algorithm-specific actions are now handled by scene configurations:
-
+### 6.2 Enhanced YAML Loading with Composition
 ```python
-class BFSSceneConfig(BaseModel):
-    @staticmethod
-    def create() -> SceneConfig:
-        return SceneConfig(
-            action_handlers={
-                "place_start": lambda scene, args, run_time, context: 
-                    scene_engine.get_widget("grid").mark_start(args["pos"]),
-                "place_goal": lambda scene, args, run_time, context:
-                    scene_engine.get_widget("grid").mark_goal(args["pos"]),
-                "place_obstacles": lambda scene, args, run_time, context:
-                    [scene_engine.get_widget("grid").mark_obstacle(pos) for pos in args["positions"]],
-                "celebrate_goal": lambda scene, args, run_time, context:
-                    scene_engine.get_widget("grid").highlight_element(args["pos"], "celebration")
-            },
-            event_bindings={
-                "enqueue": [
-                    EventBinding(widget="queue", action="enqueue", params={"element": "${event.node}"})
-                ]
-            }
-        )
+def load_storyboard_yaml(yaml_path: str, config_overrides: Dict = None) -> Storyboard:
+    """Load storyboard YAML with hydra-zen composition support."""
+    # Load base configuration
+    cfg = OmegaConf.load(yaml_path)
+    
+    # Apply overrides if provided
+    if config_overrides:
+        override_cfg = OmegaConf.create(config_overrides)
+        cfg = OmegaConf.merge(cfg, override_cfg)
+    
+    # Resolve any interpolations
+    cfg = OmegaConf.to_container(cfg, resolve=True)
+    
+    # Create storyboard using structured configs
+    loader = StoryboardLoader()
+    
+    # If it references a template, use that
+    if 'storyboard_template' in cfg:
+        template_name = cfg['storyboard_template']
+        return loader.load_from_template(template_name, **cfg)
+    else:
+        # Create from direct configuration
+        storyboard_cfg = OmegaConf.create(cfg)
+        return instantiate(StoryboardConfigZen, **storyboard_cfg)
 
-class SortingSceneConfig(BaseModel):
-    @staticmethod
-    def create() -> SceneConfig:
-        return SceneConfig(
-            action_handlers={
-                "setup_array": lambda scene, args, run_time, context:
-                    scene_engine.get_widget("array").initialize_elements(args["values"]),
-                "show_comparison": lambda scene, args, run_time, context:
-                    scene_engine.get_widget("array").compare_elements(args["i"], args["j"], args["result"])
-            }
-        )
-```
+# Usage examples
+def load_bfs_storyboard():
+    """Load BFS storyboard using template."""
+    loader = StoryboardLoader()
+    return loader.load_from_template("pathfinding_template", 
+                                   algorithm="bfs",
+                                   scene_config="bfs_pathfinding",
+                                   title="Breadth-First Search")
 
-### 6.2 Domain-Specific Action Examples
-- **Pathfinding**: `place_start`, `place_goal`, `place_obstacles`, `celebrate_goal`
-- **Sorting**: `setup_array`, `show_comparison`, `swap_elements`, `show_sorted`
-- **Trees**: `highlight_node`, `show_path`, `traverse_subtree`
-
-### 6.3 Event Binding Integration
-Scene configurations also handle event binding for `play_events` action.
-
-```python
-# Event bindings in scene configuration
-event_bindings = {
-    "enqueue": [
-        EventBinding(widget="queue", action="enqueue", params={"element": "${event.node}"}, order=1),
-        EventBinding(widget="grid", action="highlight_element", params={"index": "${event.pos}", "style": "frontier"}, order=2)
-    ],
-    "dequeue": [
-        EventBinding(widget="queue", action="dequeue", params={}, order=1)
+def load_custom_storyboard():
+    """Load custom storyboard with specific acts."""
+    loader = StoryboardLoader()
+    
+    custom_acts = [
+        instantiate(IntroActConfigZen, title="Custom Algorithm", subtitle="My Visualization"),
+        instantiate(AlgorithmActConfigZen, algorithm="custom", scene_config="custom_scene"),
+        instantiate(ResultsActConfigZen, result_type="custom result")
     ]
-}
+    
+    return loader.create_custom_storyboard(custom_acts)
 ```
 
-## 7. Action Resolution (Updated for Scene Configuration)
+## 7. Action Resolution (Updated for Hydra-zen Scene Integration)
 
-### 7.1 Resolution Process
-1. **Core Action Check**: Is action in Director's core actions?
-2. **Scene Configuration Check**: Is action defined in scene configuration?
-3. **Plugin Action Check**: Is action provided by loaded plugins?
-4. **Error Handling**: Provide helpful error with available actions
-
+### 7.1 Enhanced Action Resolution with Scene Configurations
 ```python
 class ActionResolver:
-    def __init__(self, director: Director, scene_engine: SceneEngine):
-        self.director = director
+    """Resolves actions through core registry and hydra-zen scene configurations."""
+    
+    def __init__(self, scene_engine):
         self.scene_engine = scene_engine
+        self.core_actions = {
+            "show_title": self._action_show_title,
+            "show_widgets": self._action_show_widgets,
+            "play_events": self._action_play_events,
+            "outro": self._action_outro
+        }
     
-    def resolve(self, action_name: str) -> Callable:
-        """Resolve action through hierarchy."""
+    def resolve_action(self, beat: Beat, context: Dict) -> callable:
+        """Resolve action through core registry or scene configuration."""
         
-        # 1. Core generic actions (highest priority)
-        if action_name in self.director.core_actions:
-            return self.director.core_actions[action_name]
+        # 1. Check core actions first
+        if beat.action in self.core_actions:
+            return self.core_actions[beat.action]
         
-        # 2. Scene configuration actions
-        if self.scene_engine.has_action(action_name):
-            return self.scene_engine.get_action_handler(action_name)
+        # 2. Check scene configuration actions (hydra-zen instantiated)
+        if self.scene_engine.has_action(beat.action):
+            return lambda scene, args, run_time, ctx: \
+                self.scene_engine.execute_action(beat.action, args, run_time, ctx)
         
-        # 3. Plugin-provided actions
-        if self.director.registry.has_action(action_name):
-            return self.director.registry.get_action(action_name)
+        # 3. Check if it's a configurable action template
+        if self._is_template_action(beat.action):
+            return self._resolve_template_action(beat.action, beat.args, context)
         
-        # 4. Error with helpful context
-        available_actions = self.get_available_actions()
-        raise ValueError(f"Unknown action '{action_name}'. Available: {available_actions}")
+        raise ValueError(f"Unknown action '{beat.action}'. Available actions: {self._get_available_actions()}")
+    
+    def _is_template_action(self, action_name: str) -> bool:
+        """Check if action is available as a template in ConfigStore."""
+        cs = ConfigStore.instance()
+        repo = cs.get_repo()
+        return f"beat/{action_name}" in repo
+    
+    def _resolve_template_action(self, action_name: str, args: Dict, context: Dict) -> callable:
+        """Resolve action from ConfigStore template."""
+        cs = ConfigStore.instance()
+        beat_config = cs.get_repo()[f"beat/{action_name}"].node
+        
+        # Merge args with template
+        resolved_config = OmegaConf.merge(beat_config, OmegaConf.create({"args": args}))
+        
+        # Instantiate beat and return action resolver
+        beat = instantiate(resolved_config, **context)
+        return self.resolve_action(beat, context)
 ```
 
-### 7.2 Priority Order
-1. Core generic actions (highest priority)
-2. Scene configuration actions
-3. Plugin-provided actions
-4. Error if not found
+## 8. Validation & Loading (Enhanced for Hydra-zen)
 
-### 7.3 Parameter Resolution
-- Static parameters passed directly
-- Template parameters (`${event.pos}`) resolved at runtime
-- Context parameters (act/shot/beat indices) available
-
-```python
-def resolve_beat_parameters(beat: Beat, context: dict) -> dict:
-    """Resolve beat parameters including templates."""
-    resolved_args = {}
-    
-    for key, value in beat.args.items():
-        if isinstance(value, str) and value.startswith("${"):
-            # Template parameter
-            template_path = value[2:-1]  # Remove ${ and }
-            resolved_args[key] = resolve_template_path(template_path, context)
-        else:
-            # Static parameter
-            resolved_args[key] = value
-    
-    return resolved_args
-```
-
-## 8. Validation & Loading (Updated for v2.0)
-
-- Pydantic models mirror the dataclasses (for runtime validation)
-- Strict keys; unknown keys flag warnings (fail in CI)
-- **Scene configuration validation**: Ensure referenced actions exist
-- **Action availability check**: Verify all storyboard actions are resolvable
-- Provide helpful error messages: include act/shot indexes for context
-
+### 8.1 Hydra-zen Aware Validation
 ```python
 class StoryboardValidator:
-    def __init__(self, scene_config: SceneConfig):
-        self.scene_config = scene_config
+    """Validates storyboards with hydra-zen scene configuration integration."""
     
-    def validate_storyboard(self, storyboard: Storyboard) -> list[str]:
-        """Validate storyboard against scene configuration."""
+    def __init__(self, scene_config: DictConfig):
+        self.scene_config = scene_config
+        self.cs = ConfigStore.instance()
+    
+    def validate_storyboard(self, storyboard: Storyboard) -> List[str]:
+        """Validate storyboard against scene configuration and ConfigStore."""
         errors = []
         
         for act_idx, act in enumerate(storyboard.acts):
             for shot_idx, shot in enumerate(act.shots):
                 for beat_idx, beat in enumerate(shot.beats):
                     try:
-                        self.validate_beat_action(beat)
+                        self.validate_beat(beat)
                     except ValueError as e:
                         location = f"Act {act_idx}/Shot {shot_idx}/Beat {beat_idx}"
                         errors.append(f"{location}: {e}")
         
         return errors
     
-    def validate_beat_action(self, beat: Beat):
-        """Validate that beat action is resolvable."""
+    def validate_beat(self, beat: Beat):
+        """Validate beat action against available actions and templates."""
         core_actions = ["show_title", "show_widgets", "play_events", "outro"]
         
-        if beat.action not in core_actions:
-            if beat.action not in self.scene_config.action_handlers:
-                available = core_actions + list(self.scene_config.action_handlers.keys())
-                raise ValueError(f"Unknown action '{beat.action}'. Available: {available}")
+        # Check core actions
+        if beat.action in core_actions:
+            return
+        
+        # Check scene configuration actions
+        if hasattr(self.scene_config, 'event_bindings'):
+            scene_actions = list(self.scene_config.event_bindings.keys())
+            if beat.action in scene_actions:
+                return
+        
+        # Check ConfigStore beat templates
+        repo = self.cs.get_repo()
+        if f"beat/{beat.action}" in repo:
+            return
+        
+        # Action not found
+        available_actions = core_actions + self._get_scene_actions() + self._get_template_actions()
+        raise ValueError(f"Unknown action '{beat.action}'. Available: {available_actions}")
+    
+    def _get_scene_actions(self) -> List[str]:
+        """Get actions available from scene configuration."""
+        if hasattr(self.scene_config, 'event_bindings'):
+            return list(self.scene_config.event_bindings.keys())
+        return []
+    
+    def _get_template_actions(self) -> List[str]:
+        """Get actions available from ConfigStore templates."""
+        repo = self.cs.get_repo()
+        template_actions = []
+        
+        for config_name in repo:
+            if config_name.startswith("beat/"):
+                action_name = config_name[5:]  # Remove "beat/" prefix
+                template_actions.append(action_name)
+        
+        return template_actions
+    
+    def validate_template_compatibility(self, template_name: str, overrides: Dict) -> List[str]:
+        """Validate that template overrides are compatible."""
+        errors = []
+        
+        config_key = f"storyboard/{template_name}"
+        repo = self.cs.get_repo()
+        
+        if config_key not in repo:
+            errors.append(f"Template '{template_name}' not found in ConfigStore")
+            return errors
+        
+        template_config = repo[config_key].node
+        
+        # Validate override keys exist in template
+        for override_key in overrides.keys():
+            if not self._key_exists_in_config(override_key, template_config):
+                errors.append(f"Override key '{override_key}' not found in template '{template_name}'")
+        
+        return errors
+    
+    def _key_exists_in_config(self, key: str, config) -> bool:
+        """Check if key exists in structured config (supports nested keys)."""
+        try:
+            keys = key.split('.')
+            current = config
+            for k in keys:
+                if hasattr(current, k):
+                    current = getattr(current, k)
+                else:
+                    return False
+            return True
+        except:
+            return False
 ```
 
-## 9. Examples (Updated for v2.0)
+## 9. Examples (Enhanced for Hydra-zen)
 
-### 9.1 Generic Storyboard Examples
-```yaml
-# Generic storyboard structure (works with any algorithm)
-acts:
-  - title: "Introduction"
-    shots:
-      - beats:
-          - action: show_title
-            args: {text: "Algorithm Visualization"}
-          - action: show_widgets
-            args: {grid: true, queue: true}
-  - title: "Execution"
-    shots:
-      - beats:
-          - action: play_events
-            args: {algorithm: "bfs", scene_config: "pathfinding.bfs"}
-```
-
-### 9.2 Scene Configuration Examples
+### 9.1 Template-Based Storyboard Creation
 ```python
-# Pathfinding scene configuration
-PathfindingSceneConfig = SceneConfig(
-    action_handlers={
-        "place_start": pathfinding_place_start_handler,
-        "place_goal": pathfinding_place_goal_handler,
-        "celebrate_goal": pathfinding_celebrate_handler
-    }
+# Using ConfigStore templates
+def create_algorithm_storyboard(algorithm: str, scene_config: str, **customizations):
+    """Create storyboard from template with customizations."""
+    loader = StoryboardLoader()
+    
+    if algorithm in ["bfs", "dfs", "dijkstra", "astar"]:
+        template = "pathfinding_template"
+    elif algorithm in ["quicksort", "mergesort", "heapsort"]:
+        template = "sorting_template"
+    else:
+        template = "generic_template"
+    
+    return loader.load_from_template(
+        template,
+        algorithm=algorithm,
+        scene_config=scene_config,
+        **customizations
+    )
+
+# Usage examples
+bfs_storyboard = create_algorithm_storyboard(
+    "bfs", 
+    "bfs_pathfinding",
+    title="BFS Visualization",
+    algorithm_description="We explore nodes level by level."
 )
 
-# Sorting scene configuration  
-SortingSceneConfig = SceneConfig(
-    action_handlers={
-        "setup_array": sorting_setup_array_handler,
-        "show_comparison": sorting_comparison_handler,
-        "show_sorted": sorting_sorted_handler
-    }
+quicksort_storyboard = create_algorithm_storyboard(
+    "quicksort",
+    "quicksort", 
+    title="QuickSort Demo",
+    array={"size": 15, "values": "ascending"}
 )
 ```
 
-### 9.3 Multi-Algorithm Examples
-```yaml
-# Same storyboard structure works for different algorithms
-acts:
-  - title: "Setup"
-    shots:
-      - beats:
-          - action: place_start    # Resolved via scene configuration
-          - action: place_goal     # Resolved via scene configuration
-  - title: "Algorithm"
-    shots:
-      - beats:
-          - action: play_events
-            args: 
-              algorithm: "bfs"           # BFS with PathfindingSceneConfig
-              scene_config: "pathfinding.bfs"
----
-# Different algorithm, same storyboard structure
-acts:
-  - title: "Setup"
-    shots:
-      - beats:
-          - action: setup_array    # Resolved via SortingSceneConfig
-  - title: "Algorithm"  
-    shots:
-      - beats:
-          - action: play_events
-            args:
-              algorithm: "quicksort"     # Quicksort with SortingSceneConfig
-              scene_config: "sorting.quicksort"
+### 9.2 Dynamic Storyboard Composition
+```python
+def create_comparison_storyboard(algorithms: List[str], scene_configs: List[str]):
+    """Create storyboard comparing multiple algorithms."""
+    loader = StoryboardLoader()
+    
+    acts = [
+        instantiate(IntroActConfigZen, 
+                   title="Algorithm Comparison",
+                   subtitle="Side-by-side Analysis")
+    ]
+    
+    for i, (algorithm, scene_config) in enumerate(zip(algorithms, scene_configs)):
+        acts.append(
+            instantiate(ActConfigZen,
+                       title=f"Algorithm {i+1}: {algorithm.upper()}",
+                       shots=[
+                           instantiate(ShotConfigZen,
+                                     beats=[
+                                         instantiate(BeatConfigZen,
+                                                   action="play_events",
+                                                   args={"algorithm": algorithm, "scene": scene_config},
+                                                   narration=f"Now let's see how {algorithm} performs.")
+                                     ])
+                       ])
+        )
+    
+    acts.append(
+        instantiate(ResultsActConfigZen,
+                   title="Comparison Results", 
+                   result_type="performance comparison")
+    )
+    
+    return loader.create_custom_storyboard(acts)
 ```
 
-## 10. Testing (Updated for v2.0)
+## 10. CLI Integration (Hydra-zen Native)
 
-- YAML schema tests (bad/missing/extra keys)
-- Golden storyboards (snapshots) parsed ⇒ round-trip to dataclasses
-- **Scene configuration integration tests**: Ensure action resolution works
-- **Multi-algorithm tests**: Same storyboard structure with different scene configs
-- Action contracts mocked; ensure Director calls with correct `run_time` and args
-- Bookmarks: simulate "spoken words" and assert actions fire
+### 10.1 Storyboard CLI Commands
+```bash
+# List available storyboard templates
+agloviz storyboard list-templates
 
-```python
-def test_storyboard_scene_configuration_integration():
-    """Test storyboard works with scene configuration."""
-    storyboard = load_storyboard("generic_pathfinding.yaml")
-    scene_config = PathfindingSceneConfig.create()
-    
-    validator = StoryboardValidator(scene_config)
-    errors = validator.validate_storyboard(storyboard)
-    assert len(errors) == 0  # All actions should resolve
+# Create storyboard from template
+agloviz storyboard create --template pathfinding_template --algorithm bfs --output bfs_demo.yaml
 
-def test_multi_algorithm_storyboard():
-    """Test same storyboard structure works with different algorithms."""
-    base_storyboard = load_storyboard("generic_algorithm.yaml")
-    
-    # Test with pathfinding
-    pathfinding_config = PathfindingSceneConfig.create()
-    director_bfs = Director(scene, base_storyboard, timing, pathfinding_config)
-    director_bfs.run()  # Should work
-    
-    # Test with sorting
-    sorting_config = SortingSceneConfig.create()
-    director_sort = Director(scene, base_storyboard, timing, sorting_config)
-    director_sort.run()  # Should work with same storyboard
+# Validate storyboard configuration
+agloviz storyboard validate bfs_demo.yaml --scene bfs_pathfinding
+
+# Run storyboard with overrides
+agloviz render --storyboard pathfinding_template --algorithm dfs --scene dfs_pathfinding
 ```
 
-## 11. Performance
-
-- Keep YAML small; prefer references to shared sequences if needed
-- Pre-parse and memoize storyboards in CLI to avoid repeated parsing
-- **Scene configuration caching**: Cache action resolution for performance
-- **Template compilation**: Pre-compile parameter templates
-- No heavy computation; this layer stays declarative
-
+### 10.2 CLI Implementation
 ```python
-class StoryboardOptimizer:
-    def optimize_for_scene_config(self, storyboard: Storyboard, scene_config: SceneConfig):
-        """Pre-optimize storyboard for scene configuration."""
-        # Pre-resolve all action handlers
+import click
+from hydra_zen import instantiate
+
+@click.group()
+def storyboard():
+    """Storyboard management commands."""
+    pass
+
+@storyboard.command()
+def list_templates():
+    """List available storyboard templates."""
+    loader = StoryboardLoader()
+    templates = loader.get_available_templates()
+    
+    click.echo("Available storyboard templates:")
+    for template_name, config_path in templates.items():
+        click.echo(f"  - {template_name} ({config_path})")
+
+@storyboard.command()
+@click.option('--template', required=True, help='Template name')
+@click.option('--algorithm', required=True, help='Algorithm name')
+@click.option('--output', required=True, help='Output YAML file')
+@click.option('--scene', help='Scene configuration name')
+def create(template, algorithm, output, scene):
+    """Create storyboard from template."""
+    loader = StoryboardLoader()
+    
+    overrides = {"algorithm": algorithm}
+    if scene:
+        overrides["scene_config"] = scene
+    
+    try:
+        storyboard = loader.load_from_template(template, **overrides)
+        
+        # Convert to YAML and save
+        storyboard_dict = OmegaConf.structured(storyboard)
+        with open(output, 'w') as f:
+            OmegaConf.save(storyboard_dict, f)
+        
+        click.echo(f"Created storyboard: {output}")
+        
+    except Exception as e:
+        click.echo(f"Error creating storyboard: {e}", err=True)
+
+@storyboard.command()
+@click.argument('storyboard_file')
+@click.option('--scene', help='Scene configuration for validation')
+def validate(storyboard_file, scene):
+    """Validate storyboard configuration."""
+    try:
+        # Load storyboard
+        storyboard = load_storyboard_yaml(storyboard_file)
+        
+        # Load scene config if provided
+        scene_config = None
+        if scene:
+            from agloviz.core.scene import create_scene_from_config_store
+            scene_engine = create_scene_from_config_store(scene)
+            scene_config = scene_engine.get_scene_config()
+        
+        # Validate
+        if scene_config:
+            validator = StoryboardValidator(scene_config)
+            errors = validator.validate_storyboard(storyboard)
+            
+            if errors:
+                click.echo("Validation errors found:")
+                for error in errors:
+                    click.echo(f"  - {error}")
+            else:
+                click.echo("Storyboard validation passed!")
+        else:
+            click.echo("Basic storyboard structure validation passed!")
+            
+    except Exception as e:
+        click.echo(f"Validation failed: {e}", err=True)
+```
+
+## 11. Testing (Enhanced for Hydra-zen)
+
+### 11.1 Template and ConfigStore Testing
+```python
+def test_storyboard_template_instantiation():
+    """Test that storyboard templates instantiate correctly."""
+    register_storyboard_configs()
+    cs = ConfigStore.instance()
+    
+    # Test pathfinding template
+    pathfinding_config = cs.get_repo()["storyboard/pathfinding_template"].node
+    storyboard = instantiate(pathfinding_config)
+    
+    assert isinstance(storyboard, Storyboard)
+    assert len(storyboard.acts) >= 3  # Intro, setup, algorithm, results
+    assert storyboard.acts[0].title == "Introduction"
+
+def test_storyboard_template_overrides():
+    """Test template overrides work correctly."""
+    loader = StoryboardLoader()
+    
+    storyboard = loader.load_from_template(
+        "pathfinding_template",
+        algorithm="dfs",
+        title="DFS Custom Title",
+        scene_config="dfs_pathfinding"
+    )
+    
+    # Check overrides were applied
+    play_events_beat = None
         for act in storyboard.acts:
             for shot in act.shots:
                 for beat in shot.beats:
-                    beat._resolved_handler = self.resolve_action(beat.action, scene_config)
+                if beat.action == "play_events":
+                    play_events_beat = beat
+                    break
+    
+    assert play_events_beat is not None
+    assert play_events_beat.args["algorithm"] == "dfs"
+    assert play_events_beat.args["scene"] == "dfs_pathfinding"
+
+def test_configstore_template_discovery():
+    """Test ConfigStore template discovery works."""
+    loader = StoryboardLoader()
+    templates = loader.get_available_templates()
+    
+    assert "pathfinding_template" in templates
+    assert "sorting_template" in templates
+    assert len(templates) >= 2
+
+def test_hydra_composition_loading():
+    """Test loading storyboard via Hydra composition."""
+    # This would test actual Hydra config file loading
+    # with defaults and overrides
+    pass
 ```
 
-## 12. Migration from v1.0
+## 12. Migration Strategy
 
-### 12.1 Removed Algorithm-Specific Actions
-**Actions removed from core DSL (moved to scene configurations):**
-- ❌ `place_start` - Now in PathfindingSceneConfig
-- ❌ `place_goal` - Now in PathfindingSceneConfig
-- ❌ `place_obstacles` - Now in PathfindingSceneConfig
-- ❌ `show_complexity` - Now in AlgorithmAnalysisSceneConfig
-- ❌ `celebrate_goal` - Now in PathfindingSceneConfig
+### 12.1 Phase 1: Template System Implementation
+**Goal**: Implement ConfigStore-based storyboard template system
 
-### 12.2 New Scene Configuration Requirements
-**Storyboards now require:**
-- Scene configuration specification in `play_events` action
-- Algorithm-specific actions provided by scene configurations
-- Generic storyboard structure that works across algorithm types
-- Parameter template support for dynamic arguments
+**Tasks**:
+1. Create structured configs for all storyboard components
+2. Register templates with ConfigStore using appropriate groups
+3. Implement StoryboardLoader with template support
+4. Add CLI commands for template management
 
-### 12.3 Updated Action Resolution
-**Action resolution hierarchy:**
-1. Core generic actions (Director)
-2. Scene configuration actions (SceneEngine)
-3. Plugin actions (Registry)
-4. Error with helpful context
+### 12.2 Phase 2: YAML Composition Enhancement
+**Goal**: Update YAML loading to use hydra-zen composition
 
-```python
-# Migration example: BFS storyboard action
-# OLD v1.0 (algorithm-specific in core DSL):
-- action: place_start
-  args: {pos: [0, 0]}
+**Tasks**:
+1. Update YAML files to use Hydra composition syntax
+2. Add template references and overrides to existing storyboards
+3. Implement parameter interpolation in storyboard configs
+4. Test template inheritance and customization
 
-# NEW v2.0 (generic storyboard + scene configuration):
-- action: place_start        # Resolved via PathfindingSceneConfig
-  args: {pos: [0, 0]}        # Same args, different resolution
+### 12.3 Phase 3: Integration Testing
+**Goal**: Validate complete hydra-zen storyboard system
 
-# Scene configuration provides the implementation:
-PathfindingSceneConfig.action_handlers["place_start"] = pathfinding_place_start_handler
-```
+**Tasks**:
+1. Test template instantiation and customization
+2. Validate scene configuration integration
+3. Test CLI template management commands
+4. Performance testing of hydra-zen composition
+
+## 13. Success Criteria
+
+### 13.1 Hydra-zen Integration Success
+- ✅ All storyboard components use structured configs with `builds()` patterns
+- ✅ ConfigStore registration works for storyboard templates and components
+- ✅ Template system supports inheritance and customization
+- ✅ YAML loading uses hydra-zen composition syntax
+- ✅ CLI integration supports template management and validation
+
+### 13.2 Template System Quality
+- ✅ Reusable templates for common storyboard patterns
+- ✅ Easy customization through parameter overrides
+- ✅ Template discovery and validation
+- ✅ Integration with scene configuration system
+- ✅ Performance maintained with structured config instantiation
 
 ---
+
+## Summary
+
+This Storyboard DSL v2.0 document defines a complete hydra-zen first storyboard system that seamlessly integrates with the Configuration System, DI Strategy, and Widget Architecture. The storyboard system features:
+
+1. **Hydra-zen Native Configuration**: All storyboard components use `builds()` and structured configs
+2. **ConfigStore Template System**: Reusable storyboard templates with inheritance and customization
+3. **Enhanced YAML Composition**: Hydra-zen composition syntax with parameter interpolation
+4. **Scene Configuration Integration**: Seamless integration with hydra-zen scene configurations
+5. **CLI Template Management**: Complete CLI support for template discovery, creation, and validation
+
+The implementation provides a world-class, extensible storyboard system that supports any algorithm type while maintaining the high engineering standards established in the ALGOViz project vision.

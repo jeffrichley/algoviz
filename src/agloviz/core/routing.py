@@ -10,12 +10,8 @@ from typing import TypeAlias
 RoutingMap: TypeAlias = dict[str, list[str]]  # event_type -> handler_names
 
 
-# BFS routing map exactly as specified in design document
-BFS_ROUTING: RoutingMap = {
-    "enqueue": ["queue.highlight_enqueue", "grid.mark_frontier"],
-    "dequeue": ["queue.highlight_dequeue"],
-    "goal_found": ["grid.flash_goal", "hud.show_success"]
-}
+# BFS_ROUTING removed - routing now handled by scene configurations
+# Legacy routing maps are deprecated in v2.0 architecture
 
 
 class RoutingRegistry:
@@ -130,5 +126,4 @@ def validate_event_coverage(routing_map: RoutingMap, event_types: set[str]) -> l
     return uncovered
 
 
-# Register BFS routing map
-RoutingRegistry.register("bfs", BFS_ROUTING)
+# BFS routing registration removed - legacy routing deprecated in v2.0

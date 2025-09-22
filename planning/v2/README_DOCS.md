@@ -1,45 +1,46 @@
 # ALGOViz Planning Documents v2.0
 
-**Architecture Version:** v2.0 (Widget Architecture Redesign)  
+**Architecture Version:** v2.0 (Hydra-zen First Architecture)  
 **Status:** Current  
 **Previous Version:** planning/v1/ (archived)  
-**Key Changes:** Multi-level widget hierarchy, scene configuration system, clean architecture
+**Key Changes:** Hydra-zen first philosophy, multi-level widget hierarchy, scene configuration system, clean architecture
 
 ---
 
 ## 🏗️ **Architecture v2.0 Overview**
 
-The v2.0 architecture addresses fundamental design flaws discovered during Phase 1.4:
+The v2.0 architecture addresses fundamental design flaws discovered during Phase 1.4 with **hydra-zen first philosophy**:
+- **Hydra-zen First**: All configuration uses structured configs, builds(), and ConfigStore
 - **Multi-Level Widget Hierarchy**: Pure visual primitives, generic data structures, domain-specific extensions
-- **Configuration-Driven Event Binding**: Declarative scene configurations with parameter templates
+- **Configuration-Driven Event Binding**: Declarative scene configurations with hydra-zen parameter templates
 - **Clean Architecture**: No algorithm-specific pollution in core components
 - **Manim Integration**: Leverage existing Manim primitives, add ALGOViz-specific functionality
 
 ## 📚 **Document Categories**
 
-### **Core Architecture Documents (v2.0 - Major Updates)**
-- [ALGOViz_Design_Widget_Architecture_v2.md](../v1/ALGOViz_Design_Widget_Architecture_v2.md) - **NEW** - Complete architecture redesign
-- [ALGOViz_Design_Widgets_Registry_v2.md](ALGOViz_Design_Widgets_Registry_v2.md) - Multi-level widget hierarchy ✅
-- [ALGOViz_Design_Director_v2.md](ALGOViz_Design_Director_v2.md) - Pure orchestrator with scene integration ✅
-- [ALGOViz_Design_Storyboard_DSL_v2.md](ALGOViz_Design_Storyboard_DSL_v2.md) - Generic actions with scene configuration ✅
+### **Core Architecture Documents (v2.0 - Hydra-zen First)**
+- [ALGOViz_Design_Widget_Architecture_v2.md](ALGOViz_Design_Widget_Architecture_v2.md) - **Complete hydra-zen first architecture** ✅
+- [ALGOViz_Design_Widgets_Registry_v2.md](ALGOViz_Design_Widgets_Registry_v2.md) - Multi-level widget hierarchy with ConfigStore ✅
+- [ALGOViz_Design_Director_v2.md](ALGOViz_Design_Director_v2.md) - Pure orchestrator with hydra-zen scene integration ✅
+- [ALGOViz_Design_Storyboard_DSL_v2.md](ALGOViz_Design_Storyboard_DSL_v2.md) - Hydra-zen storyboard templates ✅
 
-### **Integration Documents (v2.0 - Updated Examples)**
+### **Integration Documents (v2.0 - Hydra-zen Enhanced)**
 - [ALGOViz_Design_Adapters_VizEvents_v2.md](ALGOViz_Design_Adapters_VizEvents_v2.md) - Scene configuration routing ✅
 - [ALGOViz_PRD_v2.md](ALGOViz_PRD_v2.md) - Updated phases and widget naming ✅
 - [ALGOViz_SDD_v2.md](ALGOViz_SDD_v2.md) - Multi-level package structure ✅
 
-### **Infrastructure Documents (v2.0 - Minor Updates)**
-- [ALGOViz_Design_Plugin_System_v2.md](ALGOViz_Design_Plugin_System_v2.md) - Widget plugin integration ✅
-- [ALGOViz_Design_DI_Strategy_v2.md](ALGOViz_Design_DI_Strategy_v2.md) - Scene configuration DI ✅
+### **Infrastructure Documents (v2.0 - Hydra-zen First)**
+- [ALGOViz_Design_Plugin_System_v2.md](ALGOViz_Design_Plugin_System_v2.md) - Hydra-zen plugin architecture ✅
+- [ALGOViz_Design_DI_Strategy_v2.md](ALGOViz_Design_DI_Strategy_v2.md) - Hydra-zen first DI patterns ✅
+- [ALGOViz_Design_Config_System.md](ALGOViz_Design_Config_System.md) - Hydra-zen configuration system ✅
+- [ALGOViz_Error_Taxonomy.md](ALGOViz_Error_Taxonomy.md) - Enhanced with hydra-zen error patterns ✅
 
-### **Infrastructure Documents (v2.0 - No Changes)**
-- [ALGOViz_Design_Config_System.md](ALGOViz_Design_Config_System.md) - No conflicts ✅
-- [ALGOViz_Design_TimingConfig.md](ALGOViz_Design_TimingConfig.md) - No conflicts ✅
-- [ALGOViz_Design_Voiceover.md](ALGOViz_Design_Voiceover.md) - No conflicts ✅
-- [ALGOViz_Design_Rendering_Export.md](ALGOViz_Design_Rendering_Export.md) - No conflicts ✅
-- [ALGOViz_Error_Taxonomy.md](ALGOViz_Error_Taxonomy.md) - No conflicts ✅
-- [ALGOViz_Vision_Goals.md](ALGOViz_Vision_Goals.md) - No conflicts ✅
-- [ALGOViz_Scenario_Theme_Merge_Precedence.md](ALGOViz_Scenario_Theme_Merge_Precedence.md) - No conflicts ✅
+### **Infrastructure Documents (v2.0 - Compatible)**
+- [ALGOViz_Design_TimingConfig.md](ALGOViz_Design_TimingConfig.md) - Compatible with hydra-zen ✅
+- [ALGOViz_Design_Voiceover.md](ALGOViz_Design_Voiceover.md) - Compatible with hydra-zen ✅
+- [ALGOViz_Design_Rendering_Export.md](ALGOViz_Design_Rendering_Export.md) - Compatible with hydra-zen ✅
+- [ALGOViz_Vision_Goals.md](ALGOViz_Vision_Goals.md) - Compatible with hydra-zen ✅
+- [ALGOViz_Scenario_Theme_Merge_Precedence.md](ALGOViz_Scenario_Theme_Merge_Precedence.md) - Compatible with hydra-zen ✅
 
 ## 🔄 **Migration from v1.0**
 
@@ -89,7 +90,8 @@ See [Implementation_Plan.md](../../Implementation_Plan.md) Phase 1.4.1-2.1 for i
 
 ### **Essential Documents for Implementation**
 - **Start Here**: [ALGOViz_Vision_Goals.md](ALGOViz_Vision_Goals.md) - Project vision and principles
-- **Architecture**: [ALGOViz_Design_Widget_Architecture_v2.md](../v1/ALGOViz_Design_Widget_Architecture_v2.md) - Core v2.0 architecture
+- **Architecture**: [ALGOViz_Design_Widget_Architecture_v2.md](ALGOViz_Design_Widget_Architecture_v2.md) - Core v2.0 hydra-zen first architecture
+- **Configuration**: [ALGOViz_Design_Config_System.md](ALGOViz_Design_Config_System.md) - Hydra-zen configuration system
 - **System Design**: [ALGOViz_SDD_v2.md](ALGOViz_SDD_v2.md) - Complete technical architecture
 - **Implementation Plan**: [Implementation_Plan.md](../../Implementation_Plan.md) - Development roadmap
 
@@ -134,13 +136,13 @@ See [Implementation_Plan.md](../../Implementation_Plan.md) Phase 1.4.1-2.1 for i
 
 ### **Common Questions**
 - **Q**: Where do I start reading the documentation?
-- **A**: Begin with [ALGOViz_Vision_Goals.md](ALGOViz_Vision_Goals.md), then [ALGOViz_Design_Widget_Architecture_v2.md](../v1/ALGOViz_Design_Widget_Architecture_v2.md)
+- **A**: Begin with [ALGOViz_Vision_Goals.md](ALGOViz_Vision_Goals.md), then [ALGOViz_Design_Config_System.md](ALGOViz_Design_Config_System.md) for hydra-zen patterns, then [ALGOViz_Design_Widget_Architecture_v2.md](ALGOViz_Design_Widget_Architecture_v2.md)
 
 - **Q**: How do I implement a new algorithm?
 - **A**: Follow the algorithm developer reading guide above, starting with [ALGOViz_Design_Adapters_VizEvents_v2.md](ALGOViz_Design_Adapters_VizEvents_v2.md)
 
 - **Q**: What's the difference between v1.0 and v2.0?
-- **A**: v2.0 eliminates BFS-specific pollution and introduces multi-level widget hierarchy with scene configuration
+- **A**: v2.0 introduces hydra-zen first architecture, eliminates BFS-specific pollution, and features multi-level widget hierarchy with structured config scene configuration
 
 ### **Implementation Support**
 - **Development Roadmap**: [Implementation_Plan.md](../../Implementation_Plan.md)
@@ -150,4 +152,4 @@ See [Implementation_Plan.md](../../Implementation_Plan.md) Phase 1.4.1-2.1 for i
 
 ---
 
-**ALGOViz v2.0 Documentation - Complete and Ready for Implementation** ✅
+**ALGOViz v2.0 Documentation - Hydra-zen First Architecture - Complete and Ready for Implementation** ✅

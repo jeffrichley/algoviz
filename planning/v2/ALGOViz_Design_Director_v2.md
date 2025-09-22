@@ -37,13 +37,20 @@ The **Director** is a **pure orchestrator** that executes storyboards using scen
 
 ## 3. SceneEngine Integration (New Section)
 
-### 3.1 Scene Configuration Loading
+### 3.1 Scene Configuration Loading (Hydra-zen First)
 ```python
+from hydra_zen import instantiate
+from omegaconf import DictConfig
+
 class Director:
-    def __init__(self, scene, storyboard, timing, scene_config, **kwargs):
-        self.scene_engine = SceneEngine(scene_config)
-        # Director delegates widget management to SceneEngine
+    def __init__(self, scene, storyboard, timing, scene_config: DictConfig, **kwargs):
+        # Instantiate scene configuration using hydra-zen
+        if hasattr(scene_config, '_target_'):
+            self.scene_engine = SceneEngine(instantiate(scene_config), timing)
+        else:
+            self.scene_engine = SceneEngine(scene_config, timing)
         
+        # Director delegates widget management to SceneEngine
         self.scene = scene
         self.storyboard = storyboard
         self.timing = timing
@@ -120,7 +127,7 @@ class Director:
                 handler = self.core_actions[beat.action]
                 handler(self.scene, beat.args, run_time, context={"ai": ai, "si": si, "bi": bi})
             else:
-                # Delegate to scene configuration
+                # Delegate to scene configuration using hydra-zen patterns
                 self.scene_engine.execute_action(beat.action, beat.args, run_time, 
                                                context={"ai": ai, "si": si, "bi": bi})
 
@@ -159,17 +166,17 @@ class Director:
 
 ```python
 def _action_play_events(self, scene, args, run_time, context):
-    """Play algorithm events through scene configuration routing."""
+    """Play algorithm events through hydra-zen scene configuration routing."""
     algorithm_name = args.get('algorithm', context.get('algorithm'))
     adapter = self.registry.get_algorithm(algorithm_name)
     
-    # Get scene configuration for this algorithm
+    # Get scene configuration for this algorithm (hydra-zen instantiated)
     scene_config = self.scene_engine.get_scene_config()
     
     for event in adapter.run(context.scenario):
-        # Route through scene configuration, not direct widget calls
+        # Route through scene configuration using parameter templates
         event_run_time = self.timing.events_for(mode=self.mode)
-        self.scene_engine.process_event(event, event_run_time, context)
+        self.scene_engine.handle_event(event)  # Uses hydra-zen parameter resolution
 ```
 
 ## 6. Actions & Routing (Updated for v2.0)

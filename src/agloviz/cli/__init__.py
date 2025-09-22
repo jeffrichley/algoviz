@@ -4,6 +4,6 @@ This module provides the CLI application built with Typer for rendering
 algorithm visualizations and managing configurations.
 """
 
-from .app import app
+# CLI module - contains various CLI implementations
 
-__all__ = ["app"]
+__all__ = []

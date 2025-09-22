@@ -1,7 +1,6 @@
 """Action registry system for storyboard actions."""
 
 from typing import Any, Protocol
-from collections.abc import Callable
 
 from agloviz.core.errors import RegistryError
 
@@ -35,7 +34,7 @@ class ActionRegistry:
         if name not in cls._actions:
             available = ", ".join(sorted(cls._actions.keys()))
             raise RegistryError(
-                category="ActionRegistry", 
+                category="ActionRegistry",
                 context=f"Action '{name}'",
                 issue="not registered",
                 remedy=f"Available actions: {available}"

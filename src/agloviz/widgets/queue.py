@@ -5,9 +5,12 @@ with enqueue/dequeue animations and queue state management.
 """
 
 from collections import deque
-from typing import Any, Deque, Tuple
+from typing import Any
+
 from manim import *
-from agloviz.core.events import VizEvent, PayloadKey
+
+# No longer import VizEvent - widgets are pure visual
+
 from .protocol import Widget
 
 
@@ -17,42 +20,29 @@ class QueueWidget(Widget):
     The QueueWidget maintains a visual queue that synchronizes with algorithm
     queue operations through VizEvent updates.
     """
-    
-    def __init__(self):
+
+    def __init__(self, max_visible_items: int = 8, item_width: float = 1.0, item_height: float = 0.6, spacing: float = 0.1):
         self.queue_group: VGroup | None = None
-        self.queue_items: Deque[VGroup] = deque()
-        self.queue_data: Deque[Tuple[int, int]] = deque()
-        self.max_visible_items: int = 8
-        self.item_width: float = 1.0
-        self.item_height: float = 0.6
-        self.spacing: float = 0.1
-    
+        self.queue_items: list = []  # Changed to list for pure visual operations
+        self.queue_data: list = []   # Changed to list for pure visual operations
+        self.max_visible_items: int = max_visible_items
+        self.item_width: float = item_width
+        self.item_height: float = item_height
+        self.spacing: float = spacing
+
     def show(self, scene: Any, **kwargs) -> None:
         """Initialize queue visualization.
         
         Args:
             scene: Manim scene instance
-            **kwargs: Configuration parameters including max_items, run_time
+            **kwargs: Optional runtime parameters like run_time
         """
-        self.max_visible_items = kwargs.get("max_items", 8)
         run_time = kwargs.get("run_time", 1.0)
-        
+
         self._create_queue_container(scene)
         scene.play(FadeIn(self.queue_group), run_time=run_time)
-    
-    def update(self, scene: Any, event: VizEvent, run_time: float) -> None:
-        """Handle queue events from BFS routing.
-        
-        Args:
-            scene: Manim scene instance
-            event: VizEvent to process
-            run_time: Duration for any animations
-        """
-        if event.type == "enqueue":
-            self._highlight_enqueue(scene, event, run_time)
-        elif event.type == "dequeue":
-            self._highlight_dequeue(scene, event, run_time)
-    
+
+
     def hide(self, scene: Any) -> None:
         """Clean teardown of queue visualization.
         
@@ -64,7 +54,7 @@ class QueueWidget(Widget):
             self.queue_group = None
             self.queue_items.clear()
             self.queue_data.clear()
-    
+
     def _create_queue_container(self, scene: Any) -> None:
         """Create queue container structure.
         
@@ -74,93 +64,73 @@ class QueueWidget(Widget):
         # Create queue label
         queue_label = Text("Queue:", font_size=24)
         queue_label.to_edge(LEFT + UP)
-        
+
         # Create queue container outline
         container_width = (self.item_width + self.spacing) * self.max_visible_items
         container = Rectangle(width=container_width, height=self.item_height + 0.2)
         container.set_stroke(WHITE, width=2)
         container.set_fill(BLACK, opacity=0.1)
         container.next_to(queue_label, DOWN, buff=0.3)
-        
+
         self.queue_group = VGroup(queue_label, container)
         self.container = container  # Store reference for positioning
-    
-    def _highlight_enqueue(self, scene: Any, event: VizEvent, run_time: float) -> None:
-        """Handle queue.highlight_enqueue routing.
+
+    def add_element(self, element: Any, label: str | None = None):
+        """Pure visual operation: add element to queue.
         
         Args:
-            scene: Manim scene instance
-            event: VizEvent containing node information
-            run_time: Animation duration
+            element: Element to add (any data)
+            label: Optional text label for the element
         """
-        if PayloadKey.NODE not in event.payload:
-            return
+        from .primitives import MarkerWidget
         
-        node = event.payload[PayloadKey.NODE]
+        # Create visual representation
+        item_widget = MarkerWidget(width=self.item_width, height=self.item_height)
+        item_widget.highlight(BLUE, opacity=0.8)
         
-        # Create new queue item
-        item = Rectangle(width=self.item_width, height=self.item_height)
-        item.set_fill(BLUE, opacity=0.8)
-        item.set_stroke(WHITE, width=2)
-        
-        # Add node label
-        label = Text(f"({node[0]},{node[1]})", font_size=16)
-        label.move_to(item.get_center())
-        
-        item_group = VGroup(item, label)
-        
-        # Position at end of queue (right side)
-        start_pos = self.container.get_right() + RIGHT * 2
-        item_group.move_to(start_pos)
-        
-        # Add to scene
-        scene.add(item_group)
-        
-        # Calculate target position in queue
-        target_pos = self._get_queue_position(len(self.queue_items))
-        
-        # Animate into queue
-        scene.play(
-            item_group.animate.move_to(target_pos),
-            run_time=run_time
-        )
+        if label:
+            item_widget.set_label(label)
+        elif hasattr(element, '__str__'):
+            item_widget.set_label(str(element))
         
         # Add to queue state
-        self.queue_items.append(item_group)
-        self.queue_data.append(node)
+        self.queue_items.append(item_widget)
+        self.queue_data.append(element)
         
-        # Handle overflow if needed
-        if len(self.queue_items) > self.max_visible_items:
-            self._handle_queue_overflow(scene, run_time * 0.5)
-    
-    def _highlight_dequeue(self, scene: Any, event: VizEvent, run_time: float) -> None:
-        """Handle queue.highlight_dequeue routing.
+        # Arrange queue items horizontally using Manim's layout
+        if len(self.queue_items) > 1:
+            queue_group = VGroup(*self.queue_items)
+            queue_group.arrange(RIGHT, buff=0.1)
+            
+        return item_widget  # Return for potential animation
+
+    def remove_element(self, index: int = 0):
+        """Pure visual operation: remove element from queue.
         
         Args:
-            scene: Manim scene instance
-            event: VizEvent containing node information
-            run_time: Animation duration
+            index: Index of element to remove (default: 0 for FIFO)
+            
+        Returns:
+            Tuple of (removed_data, removed_widget) for potential animation
         """
-        if not self.queue_items:
-            return
+        if not self.queue_items or index >= len(self.queue_items):
+            return None, None
         
-        # Remove from front of queue
-        item = self.queue_items.popleft()
-        self.queue_data.popleft()
+        # Remove from state
+        removed_widget = self.queue_items[index]
+        removed_data = self.queue_data[index]
         
-        # Highlight and remove animation
-        scene.play(
-            Succession(
-                item.animate.set_fill(YELLOW, opacity=1.0),
-                FadeOut(item, shift=UP),
-            ),
-            run_time=run_time
-        )
+        del self.queue_items[index]
+        del self.queue_data[index]
         
-        # Slide remaining items forward
+        # Rearrange remaining items using Manim's layout
         if self.queue_items:
-            self._slide_queue_forward(scene, run_time * 0.5)
-    
+            from .primitives import ContainerGroup
+            queue_group = ContainerGroup(*self.queue_items)
+            queue_group.arrange_horizontal(spacing=0.1)
+        
+        return removed_data, removed_widget
+
     def _get_queue_position(self, index: int) -> list[float]:
         """Calculate position for queue item at given index.
         
@@ -174,9 +144,9 @@ class QueueWidget(Widget):
         x_offset = index * (self.item_width + self.spacing) + self.item_width / 2
         x_pos = container_left[0] + x_offset + 0.1  # Small padding
         y_pos = self.container.get_center()[1]
-        
+
         return [x_pos, y_pos, 0]
-    
+
     def _slide_queue_forward(self, scene: Any, run_time: float) -> None:
         """Slide all queue items forward after dequeue.
         
@@ -185,14 +155,14 @@ class QueueWidget(Widget):
             run_time: Animation duration
         """
         animations = []
-        
+
         for i, item in enumerate(self.queue_items):
             target_pos = self._get_queue_position(i)
             animations.append(item.animate.move_to(target_pos))
-        
+
         if animations:
             scene.play(*animations, run_time=run_time)
-    
+
     def _handle_queue_overflow(self, scene: Any, run_time: float) -> None:
         """Handle queue overflow by removing leftmost items.
         
@@ -204,9 +174,9 @@ class QueueWidget(Widget):
             # Remove oldest item (leftmost)
             old_item = self.queue_items.popleft()
             self.queue_data.popleft()
-            
+
             # Fade out the overflow item
             scene.play(FadeOut(old_item, shift=LEFT), run_time=run_time)
-        
+
         # Slide remaining items to proper positions
         self._slide_queue_forward(scene, run_time)

@@ -1,0 +1,19 @@
+# @package _global_
+defaults:
+  - scenario: maze_large
+  - timing: normal
+  - theme: dark
+  - scene: bfs_pathfinding
+  - render: hd
+  - _self_
+
+# Custom overrides for this specific configuration
+scenario:
+  name: "bfs_large_maze_demo"
+
+timing:
+  ui: 1.2
+  events: 1.0
+
+theme:
+  name: "dark_custom"

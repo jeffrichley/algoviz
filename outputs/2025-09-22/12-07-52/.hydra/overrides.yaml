@@ -1,0 +1,5 @@
+- scene=bfs_basic
+- scenario=maze_small
+- theme=dark
+- timing=fast
+- output_path=test_scene_override.mp4

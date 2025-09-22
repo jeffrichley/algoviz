@@ -1,0 +1,10 @@
+_target_: __main__.render_algorithm
+renderer:
+  _target_: __main__.SimpleRenderer
+  config:
+    _target_: __main__.RenderConfig
+    quality: custom
+    resolution:
+    - 1024
+    - 768
+algorithm: bfs

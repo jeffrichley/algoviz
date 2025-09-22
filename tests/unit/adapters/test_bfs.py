@@ -2,31 +2,20 @@
 
 import pytest
 
-from agloviz.adapters.bfs import BFSAdapter, BFSEventType
-from agloviz.adapters.protocol import AdapterWrapper
-from agloviz.config.models import ScenarioConfig
+from agloviz.adapters.bfs import BFSEventType
 
 
 @pytest.mark.unit
 class TestBFSAdapter:
     """Test BFS adapter implementation."""
 
-    def test_adapter_name(self):
+    def test_adapter_name(self, bfs_adapter):
         """Test that adapter has correct name."""
-        adapter = BFSAdapter()
-        assert adapter.name == "bfs"
+        assert bfs_adapter.name == "bfs"
 
-    def test_simple_bfs_path(self):
+    def test_simple_bfs_path(self, bfs_adapter, simple_scenario_config):
         """Test BFS on simple 3x3 grid."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
-
-        adapter = BFSAdapter()
-        events = list(adapter.run(config))
+        events = list(bfs_adapter.run(simple_scenario_config))
 
         # Should have at least initial enqueue and final goal_found
         assert len(events) > 0
@@ -37,37 +26,19 @@ class TestBFSAdapter:
         assert events[-1].type == BFSEventType.GOAL_FOUND
         assert events[-1].payload["node"] == (2, 2)
 
-    def test_bfs_with_wrapper_step_indexing(self):
+    def test_bfs_with_wrapper_step_indexing(self, bfs_wrapper, simple_scenario_config):
         """Test BFS with AdapterWrapper for step indexing."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
-
-        adapter = BFSAdapter()
-        wrapper = AdapterWrapper(adapter)
-        events = list(wrapper.run_with_indexing(config))
+        events = list(bfs_wrapper.run_with_indexing(simple_scenario_config))
 
         # Check that step indices are sequential
         for i, event in enumerate(events):
             assert event.step_index == i
 
-    def test_bfs_deterministic_behavior(self):
+    def test_bfs_deterministic_behavior(self, bfs_adapter, simple_scenario_config):
         """Test that BFS produces deterministic results."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
-
-        adapter = BFSAdapter()
-
         # Run twice and compare
-        events1 = list(adapter.run(config))
-        events2 = list(adapter.run(config))
+        events1 = list(bfs_adapter.run(simple_scenario_config))
+        events2 = list(bfs_adapter.run(simple_scenario_config))
 
         assert len(events1) == len(events2)
 
@@ -75,17 +46,9 @@ class TestBFSAdapter:
             assert e1.type == e2.type
             assert e1.payload == e2.payload
 
-    def test_bfs_start_equals_goal(self):
+    def test_bfs_start_equals_goal(self, bfs_adapter, start_equals_goal_scenario_config):
         """Test BFS when start equals goal."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(0, 0),
-            goal=(0, 0)  # Same as start
-        )
-
-        adapter = BFSAdapter()
-        events = list(adapter.run(config))
+        events = list(bfs_adapter.run(start_equals_goal_scenario_config))
 
         # Should have enqueue, dequeue, goal_found
         assert len(events) == 3
@@ -93,34 +56,18 @@ class TestBFSAdapter:
         assert events[1].type == BFSEventType.DEQUEUE
         assert events[2].type == BFSEventType.GOAL_FOUND
 
-    def test_bfs_event_types(self):
+    def test_bfs_event_types(self, bfs_adapter, small_scenario_config):
         """Test that BFS emits correct event types."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(0, 0),
-            goal=(1, 1)
-        )
-
-        adapter = BFSAdapter()
-        events = list(adapter.run(config))
+        events = list(bfs_adapter.run(small_scenario_config))
 
         # Check event type validity
         valid_types = {BFSEventType.ENQUEUE, BFSEventType.DEQUEUE, BFSEventType.GOAL_FOUND}
         for event in events:
             assert event.type in valid_types
 
-    def test_bfs_payload_structure(self):
+    def test_bfs_payload_structure(self, bfs_adapter, small_scenario_config):
         """Test that BFS events have correct payload structure."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_simple.yaml",
-            start=(0, 0),
-            goal=(1, 1)
-        )
-
-        adapter = BFSAdapter()
-        events = list(adapter.run(config))
+        events = list(bfs_adapter.run(small_scenario_config))
 
         # All events should have 'node' in payload
         for event in events:
@@ -130,34 +77,18 @@ class TestBFSAdapter:
             assert len(node) == 2
             assert all(isinstance(coord, int) for coord in node)
 
-    def test_bfs_with_obstacles(self):
+    def test_bfs_with_obstacles(self, bfs_adapter, complex_scenario_config):
         """Test BFS behavior with obstacles."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_maze.yaml",
-            start=(0, 0),
-            goal=(4, 4)
-        )
-
-        adapter = BFSAdapter()
-        events = list(adapter.run(config))
+        events = list(bfs_adapter.run(complex_scenario_config))
 
         # Should still find goal despite obstacles
         assert len(events) > 0
         assert events[0].type == BFSEventType.ENQUEUE
         assert events[-1].type == BFSEventType.GOAL_FOUND
 
-    def test_bfs_unreachable_goal(self):
+    def test_bfs_unreachable_goal(self, bfs_adapter, unreachable_scenario_config):
         """Test BFS behavior with unreachable goal."""
-        config = ScenarioConfig(
-            name="test",
-            grid_file="grids/test_unreachable.yaml",
-            start=(0, 0),
-            goal=(2, 2)
-        )
-
-        adapter = BFSAdapter()
-        events = list(adapter.run(config))
+        events = list(bfs_adapter.run(unreachable_scenario_config))
 
         # Should not find goal - last event should not be goal_found
         assert len(events) > 0

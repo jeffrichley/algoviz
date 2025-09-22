@@ -1,0 +1,45 @@
+_target_: __main__.render_algorithm_video
+renderer:
+  _target_: agloviz.rendering.renderer.SimpleRenderer
+  render_config:
+    _target_: agloviz.rendering.config.RenderConfig
+    quality: HIGH
+    resolution:
+    - 1920
+    - 1080
+    frame_rate: 60
+    format: MP4
+scenario:
+  _target_: agloviz.config.models.ScenarioConfig
+  name: maze_small
+  obstacles:
+  - - 1
+    - 1
+  - - 2
+    - 2
+  - - 3
+    - 1
+  start:
+  - 0
+  - 0
+  goal:
+  - 9
+  - 9
+  grid_size:
+  - 10
+  - 10
+theme:
+  _target_: agloviz.config.models.ThemeConfig
+  name: dark
+  colors:
+    visited: '#BB86FC'
+    frontier: '#03DAC6'
+    goal: '#CF6679'
+    path: '#FF9800'
+    obstacle: '#1F1B24'
+    grid: '#2D2D2D'
+timing:
+  _target_: agloviz.config.models.TimingConfig
+  mode: NORMAL
+algorithm: dfs
+output_path: pure_zen_output.mp4

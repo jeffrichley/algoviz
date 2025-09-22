@@ -1,0 +1,11 @@
+# @package timing
+_target_: agloviz.config.models.TimingConfig
+mode: "fast"
+ui: 0.25
+events: 0.2
+effects: 0.125
+waits: 0.125
+multipliers:
+  draft: 0.5
+  normal: 1.0
+  fast: 0.25

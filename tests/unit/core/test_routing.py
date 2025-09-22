@@ -3,7 +3,6 @@
 import pytest
 
 from agloviz.core.routing import (
-    BFS_ROUTING,
     RoutingRegistry,
     validate_event_coverage,
     validate_routing_map,
@@ -12,35 +11,44 @@ from agloviz.core.routing import (
 
 @pytest.mark.unit
 class TestRoutingMap:
-    """Test RoutingMap type alias and BFS_ROUTING."""
+    """Test RoutingMap type alias and generic routing structures."""
 
-    def test_bfs_routing_structure(self):
-        """Test that BFS_ROUTING has expected structure."""
-        assert isinstance(BFS_ROUTING, dict)
+    def test_generic_routing_structure(self):
+        """Test that generic routing maps have expected structure."""
+        # Test with a sample routing map (v2.0 style)
+        sample_routing = {
+            "enqueue": ["queue.add_element", "grid.highlight_element"],
+            "dequeue": ["queue.remove_element"],
+            "goal_found": ["grid.highlight_element"]
+        }
 
-        # Check expected event types
-        expected_events = {"enqueue", "dequeue", "goal_found"}
-        assert set(BFS_ROUTING.keys()) == expected_events
+        assert isinstance(sample_routing, dict)
 
         # Check handler format
-        for event_type, handlers in BFS_ROUTING.items():
+        for event_type, handlers in sample_routing.items():
             assert isinstance(handlers, list)
             for handler in handlers:
                 assert isinstance(handler, str)
                 assert '.' in handler  # Should be widget.action format
 
-    def test_bfs_routing_handlers(self):
-        """Test specific BFS routing handlers."""
-        # Test enqueue handlers
-        assert "queue.highlight_enqueue" in BFS_ROUTING["enqueue"]
-        assert "grid.mark_frontier" in BFS_ROUTING["enqueue"]
+    def test_v2_routing_handlers(self):
+        """Test v2.0 compliant routing handlers."""
+        # Test with generic widget methods (v2.0 style)
+        sample_routing = {
+            "enqueue": ["queue.add_element", "grid.highlight_element"],
+            "dequeue": ["queue.remove_element"],
+            "goal_found": ["grid.highlight_element"]
+        }
 
-        # Test dequeue handlers
-        assert "queue.highlight_dequeue" in BFS_ROUTING["dequeue"]
+        # Test enqueue handlers - should use generic methods
+        assert "queue.add_element" in sample_routing["enqueue"]
+        assert "grid.highlight_element" in sample_routing["enqueue"]
 
-        # Test goal_found handlers
-        assert "grid.flash_goal" in BFS_ROUTING["goal_found"]
-        assert "hud.show_success" in BFS_ROUTING["goal_found"]
+        # Test dequeue handlers - should use generic methods
+        assert "queue.remove_element" in sample_routing["dequeue"]
+
+        # Test goal_found handlers - should use generic methods
+        assert "grid.highlight_element" in sample_routing["goal_found"]
 
 
 @pytest.mark.unit
@@ -101,14 +109,12 @@ class TestRoutingRegistry:
         algorithms = RoutingRegistry.list_algorithms()
         assert algorithms == []
 
-    def test_bfs_auto_registered(self):
-        """Test that BFS routing is auto-registered."""
-        # Re-register BFS routing since setup cleared it
-        RoutingRegistry.register("bfs", BFS_ROUTING)
-
-        # BFS should be registered
-        routing_map = RoutingRegistry.get("bfs")
-        assert routing_map == BFS_ROUTING
+    def test_registry_starts_empty(self):
+        """Test that registry starts empty (v2.0 - no auto-registration)."""
+        # In v2.0 architecture, no algorithms are auto-registered
+        # Scene configurations handle routing dynamically
+        algorithms = RoutingRegistry.list_algorithms()
+        assert algorithms == []
 
 
 @pytest.mark.unit

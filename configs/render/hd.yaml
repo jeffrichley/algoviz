@@ -1,0 +1,6 @@
+# @package render
+_target_: agloviz.config.models.RenderConfig
+resolution: [1920, 1080]
+frame_rate: 30
+quality: "medium"
+format: "mp4"

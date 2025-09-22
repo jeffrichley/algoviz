@@ -1,0 +1,15 @@
+# @package _global_
+defaults:
+  - scenario: maze_small
+  - timing: normal
+  - theme: default
+  - scene: bfs_pathfinding
+  - _self_
+
+# Override specific values can be added here
+# scenario:
+#   name: "custom_maze"
+#
+# timing:
+#   mode: "normal"
+#   ui: 1.2

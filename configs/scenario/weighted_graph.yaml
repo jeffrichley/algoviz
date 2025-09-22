@@ -1,0 +1,8 @@
+# @package scenario
+_target_: agloviz.config.models.ScenarioConfig
+name: "weighted_graph"
+grid_file: "grids/weighted_example.yaml"
+start: [0, 0]
+goal: [10, 10]
+obstacles: []
+weighted: true

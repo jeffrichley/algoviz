@@ -1,0 +1,8 @@
+# @package scenario
+_target_: agloviz.config.models.ScenarioConfig
+name: "maze_small"
+grid_file: "grids/maze_small.yaml"
+start: [0, 0]
+goal: [9, 9]
+obstacles: []
+weighted: false

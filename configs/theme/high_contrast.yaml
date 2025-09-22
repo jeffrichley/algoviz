@@ -1,0 +1,10 @@
+# @package theme
+_target_: agloviz.config.models.ThemeConfig
+name: "high_contrast"
+colors:
+  visited: "#00FF00"
+  frontier: "#0000FF"
+  goal: "#FFFF00"
+  path: "#FF00FF"
+  obstacle: "#000000"
+  grid: "#FFFFFF"

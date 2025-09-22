@@ -72,14 +72,14 @@ class Director:
         self._active_widgets: dict[str, Any] = {}
 
     def _register_core_actions(self) -> None:
-        """Register core storyboard actions."""
-        self._actions.update({
+        """Register only generic orchestration actions (v2.0 compliance)."""
+        self.core_actions = {
             "show_title": self._action_show_title,
-            "show_grid": self._action_show_grid,
             "show_widgets": self._action_show_widgets,
             "play_events": self._action_play_events,
-            "outro": self._action_outro,
-        })
+            "outro": self._action_outro
+        }
+        self._actions.update(self.core_actions)
 
     def run(self) -> None:
         """Execute the complete storyboard."""
@@ -161,13 +161,6 @@ class Director:
         """Show title card action."""
         # Implementation will be added in rendering phase
         pass
-
-    def _action_show_grid(self, scene: Any, args: dict[str, Any], run_time: float, context: dict[str, Any]) -> None:
-        """Show grid action."""
-        grid_widget = component_registry.get("grid")
-        grid_widget.show(scene, **args)
-        self._active_widgets["grid"] = grid_widget
-
 
     def _action_show_widgets(self, scene: Any, args: dict[str, Any], run_time: float, context: dict[str, Any]) -> None:
         """Show widgets action."""

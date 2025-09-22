@@ -1,0 +1,35 @@
+# @package scene
+name: "bfs_pathfinding"
+algorithm: "bfs"
+
+widgets:
+  grid:
+    _target_: agloviz.widgets.grid.GridWidget
+    
+  queue:
+    _target_: agloviz.widgets.queue.QueueWidget
+
+event_bindings:
+  enqueue:
+    - widget: "queue"
+      action: "add_element"
+      params:
+        element: "${event_data:event.node}"
+        duration: "${timing_value:ui}"
+      order: 1
+    - widget: "grid"
+      action: "show_frontier"
+      params:
+        positions: ["${event_data:event.pos}"]
+      order: 2
+      
+  dequeue:
+    - widget: "queue"
+      action: "remove_element"
+      params:
+        index: 0
+      order: 1
+
+timing_overrides:
+  events: 0.8
+  effects: 0.5

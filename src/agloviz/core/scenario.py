@@ -169,10 +169,15 @@ class ScenarioLoader:
         Returns:
             Scenario object
         """
-        # Load grid file referenced by config.grid_file
-        grid_path = Path(config.grid_file)
-        with open(grid_path) as f:
-            grid_data = yaml.safe_load(f)
+        # Create grid data directly from config
+        width, height = config.grid_size
+        grid_data = {
+            "width": width,
+            "height": height,
+            "default_cost": 1.0,
+            "obstacles": list(config.obstacles),
+            "weights": []
+        }
         return GridScenario(config, grid_data)
 
     @staticmethod

@@ -17,7 +17,7 @@ def register_core_widgets() -> None:
         # Lazy import to avoid Manim dependency issues during testing
         from .grid import GridWidget
         from .queue import QueueWidget
-        
+
         component_registry.register("grid", lambda: GridWidget())
         component_registry.register("queue", lambda: QueueWidget())
     except ImportError:
@@ -26,7 +26,7 @@ def register_core_widgets() -> None:
             def show(self, scene, **kwargs): pass
             def update(self, scene, event, run_time): pass
             def hide(self, scene): pass
-        
+
         component_registry.register("grid", lambda: MockWidget())
         component_registry.register("queue", lambda: MockWidget())
 
@@ -45,7 +45,7 @@ register_core_widgets()
 
 __all__ = [
     "Widget",
-    "ComponentRegistry", 
+    "ComponentRegistry",
     "component_registry",
     "register_core_widgets",
     "get_available_widgets"

@@ -1,0 +1,46 @@
+_target_: agloviz.cli.render_pure_zen.render_algorithm_video
+renderer:
+  _target_: agloviz.rendering.renderer.SimpleRenderer
+  render_config:
+    _target_: agloviz.rendering.config.RenderConfig
+    quality: MEDIUM
+    resolution:
+    - 1280
+    - 720
+    frame_rate: 30
+    format: MP4
+scenario:
+  _target_: agloviz.config.models.ScenarioConfig
+  name: maze_small
+  obstacles:
+  - - 1
+    - 1
+  - - 2
+    - 2
+  - - 3
+    - 1
+  start:
+  - 0
+  - 0
+  goal:
+  - 9
+  - 9
+  grid_size:
+  - 10
+  - 10
+theme:
+  _target_: agloviz.config.models.ThemeConfig
+  name: default
+timing:
+  _target_: agloviz.config.models.TimingConfig
+  mode: NORMAL
+scene:
+  name: dfs_pathfinding
+  algorithm: dfs
+  widgets:
+    grid:
+      _target_: agloviz.widgets.grid.GridWidget
+    queue:
+      _target_: agloviz.widgets.queue.QueueWidget
+algorithm: dfs
+output_path: pure_zen_output.mp4

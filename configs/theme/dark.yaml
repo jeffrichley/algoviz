@@ -1,0 +1,10 @@
+# @package theme
+_target_: agloviz.config.models.ThemeConfig
+name: "dark"
+colors:
+  visited: "#66BB6A"
+  frontier: "#42A5F5"
+  goal: "#FFA726"
+  path: "#EC407A"
+  obstacle: "#616161"
+  grid: "#303030"
