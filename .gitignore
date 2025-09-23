@@ -148,3 +148,6 @@ outputs/
 *.jpeg
 *.webm
 *.avi
+
+# AI Agent workflow
+issues/
