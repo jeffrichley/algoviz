@@ -4,12 +4,12 @@ This package provides video rendering capabilities using hydra-zen configuration
 and Manim's built-in rendering engine.
 """
 
-from .renderer import SimpleRenderer, create_renderer, create_preview_renderer
-from .config import RenderConfig, RenderQuality, RenderFormat
+from .config import RenderConfig, RenderFormat, RenderQuality
+from .renderer import SimpleRenderer, create_preview_renderer, create_renderer
 
 __all__ = [
     "SimpleRenderer",
-    "create_renderer", 
+    "create_renderer",
     "create_preview_renderer",
     "RenderConfig",
     "RenderQuality",

@@ -7,11 +7,12 @@ Updated to support hydra-zen instantiation patterns while maintaining backward c
 from collections.abc import Callable
 from typing import Any
 
-from hydra_zen import builds, instantiate
 from hydra.core.config_store import ConfigStore
+from hydra_zen import instantiate
 from omegaconf import OmegaConf
 
 from agloviz.core.errors import RegistryError
+
 from .protocol import Widget
 
 
@@ -27,7 +28,7 @@ class ComponentRegistry:
     def __init__(self):
         # Legacy factory pattern support
         self._registry: dict[str, Callable[[], Widget]] = {}
-        
+
         # Hydra-zen pattern support
         self.cs = ConfigStore.instance()
         self._setup_widget_configs()
@@ -36,18 +37,18 @@ class ComponentRegistry:
         """Register widget structured configs with ConfigStore."""
         # Register basic widget configurations
         self._register_basic_widgets()
-    
+
     def _register_basic_widgets(self):
         """Register basic widget configurations."""
         # For STEP 3, we'll register simple widget specs without string targets
         # This avoids the builds() string target issue while demonstrating the pattern
-        
+
         # Grid widget configuration
         self.cs.store(group="widget", name="grid", node={
             "_target_": "agloviz.widgets.grid.GridWidget"
         })
-        
-        # Queue widget configuration  
+
+        # Queue widget configuration
         self.cs.store(group="widget", name="queue", node={
             "_target_": "agloviz.widgets.queue.QueueWidget"
         })
@@ -104,23 +105,23 @@ class ComponentRegistry:
             # Fallback to legacy factory pattern
             if name in self._registry:
                 return self._registry[name]()
-            
+
             available_zen = list(self.cs.repo.get("widget", {}).keys()) if "widget" in self.cs.repo else []
             available_legacy = list(self._registry.keys())
             available = available_zen + available_legacy
             raise RegistryError.missing_component(name, available)
-        
+
         # Get widget config from ConfigStore
         widget_config = self.cs.repo["widget"][name + ".yaml"].node
-        
+
         # Apply parameter overrides
         if overrides:
             override_config = OmegaConf.create(overrides)
             widget_config = OmegaConf.merge(widget_config, override_config)
-        
+
         # Instantiate using hydra-zen
         return instantiate(widget_config)
-    
+
     def create_widget_from_spec(self, widget_spec: dict[str, Any]) -> Widget:
         """Create widget from widget specification dict.
         
@@ -136,7 +137,7 @@ class ComponentRegistry:
                 component_type="widget_spec",
                 suggestions=["Add '_target_' field pointing to widget class"]
             )
-        
+
         return instantiate(widget_spec)
 
     def list_widgets(self) -> list[str]:
@@ -147,10 +148,10 @@ class ComponentRegistry:
         """
         legacy_widgets = list(self._registry.keys())
         zen_widgets = []
-        
+
         if "widget" in self.cs.repo:
             zen_widgets = [name.replace(".yaml", "") for name in self.cs.repo["widget"].keys()]
-        
+
         all_widgets = list(set(legacy_widgets + zen_widgets))
         return sorted(all_widgets)
 

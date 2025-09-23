@@ -5,10 +5,10 @@ from pydantic import ValidationError
 
 from agloviz.config.models import (
     ScenarioConfig,
+    SceneConfig,
     ThemeConfig,
     TimingConfig,
     TimingMode,
-    SceneConfig,
     WidgetConfigSpec,
 )
 
@@ -68,7 +68,7 @@ class TestThemeConfig:
             "obstacle": "#000000",
             "grid": "#FFFFFF",
         }
-        
+
         config = ThemeConfig(name="custom_theme", colors=custom_colors)
 
         assert config.name == "custom_theme"
@@ -96,21 +96,27 @@ class TestTimingConfig:
         """Test creating a valid timing configuration."""
         config = TimingConfig(
             mode=TimingMode.DRAFT,
-            step_duration=0.5,
-            effect_duration=0.3
+            ui=0.5,
+            events=0.4,
+            effects=0.3,
+            waits=0.25
         )
 
         assert config.mode == TimingMode.DRAFT
-        assert config.step_duration == 0.5
-        assert config.effect_duration == 0.3
+        assert config.ui == 0.5
+        assert config.events == 0.4
+        assert config.effects == 0.3
+        assert config.waits == 0.25
 
     def test_timing_config_defaults(self):
         """Test timing configuration with default values."""
         config = TimingConfig()
 
         assert config.mode == TimingMode.NORMAL
-        assert config.step_duration == 1.0
-        assert config.effect_duration == 0.5
+        assert config.ui == 1.0
+        assert config.events == 0.8
+        assert config.effects == 0.5
+        assert config.waits == 0.5
 
     def test_timing_config_validation(self):
         """Test timing configuration validation."""

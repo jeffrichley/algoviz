@@ -37,7 +37,8 @@ The new architecture establishes a **multi-level widget hierarchy** with **pure 
 **Hydra-zen Native**: All widget configuration uses hydra-zen patterns:
 - Widget specifications use `builds()` for type safety
 - Scene configurations use `make_config()` for composition
-- Event bindings use structured configs with parameter templates
+- Event bindings use structured configs with static parameters (hydra-zen first)
+- Dynamic parameters resolved at runtime using OmegaConf resolvers with event data
 - Plugin integration through ConfigStore groups
 
 ## 3. Current Problems (BFS-Specific Pollution)
@@ -96,8 +97,38 @@ class QueueWidget:
 
 - No hydra-zen structured configs for scene compositions
 - No ConfigStore registration for widget templates
-- No parameter template system with OmegaConf resolvers
+- No event parameter resolution system with OmegaConf resolvers
 - Hard-coded widget relationships instead of composition
+
+## 3.4 Architectural Separation: Widgets vs Events
+
+### **Key Architectural Principle: Static Widget Configs + Dynamic Event Parameters**
+
+The Widget Architecture v2.0 establishes a clear separation of concerns between widget configuration and event parameter resolution:
+
+**Widget Configuration (Static - Hydra-zen First):**
+- ✅ **Widget Properties**: Size, appearance, behavior set at configuration time
+- ✅ **Widget Methods**: Available actions and their signatures defined in widget classes
+- ✅ **Scene Composition**: Which widgets exist and their relationships
+- ✅ **Event Bindings**: Which events trigger which widget actions (static routing)
+
+**Event Parameters (Dynamic - Runtime Resolution):**
+- ✅ **Dynamic Values**: Node positions, colors, weights resolved from algorithm execution
+- ✅ **Event Data**: Algorithm-specific data passed through VizEvents
+- ✅ **Parameter Resolution**: OmegaConf resolvers resolve templates with event context
+- ✅ **Runtime Context**: Full access to event data, scene config, and timing config
+
+**The Flow:**
+1. **Configuration Time**: Widgets configured with static properties and event bindings
+2. **Runtime**: Algorithm generates VizEvents with dynamic data
+3. **SceneEngine**: Resolves dynamic parameters using OmegaConf resolvers
+4. **Widget Methods**: Called with resolved parameters (static + dynamic)
+
+**Benefits:**
+- ✅ **Hydra-zen First**: Widget configs are pure and predictable
+- ✅ **Runtime Flexibility**: Dynamic parameters resolved with full context
+- ✅ **Clear Separation**: Configuration vs runtime behavior
+- ✅ **Maintainability**: Single responsibility for each component
 
 ## 4. Core Widget Abstractions (Multi-Level Hierarchy)
 
@@ -382,7 +413,7 @@ class EventBinding(BaseModel):
     """Configuration for binding algorithm events to widget actions."""
     widget: str = Field(..., description="Name of target widget")
     action: str = Field(..., description="Widget method to call")
-    params: dict[str, Any] = Field(default_factory=dict, description="Parameters with templates")
+    params: dict[str, Any] = Field(default_factory=dict, description="Static parameters with dynamic templates")
     order: int = Field(1, description="Execution order")
     condition: str | None = Field(None, description="Optional condition")
 
@@ -468,12 +499,12 @@ BFSSceneConfigZen = make_config(
             builds(EventBinding,
                   widget="queue",
                   action="add_element",
-                  params={"element": "${event_data:event.node}"},
+                  params={"element": "${event.node}"},
                   order=1),
             builds(EventBinding,
                   widget="grid",
                   action="show_frontier",
-                  params={"positions": ["${event_data:event.pos}"]},
+                  params={"positions": ["${event.pos}"]},
                   order=2)
         ],
         "dequeue": [
@@ -488,9 +519,9 @@ BFSSceneConfigZen = make_config(
                   widget="grid",
                   action="highlight_element",
                   params={
-                      "index": "${event_data:event.pos}",
+                      "index": "${event.pos}",
                       "style": "visited",
-                      "duration": "${timing_value:events}"
+                      "duration": "${timing.events}"
                   },
                   order=1)
         ],
@@ -498,7 +529,7 @@ BFSSceneConfigZen = make_config(
             builds(EventBinding,
                   widget="grid",
                   action="mark_goal",
-                  params={"pos": "${event_data:event.pos}"},
+                  params={"pos": "${event.pos}"},
                   order=1),
             builds(EventBinding,
                   widget="legend",
@@ -558,14 +589,14 @@ def register_widget_configs():
                 builds(EventBinding,
                       widget="array",
                       action="compare_highlight",
-                      params={"i": "${event_data:event.i}", "j": "${event_data:event.j}", "result": "${event_data:event.result}"},
+                      params={"i": "${event.i}", "j": "${event.j}", "result": "${event.result}"},
                       order=1)
             ],
             "swap": [
                 builds(EventBinding,
                       widget="array",
                       action="swap_elements",
-                      params={"i": "${event_data:event.i}", "j": "${event_data:event.j}"},
+                      params={"i": "${event.i}", "j": "${event.j}"},
                       order=1)
             ]
         },
@@ -598,9 +629,9 @@ class SceneEngine:
         self._initialize_scene()
     
     def _setup_resolvers(self):
-        """Setup OmegaConf resolvers for parameter templates"""
-        from agloviz.core.resolvers import register_custom_resolvers
-        register_custom_resolvers()
+        """Setup OmegaConf resolvers for event parameter resolution"""
+        from agloviz.core.resolvers import register_event_resolvers
+        register_event_resolvers()
     
     def _initialize_scene(self):
         """Initialize scene using hydra-zen instantiation"""
@@ -712,6 +743,90 @@ class SceneEngine:
             return bool(resolved_condition)
 ```
 
+## 6.5 Event Processing Flow with Dynamic Parameter Resolution
+
+### **How SceneEngine Processes Events with Dynamic Parameters**
+
+The SceneEngine implements the core event processing flow that separates static widget configuration from dynamic parameter resolution:
+
+**1. Event Reception:**
+```python
+def process_event(self, event: VizEvent, run_time: float, context: dict):
+    """Process algorithm event with dynamic parameter resolution."""
+    event_type = event.type
+    
+    # Get static event bindings from scene configuration
+    if event_type not in self.event_bindings:
+        return
+    
+    # Execute bindings in order with dynamic parameter resolution
+    for binding in self.event_bindings[event_type]:
+        self._execute_binding_with_dynamic_params(binding, event, context)
+```
+
+**2. Dynamic Parameter Resolution:**
+```python
+def _execute_binding_with_dynamic_params(self, binding: EventBinding, event: VizEvent, context: dict):
+    """Execute binding with OmegaConf resolver-based parameter resolution."""
+    
+    # Create resolution context with event data
+    resolution_context = {
+        'event': event.data,  # Dynamic event data from algorithm
+        'config': self.scene_config,  # Static scene configuration
+        'timing': self.timing_config,  # Static timing configuration
+        'widgets': self.widgets  # Available widgets
+    }
+    
+    # Set OmegaConf resolvers with dynamic context
+    OmegaConf.set_resolver("current_event", lambda: event.data)
+    OmegaConf.set_resolver("current_config", lambda: self.scene_config)
+    OmegaConf.set_resolver("current_timing", lambda: self.timing_config)
+    
+    # Resolve parameters using OmegaConf
+    params_config = OmegaConf.create(binding.params)
+    resolved_params = OmegaConf.to_container(params_config, resolve=True)
+    
+    # Call widget method with resolved parameters
+    widget = self.widgets[binding.widget]
+    method = getattr(widget, binding.action)
+    method(**resolved_params)
+```
+
+**3. Template Resolution Examples:**
+```python
+# Static event binding configuration
+EventBinding(
+    widget="grid",
+    action="highlight_cell",
+    params={
+        "position": "${event.position}",  # Resolved from event.data.position
+        "style": "visited",              # Static value
+        "duration": "${timing.events}"   # Resolved from timing config
+    }
+)
+
+# Event data from algorithm (dynamic)
+event_data = {
+    "type": "node_visited",
+    "position": [3, 4],  # This becomes the resolved value
+    "node_id": "A"
+}
+
+# Resolved parameters (what widget method receives)
+resolved_params = {
+    "position": [3, 4],     # From event.data.position
+    "style": "visited",     # Static value
+    "duration": 0.5         # From timing.events
+}
+```
+
+**4. Benefits of This Approach:**
+- ✅ **Static Configuration**: Widget properties and event bindings are pure and predictable
+- ✅ **Dynamic Parameters**: Event-specific data resolved at runtime with full context
+- ✅ **Hydra-zen First**: Scene configs use hydra-zen patterns without runtime dependencies
+- ✅ **OmegaConf Integration**: Leverages OmegaConf's powerful resolver system
+- ✅ **Clear Separation**: Configuration vs runtime behavior is explicit
+
 ## 7. Plugin System with Hydra-zen
 
 ### 7.1 Plugin Architecture
@@ -773,7 +888,7 @@ class AdvancedGraphsPlugin(WidgetPlugin):
                         builds(EventBinding,
                               widget="centrality",
                               action="show_centrality",
-                              params={"node": "${event_data:event.node}", "value": "${event_data:event.centrality}"},
+                              params={"node": "${event.node}", "value": "${event.centrality}"},
                               order=1)
                     ]
                 },
@@ -884,18 +999,18 @@ event_bindings:
       widget: "queue"
       action: "add_element"
       params:
-        element: "${event_data:event.node}"
+        element: "${event.node}"
         animation: "slide_in"
-        duration: "${timing_value:ui}"
+        duration: "${timing.ui}"
       order: 1
       
     - _target_: agloviz.core.events.EventBinding
       widget: "grid"
       action: "show_frontier"
       params:
-        positions: ["${event_data:event.pos}"]
+        positions: ["${event.pos}"]
         style: "frontier"
-        duration: "${timing_value:effects}"
+        duration: "${timing.effects}"
       order: 2
 ```
 
@@ -982,7 +1097,7 @@ agloviz/
 2. Register configs with ConfigStore using appropriate groups
 3. Implement SceneEngine with hydra-zen integration
 4. Create BFS scene configuration that replicates current functionality
-5. Setup OmegaConf resolvers for parameter templates
+5. Setup OmegaConf resolvers for event parameter resolution
 
 ### 10.2 Phase 2: Integration (Week 2)
 **Goal**: Integrate with Director and CLI
@@ -1045,7 +1160,7 @@ This Widget Architecture v2.0 document defines a complete hydra-zen first widget
 
 1. **Multi-Level Widget Hierarchy**: Pure visual primitives, generic data structures, and domain-specific extensions, all configured through hydra-zen structured configs
 2. **Hydra-zen Native Configuration**: Complete integration with `builds()`, `make_config()`, ConfigStore, and parameter resolution
-3. **Scene Engine Integration**: Hydra-zen powered scene management with event binding and parameter templates
+3. **Scene Engine Integration**: Hydra-zen powered scene management with event binding and dynamic parameter resolution
 4. **Plugin Architecture**: Extensible system using ConfigStore groups and structured config registration
 5. **Clean Migration Strategy**: Systematic approach to implementing hydra-zen first architecture
 

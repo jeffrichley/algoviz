@@ -1,0 +1,72 @@
+# BFS Dynamic Scene Configuration with Dynamic Parameter Templates
+# This configuration demonstrates the use of dynamic parameter resolution
+# with event data, timing configuration, and scene configuration access.
+
+# @package scene
+_target_: agloviz.config.hydra_zen.BFSDynamicSceneConfig
+
+# Scene metadata
+name: "bfs_dynamic"
+algorithm: "bfs"
+
+# Widget configurations
+widgets:
+  grid:
+    _target_: agloviz.widgets.grid.GridWidget
+    width: 15
+    height: 15
+    cell_size: 0.5
+    show_coordinates: true
+    
+  queue:
+    _target_: agloviz.widgets.queue.QueueWidget
+    max_visible_items: 12
+    orientation: "horizontal"
+    show_indices: true
+
+# Event bindings with dynamic parameter templates
+event_bindings:
+  enqueue:
+    - _target_: agloviz.core.scene.EventBinding
+      widget: "queue"
+      action: "add_element"
+      params:
+        # Dynamic: resolved from event data
+        element: "${event_data:node.id}"
+        # Static: widget behavior
+        style: "frontier"
+        # Dynamic: resolved from timing configuration
+        duration: "${timing_value:events}"
+      order: 1
+      
+    - _target_: agloviz.core.scene.EventBinding
+      widget: "grid"
+      action: "highlight_cell"
+      params:
+        # Dynamic: resolved from event data
+        position: "${event_data:node.position}"
+        # Dynamic: resolved from event data
+        color: "${event_data:node.color}"
+        # Dynamic: resolved from timing configuration
+        duration: "${timing_value:effects}"
+      order: 2
+      
+  dequeue:
+    - _target_: agloviz.core.scene.EventBinding
+      widget: "queue"
+      action: "remove_element"
+      params:
+        # Static: widget behavior
+        index: 0
+        # Dynamic: resolved from timing configuration
+        animation_duration: "${timing_value:ui}"
+      order: 1
+
+# Example of how this configuration would be used:
+# 1. Algorithm generates event: {"type": "enqueue", "node": {"id": "node_5", "position": [3, 4], "color": "blue"}}
+# 2. SceneEngine resolves parameters:
+#    - element: "node_5" (from event.node.id)
+#    - position: [3, 4] (from event.node.position)
+#    - color: "blue" (from event.node.color)
+#    - duration: 0.8 (from timing.events)
+# 3. Widget methods called with resolved parameters

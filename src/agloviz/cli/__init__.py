@@ -1,9 +1,9 @@
 """Command-line interface for ALGOViz.
 
-This module provides the CLI application built with Typer for rendering
+This module provides the CLI application using hydra-zen for rendering
 algorithm visualizations and managing configurations.
 """
 
-# CLI module - contains various CLI implementations
+from .render_pure_zen import main
 
-__all__ = []
+__all__ = ["main"]

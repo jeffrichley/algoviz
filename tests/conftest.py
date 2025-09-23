@@ -4,12 +4,14 @@ This module provides pytest fixtures and configuration for all tests,
 ensuring clean state and proper setup.
 """
 
-import pytest
 import logging
-from agloviz.config.store_manager import StoreManager
-from agloviz.config.models import ScenarioConfig
+
+import pytest
+
 from agloviz.adapters.bfs import BFSAdapter
 from agloviz.adapters.protocol import AdapterWrapper
+from agloviz.config.models import ScenarioConfig
+from agloviz.config.store_manager import StoreManager
 
 # Configure logging for tests
 logging.basicConfig(level=logging.DEBUG)
@@ -25,9 +27,9 @@ def clean_store():
     # Reset store before test
     StoreManager.reset_for_testing()
     logger.debug("Store reset before test")
-    
+
     yield
-    
+
     # Reset store after test
     StoreManager.reset_for_testing()
     logger.debug("Store reset after test")
@@ -438,7 +440,7 @@ def mock_adapter_basic(mock_events_basic):
     """Mock adapter with basic events."""
     from agloviz.config.models import ScenarioConfig
     from agloviz.core.events import VizEvent
-    
+
     class MockAdapter:
         """Mock adapter for testing."""
         name = "mock"
@@ -450,7 +452,7 @@ def mock_adapter_basic(mock_events_basic):
             """Yield mock events."""
             for event in self.events:
                 yield event
-    
+
     return MockAdapter(mock_events_basic)
 
 
@@ -459,7 +461,7 @@ def mock_adapter_with_metadata(mock_events_with_metadata):
     """Mock adapter with events containing metadata."""
     from agloviz.config.models import ScenarioConfig
     from agloviz.core.events import VizEvent
-    
+
     class MockAdapter:
         """Mock adapter for testing."""
         name = "mock"
@@ -471,7 +473,7 @@ def mock_adapter_with_metadata(mock_events_with_metadata):
             """Yield mock events."""
             for event in self.events:
                 yield event
-    
+
     return MockAdapter(mock_events_with_metadata)
 
 
@@ -496,7 +498,7 @@ def clean_registries():
     """Auto-clean all registries before/after each test."""
     from agloviz.adapters.registry import AdapterRegistry
     from agloviz.core.routing import RoutingRegistry
-    
+
     AdapterRegistry.clear()
     RoutingRegistry.clear()
     yield
@@ -508,7 +510,7 @@ def clean_registries():
 def registered_bfs_adapter():
     """BFS adapter registered in registry."""
     from agloviz.adapters.registry import AdapterRegistry
-    
+
     AdapterRegistry.register(BFSAdapter)
     yield
     AdapterRegistry.clear()
@@ -518,7 +520,7 @@ def registered_bfs_adapter():
 def bfs_adapter_from_registry(registered_bfs_adapter):
     """BFS adapter instance obtained from registry."""
     from agloviz.adapters.registry import AdapterRegistry
-    
+
     adapter_class = AdapterRegistry.get("bfs")
     return adapter_class()
 

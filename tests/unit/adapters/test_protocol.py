@@ -54,7 +54,7 @@ class TestAdapterWrapper:
     def test_wrapper_handles_empty_stream(self, small_scenario_config):
         """Test wrapper handles empty event stream."""
         from agloviz.core.events import VizEvent
-        
+
         class MockAdapter:
             """Mock adapter for testing."""
             name = "mock"
@@ -66,7 +66,7 @@ class TestAdapterWrapper:
                 """Yield mock events."""
                 for event in self.events:
                     yield event
-        
+
         adapter = MockAdapter([])
         wrapper = AdapterWrapper(adapter)
         result = list(wrapper.run_with_indexing(small_scenario_config))

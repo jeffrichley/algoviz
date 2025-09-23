@@ -55,7 +55,6 @@ dev = [
 ]
 
 [project.scripts]
-agloviz = "agloviz.cli:app"
 render = "agloviz.cli.render_pure_zen:main"
 
 [tool.hatch.version]

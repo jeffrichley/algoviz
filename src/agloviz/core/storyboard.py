@@ -12,7 +12,6 @@ import yaml
 from pydantic import BaseModel, Field, ValidationError
 from rich.console import Console
 
-from agloviz.config.manager import ConfigManager
 from agloviz.core.errors import ConfigError, FileContext
 
 
@@ -120,8 +119,7 @@ class ActionRegistry:
 class StoryboardLoader:
     """Loads and validates storyboard YAML files."""
 
-    def __init__(self, config_manager: ConfigManager | None = None):
-        self.config_manager = config_manager or ConfigManager()
+    def __init__(self):
         self.console = Console()
 
     def load_from_yaml(self, yaml_path: str) -> Storyboard:

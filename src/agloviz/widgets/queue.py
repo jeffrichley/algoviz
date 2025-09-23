@@ -4,13 +4,11 @@ This module provides the QueueWidget for visualizing BFS queue operations
 with enqueue/dequeue animations and queue state management.
 """
 
-from collections import deque
 from typing import Any
 
 from manim import *
 
 # No longer import VizEvent - widgets are pure visual
-
 from .protocol import Widget
 
 
@@ -83,25 +81,25 @@ class QueueWidget(Widget):
             label: Optional text label for the element
         """
         from .primitives import MarkerWidget
-        
+
         # Create visual representation
         item_widget = MarkerWidget(width=self.item_width, height=self.item_height)
         item_widget.highlight(BLUE, opacity=0.8)
-        
+
         if label:
             item_widget.set_label(label)
         elif hasattr(element, '__str__'):
             item_widget.set_label(str(element))
-        
+
         # Add to queue state
         self.queue_items.append(item_widget)
         self.queue_data.append(element)
-        
+
         # Arrange queue items horizontally using Manim's layout
         if len(self.queue_items) > 1:
             queue_group = VGroup(*self.queue_items)
             queue_group.arrange(RIGHT, buff=0.1)
-            
+
         return item_widget  # Return for potential animation
 
     def remove_element(self, index: int = 0):
@@ -115,20 +113,20 @@ class QueueWidget(Widget):
         """
         if not self.queue_items or index >= len(self.queue_items):
             return None, None
-        
+
         # Remove from state
         removed_widget = self.queue_items[index]
         removed_data = self.queue_data[index]
-        
+
         del self.queue_items[index]
         del self.queue_data[index]
-        
+
         # Rearrange remaining items using Manim's layout
         if self.queue_items:
             from .primitives import ContainerGroup
             queue_group = ContainerGroup(*self.queue_items)
             queue_group.arrange_horizontal(spacing=0.1)
-        
+
         return removed_data, removed_widget
 
     def _get_queue_position(self, index: int) -> list[float]:

@@ -317,6 +317,55 @@ outro_text: "QuickSort is efficient on average!"
 
 These actions are now **resolved through scene configurations** using hydra-zen instantiation, making the core DSL truly generic while maintaining algorithm-specific functionality.
 
+## 5.3 Architectural Separation: Storyboards vs Scene Configs
+
+### **Key Architectural Principle: Generic Storyboards + Algorithm-Specific Scene Configs**
+
+The Storyboard DSL v2.0 establishes a clear separation of concerns between storyboard orchestration and algorithm-specific behavior:
+
+**Storyboard Responsibilities (Generic Orchestration):**
+- ✅ **Narrative Structure**: Acts, shots, and beats for story flow
+- ✅ **Generic Actions**: show_title, show_widgets, play_events, outro
+- ✅ **Timing Control**: Duration, narration, bookmarks
+- ✅ **Template Composition**: Reusable storyboard templates via ConfigStore
+
+**Scene Configuration Responsibilities (Algorithm-Specific Behavior):**
+- ✅ **Widget Configuration**: Which widgets exist and their properties
+- ✅ **Event Bindings**: How algorithm events map to widget actions
+- ✅ **Parameter Resolution**: Dynamic parameter resolution using OmegaConf resolvers
+- ✅ **Algorithm-Specific Actions**: Custom actions for specific algorithms
+
+**The Flow:**
+1. **Storyboard**: Defines narrative structure with generic actions
+2. **play_events Action**: Routes to SceneEngine with algorithm and scene config
+3. **SceneEngine**: Handles algorithm-specific event processing and parameter resolution
+4. **Widget Actions**: Called with resolved parameters from event data
+
+**Benefits:**
+- ✅ **Generic Storyboards**: Reusable across different algorithm types
+- ✅ **Algorithm-Specific Scene Configs**: Tailored behavior for each algorithm
+- ✅ **Clear Separation**: Orchestration vs algorithm-specific behavior
+- ✅ **Hydra-zen First**: Both storyboards and scene configs use structured configs
+- ✅ **Maintainability**: Single responsibility for each component
+
+**Example:**
+```yaml
+# Storyboard (Generic)
+- action: play_events
+  args:
+    algorithm: "bfs"
+    scene: "bfs_pathfinding"
+  narration: "Let's explore the maze with BFS"
+
+# Scene Config (Algorithm-Specific)
+event_bindings:
+  enqueue:
+    - widget: "queue"
+      action: "add_element"
+      params:
+        element: "${event.node}"
+```
+
 ## 6. Storyboard Loading and Instantiation (Hydra-zen Native)
 
 ### 6.1 Hydra-zen Storyboard Loader
@@ -458,7 +507,7 @@ class ActionResolver:
         if beat.action in self.core_actions:
             return self.core_actions[beat.action]
         
-        # 2. Check scene configuration actions (hydra-zen instantiated)
+        # 2. Check scene configuration actions (SceneEngine handles algorithm-specific actions)
         if self.scene_engine.has_action(beat.action):
             return lambda scene, args, run_time, ctx: \
                 self.scene_engine.execute_action(beat.action, args, run_time, ctx)
@@ -518,11 +567,11 @@ class StoryboardValidator:
         """Validate beat action against available actions and templates."""
         core_actions = ["show_title", "show_widgets", "play_events", "outro"]
         
-        # Check core actions
+        # Check core actions (storyboard handles generic actions only)
         if beat.action in core_actions:
             return
         
-        # Check scene configuration actions
+        # Check scene configuration actions (SceneEngine handles algorithm-specific actions)
         if hasattr(self.scene_config, 'event_bindings'):
             scene_actions = list(self.scene_config.event_bindings.keys())
             if beat.action in scene_actions:
@@ -663,6 +712,72 @@ def create_comparison_storyboard(algorithms: List[str], scene_configs: List[str]
     )
     
     return loader.create_custom_storyboard(acts)
+```
+
+## 9.5 The `play_events` Action: Bridge Between Storyboards and Scene Configs
+
+### **How Generic Storyboards Connect to Algorithm-Specific Behavior**
+
+The `play_events` action is the key bridge that connects generic storyboards to algorithm-specific scene configurations:
+
+**Storyboard Side (Generic):**
+```yaml
+- action: play_events
+  args:
+    algorithm: "bfs"           # Which algorithm to run
+    scene: "bfs_pathfinding"   # Which scene config to use
+  narration: "Let's explore the maze with BFS"
+```
+
+**Scene Config Side (Algorithm-Specific):**
+```yaml
+# bfs_pathfinding.yaml
+event_bindings:
+  enqueue:
+    - widget: "queue"
+      action: "add_element"
+      params:
+        element: "${event.node}"  # Dynamic parameter from algorithm
+  node_visited:
+    - widget: "grid"
+      action: "highlight_cell"
+      params:
+        position: "${event.position}"
+        style: "visited"
+```
+
+**The Flow:**
+1. **Storyboard**: Defines `play_events` action with algorithm and scene config
+2. **Director**: Receives the action and gets the algorithm adapter
+3. **Algorithm Adapter**: Generates VizEvents with dynamic data
+4. **SceneEngine**: Uses scene config to route events to widgets with parameter resolution
+5. **Widgets**: Receive resolved parameters and execute actions
+
+**Benefits:**
+- ✅ **Generic Storyboards**: Same storyboard structure works for any algorithm
+- ✅ **Algorithm-Specific Behavior**: Scene configs handle algorithm-specific event processing
+- ✅ **Dynamic Parameters**: Event data resolved at runtime with full context
+- ✅ **Clear Separation**: Orchestration vs algorithm-specific behavior
+- ✅ **Reusability**: Storyboard templates work across different algorithms
+
+**Example: Same Storyboard, Different Algorithms**
+```yaml
+# Generic storyboard template
+- action: play_events
+  args:
+    algorithm: "${algorithm}"      # Resolved at runtime
+    scene: "${scene_config}"       # Resolved at runtime
+  narration: "${algorithm_description}"
+
+# Used for BFS
+algorithm: "bfs"
+scene_config: "bfs_pathfinding"
+algorithm_description: "We explore nodes level by level"
+
+# Used for DFS  
+algorithm: "dfs"
+scene_config: "dfs_pathfinding"
+algorithm_description: "We explore as deep as possible first"
 ```
 
 ## 10. CLI Integration (Hydra-zen Native)
@@ -873,7 +988,10 @@ This Storyboard DSL v2.0 document defines a complete hydra-zen first storyboard 
 1. **Hydra-zen Native Configuration**: All storyboard components use `builds()` and structured configs
 2. **ConfigStore Template System**: Reusable storyboard templates with inheritance and customization
 3. **Enhanced YAML Composition**: Hydra-zen composition syntax with parameter interpolation
-4. **Scene Configuration Integration**: Seamless integration with hydra-zen scene configurations
-5. **CLI Template Management**: Complete CLI support for template discovery, creation, and validation
+4. **Generic Storyboard Actions**: Core DSL uses generic actions only (show_title, show_widgets, play_events, outro)
+5. **Scene Configuration Integration**: Algorithm-specific behavior handled by scene configs, not storyboards
+6. **CLI Template Management**: Complete CLI support for template discovery, creation, and validation
+
+**Key Architectural Principle**: Storyboards handle generic orchestration while scene configurations handle algorithm-specific behavior. The `play_events` action serves as the bridge between generic storyboards and algorithm-specific scene configs.
 
 The implementation provides a world-class, extensible storyboard system that supports any algorithm type while maintaining the high engineering standards established in the ALGOViz project vision.

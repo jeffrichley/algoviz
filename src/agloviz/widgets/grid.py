@@ -8,8 +8,7 @@ from typing import Any
 
 from manim import *
 
-from agloviz.core.events import PayloadKey, VizEvent
-from .primitives import TokenWidget, ContainerGroup
+from .primitives import ContainerGroup, TokenWidget
 from .protocol import Widget
 
 
@@ -112,7 +111,7 @@ class GridWidget(Widget):
         if pos in self.cell_map:
             cell = self.cell_map[pos]
             cell.set_label(text)
-    
+
     def get_cell_positions(self) -> list[tuple[int, int]]:
         """Pure visual operation: get all cell positions.
         

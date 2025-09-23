@@ -26,14 +26,15 @@ The **Director** is a **pure orchestrator** that executes storyboards using scen
 ### 2.2 Scene Configuration Integration (New)
 8. Load scene configurations for algorithm-specific behavior
 9. Delegate widget lifecycle to SceneEngine
-10. Route events through scene configuration system
-11. Resolve algorithm-specific actions via scene configs
+10. Route events through SceneEngine (SceneEngine handles parameter resolution)
+11. Delegate algorithm-specific actions to SceneEngine
 
 ### 2.3 Removed Responsibilities
 - ❌ Algorithm-specific action implementation
 - ❌ Direct widget management  
 - ❌ Hard-coded routing maps
 - ❌ Widget lifecycle management (delegated to SceneEngine)
+- ❌ Parameter template resolution (delegated to SceneEngine)
 
 ## 3. SceneEngine Integration (New Section)
 
@@ -79,18 +80,47 @@ def _exit_shot(self, shot, act_index, shot_index):
 
 ### 3.3 Event Routing Through SceneEngine
 - Algorithm events routed through scene configuration
-- Parameter template resolution in SceneEngine
+- Dynamic parameter resolution in SceneEngine using OmegaConf resolvers
 - Conditional execution support
 
 ```python
 def _play_events(self, beat, run_time, context):
-    """Play algorithm events through scene configuration."""
+    """Play algorithm events through SceneEngine with dynamic parameter resolution."""
     adapter = self.registry.get_algorithm(context.algorithm)
     
     for event in adapter.run(context.scenario):
-        # Route through scene configuration, not direct widget calls
+        # Route through SceneEngine - handles dynamic parameter resolution
         self.scene_engine.process_event(event, run_time, context)
 ```
+
+## 3.4 Director's Role in Event-Driven Parameter Resolution
+
+### **Key Architectural Principle: Director Delegates, SceneEngine Resolves**
+
+The Director maintains its role as a **pure orchestrator** by delegating all parameter resolution to the SceneEngine:
+
+**Director Responsibilities:**
+- ✅ **Orchestration**: Storyboard execution, timing, voiceover
+- ✅ **Event Routing**: Pass events to SceneEngine
+- ✅ **Generic Actions**: Core actions only (show_title, show_widgets, play_events, outro)
+
+**SceneEngine Responsibilities:**
+- ✅ **Parameter Resolution**: Dynamic parameter resolution using OmegaConf resolvers
+- ✅ **Widget Management**: Widget lifecycle and method calls
+- ✅ **Event Processing**: Resolve templates with event data context
+
+**The Flow:**
+1. **Director**: Receives storyboard beat with `play_events` action
+2. **Director**: Gets algorithm adapter and runs algorithm
+3. **Director**: Passes each VizEvent to SceneEngine
+4. **SceneEngine**: Resolves dynamic parameters using OmegaConf resolvers
+5. **SceneEngine**: Calls widget methods with resolved parameters
+
+**Benefits:**
+- ✅ **Clear Separation**: Director orchestrates, SceneEngine resolves
+- ✅ **Hydra-zen First**: Scene configs remain pure and predictable
+- ✅ **Runtime Flexibility**: Dynamic parameters resolved with full context
+- ✅ **Maintainability**: Single responsibility for each component
 
 ## 4. Class Sketch (Updated for v2.0)
 
@@ -158,25 +188,22 @@ class Director:
 ## 5. Event Playback (Updated for Scene Configuration)
 
 - Director obtains **AlgorithmAdapter** from registry
-- Adapter yields **VizEvent**s
+- Adapter yields **VizEvent**s with dynamic event data
 - Director passes events to **SceneEngine** for routing
 - SceneEngine uses **scene configuration** to bind events to widget actions
-- Parameter templates resolve event data to widget method parameters
+- SceneEngine resolves dynamic parameters using OmegaConf resolvers with event data context
 - Multiple widgets can respond to same event in configured order
 
 ```python
 def _action_play_events(self, scene, args, run_time, context):
-    """Play algorithm events through hydra-zen scene configuration routing."""
+    """Play algorithm events through SceneEngine with dynamic parameter resolution."""
     algorithm_name = args.get('algorithm', context.get('algorithm'))
     adapter = self.registry.get_algorithm(algorithm_name)
     
-    # Get scene configuration for this algorithm (hydra-zen instantiated)
-    scene_config = self.scene_engine.get_scene_config()
-    
     for event in adapter.run(context.scenario):
-        # Route through scene configuration using parameter templates
+        # Route through SceneEngine - handles dynamic parameter resolution
         event_run_time = self.timing.events_for(mode=self.mode)
-        self.scene_engine.handle_event(event)  # Uses hydra-zen parameter resolution
+        self.scene_engine.process_event(event, event_run_time, context)  # SceneEngine resolves parameters
 ```
 
 ## 6. Actions & Routing (Updated for v2.0)
@@ -198,7 +225,7 @@ def resolve_action(self, action_name: str, args: dict, run_time: float, context:
     if action_name in self.core_actions:
         return self.core_actions[action_name]
     
-    # 2. Check scene configuration actions
+    # 2. Check scene configuration actions (SceneEngine handles parameter resolution)
     if self.scene_engine.has_action(action_name):
         return lambda scene, args, run_time, context: \
             self.scene_engine.execute_action(action_name, args, run_time, context)
@@ -337,8 +364,8 @@ def optimize_scene_configuration(self, scene_config: SceneConfig):
     # Pre-resolve widget factories
     self.scene_engine.preload_widget_factories()
     
-    # Pre-compile parameter templates
-    self.scene_engine.compile_parameter_templates()
+    # Pre-register OmegaConf resolvers for event parameter resolution
+    self.scene_engine.setup_event_resolvers()
     
     # Cache event binding lookups
     self.scene_engine.build_event_binding_cache()

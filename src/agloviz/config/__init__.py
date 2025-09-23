@@ -10,7 +10,7 @@ from .models import ScenarioConfig, ThemeConfig, TimingConfig, TimingMode
 
 __all__ = [
     "ScenarioConfig",
-    "ThemeConfig", 
+    "ThemeConfig",
     "TimingConfig",
     "TimingMode",
 ]

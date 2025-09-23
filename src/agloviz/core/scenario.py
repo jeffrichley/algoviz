@@ -5,10 +5,7 @@ between algorithms and their execution environment, along with implementations
 and validation tools.
 """
 
-from pathlib import Path
 from typing import Any, Protocol
-
-import yaml
 
 from agloviz.config.models import ScenarioConfig
 

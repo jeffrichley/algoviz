@@ -427,52 +427,45 @@ class SceneEngine:
 
 ---
 
-## 6. Parameter Template Resolution (Hydra-zen Integration)
+## 6. Event-Driven Parameter Resolution (Hydra-zen Integration)
 
-### 6.1 OmegaConf Resolver Integration
+### 6.1 Dynamic Parameter Resolution System
 
 ```python
-# core/resolvers.py
+# core/event_resolvers.py
 from omegaconf import OmegaConf
 from typing import Any, Dict
 
-def register_custom_resolvers():
-    """Register custom OmegaConf resolvers for parameter templates"""
+def register_event_resolvers():
+    """Register custom OmegaConf resolvers for event parameter templates"""
     
     # Event data resolver
     OmegaConf.register_new_resolver(
-        "event_data", 
-        lambda path, context=None: _resolve_event_path(path, context)
+        "event", 
+        lambda path, event_data=None: _resolve_event_path(path, event_data)
     )
     
     # Configuration resolver
     OmegaConf.register_new_resolver(
-        "config_value",
-        lambda path, default=None: _resolve_config_path(path, default)
+        "config",
+        lambda path, scene_config=None: _resolve_config_path(path, scene_config)
     )
     
     # Timing resolver
     OmegaConf.register_new_resolver(
-        "timing_value",
-        lambda timing_key, mode="normal": _resolve_timing_value(timing_key, mode)
-    )
-    
-    # Widget state resolver
-    OmegaConf.register_new_resolver(
-        "widget_state",
-        lambda widget_name, state_key: _resolve_widget_state(widget_name, state_key)
+        "timing",
+        lambda path, timing_config=None: _resolve_timing_path(path, timing_config)
     )
 
-def _resolve_event_path(path: str, context: Dict[str, Any]) -> Any:
-    """Resolve event data path like 'event.node' or 'event.pos'"""
-    if not context or 'event' not in context:
+def _resolve_event_path(path: str, event_data: Dict[str, Any]) -> Any:
+    """Resolve event data path like 'node.position' or 'node.color'"""
+    if not event_data:
         return None
     
-    event_data = context['event']
     keys = path.split('.')
     result = event_data
     
-    for key in keys[1:]:  # Skip 'event' prefix
+    for key in keys:
         if isinstance(result, dict) and key in result:
             result = result[key]
         else:
@@ -480,33 +473,68 @@ def _resolve_event_path(path: str, context: Dict[str, Any]) -> Any:
     
     return result
 
-def _resolve_config_path(path: str, default: Any = None) -> Any:
-    """Resolve configuration path like 'config.highlight_style'"""
-    # Implementation would access current config context
-    # This is a placeholder for the actual implementation
-    return default
+def _resolve_config_path(path: str, scene_config: Any) -> Any:
+    """Resolve configuration path like 'colors.frontier'"""
+    if not scene_config:
+        return None
+        
+    keys = path.split('.')
+    result = scene_config
+    
+    for key in keys:
+        if hasattr(result, key):
+            result = getattr(result, key)
+        elif isinstance(result, dict) and key in result:
+            result = result[key]
+        else:
+            return None
+    
+    return result
 
-def _resolve_timing_value(timing_key: str, mode: str = "normal") -> float:
-    """Resolve timing values based on current timing mode"""
-    timing_multipliers = {
-        "draft": 0.5,
-        "normal": 1.0, 
-        "fast": 0.25
-    }
+def _resolve_timing_path(path: str, timing_config: Any) -> Any:
+    """Resolve timing path like 'events' or 'ui'"""
+    if not timing_config:
+        return None
+        
+    if hasattr(timing_config, path):
+        return getattr(timing_config, path)
+    elif isinstance(timing_config, dict) and path in timing_config:
+        return timing_config[path]
+    else:
+        return None
+
+class EventParameterResolver:
+    """Resolves dynamic parameters using OmegaConf resolvers with event context"""
     
-    base_timings = {
-        "ui": 1.0,
-        "events": 0.8,
-        "effects": 0.5,
-        "waits": 0.5
-    }
+    def __init__(self, scene_config, timing_config):
+        self.scene_config = scene_config
+        self.timing_config = timing_config
+        
+        # Register resolvers with context
+        self._setup_resolvers()
     
-    base_time = base_timings.get(timing_key, 1.0)
-    multiplier = timing_multipliers.get(mode, 1.0)
-    return base_time * multiplier
+    def _setup_resolvers(self):
+        """Setup OmegaConf resolvers with current context"""
+        # Set resolver context for current instance
+        OmegaConf.set_resolver("current_event", lambda: self._current_event_data)
+        OmegaConf.set_resolver("current_config", lambda: self.scene_config)
+        OmegaConf.set_resolver("current_timing", lambda: self.timing_config)
+    
+    def resolve_parameters(self, static_params: dict, event_data: dict) -> dict:
+        """Resolve static parameters with dynamic event data using OmegaConf"""
+        # Store current event data for resolver access
+        self._current_event_data = event_data
+        
+        # Create OmegaConf config with parameters
+        params_config = OmegaConf.create(static_params)
+        
+        # Resolve all interpolations using registered resolvers
+        resolved_config = OmegaConf.to_container(params_config, resolve=True)
+        
+        return resolved_config
 ```
 
-### 6.2 Enhanced Event Binding with Templates
+### 6.2 Event Binding Configuration with Dynamic Templates
 
 ```yaml
 # scene/bfs_pathfinding.yaml
@@ -531,18 +559,18 @@ event_bindings:
       widget: "queue"
       action: "add_element"
       params:
-        element: "${event_data:event.node}"
-        style: "${config_value:queue.element_style,default}"
-        duration: "${timing_value:events}"
+        element: "${event.node}"           # Dynamic: resolved from event data
+        style: "frontier"                  # Static: widget behavior
+        duration: "${timing.events}"       # Dynamic: resolved from timing config
       order: 1
       
     - _target_: agloviz.core.events.EventBinding
       widget: "grid"
       action: "highlight_cell"
       params:
-        pos: "${event_data:event.pos}"
-        style: "frontier"
-        duration: "${timing_value:effects}"
+        position: "${event.node.position}" # Dynamic: resolved from event data
+        style: "frontier"                  # Static: widget behavior
+        duration: "${timing.effects}"      # Dynamic: resolved from timing config
       order: 2
       
   dequeue:
@@ -550,72 +578,156 @@ event_bindings:
       widget: "queue"
       action: "remove_element"
       params:
-        index: 0
-        animation_duration: "${timing_value:ui}"
+        index: 0                           # Static: widget behavior
+        animation_duration: "${timing.ui}" # Dynamic: resolved from timing config
       order: 1
 ```
 
-### 6.3 Runtime Parameter Resolution
+### 6.3 SceneEngine Integration with OmegaConf Resolvers
 
 ```python
-# core/event_processor.py
+# core/scene_engine.py
 from hydra_zen import instantiate
 from omegaconf import OmegaConf
 from typing import Dict, Any
 
-class EventProcessor:
-    def __init__(self, scene_engine: SceneEngine):
-        self.scene_engine = scene_engine
-        self.context = {}
+class SceneEngine:
+    def __init__(self, scene_config, timing_config):
+        self.scene_config = scene_config
+        self.timing_config = timing_config
+        self.widgets = {}
+        self.event_bindings = {}
         
-        # Register resolvers with access to current context
-        self._setup_context_resolvers()
+        # Register OmegaConf resolvers for event parameter resolution
+        register_event_resolvers()
+        
+        # Initialize widgets and event bindings
+        self._initialize_widgets()
+        self._setup_event_bindings()
     
-    def process_event(self, event_name: str, event_data: Dict[str, Any]) -> None:
-        """Process event with parameter template resolution"""
-        # Update context with current event data
-        self.context.update({
-            'event': event_data,
-            'config': self.scene_engine.scene_config,
-            'timing': self.scene_engine.timing_config,
-            'widgets': {name: widget for name, widget in self.scene_engine.widgets.items()}
-        })
+    def process_event(self, event: VizEvent, run_time: float, context: dict) -> None:
+        """Process event with OmegaConf dynamic parameter resolution"""
+        bindings = self.event_bindings.get(event.type, [])
         
-        # Get event bindings
-        bindings = self.scene_engine.event_bindings.get(event_name, [])
+        # Sort by execution order
+        bindings.sort(key=lambda b: b.order)
         
         for binding in bindings:
-            # Resolve parameters using current context
-            resolved_params = self._resolve_binding_parameters(binding, self.context)
+            widget = self.widgets[binding.widget]
             
-            # Execute binding with resolved parameters
-            self._execute_binding(binding, resolved_params)
+            # Resolve dynamic parameters using OmegaConf resolvers
+            resolved_params = self._resolve_parameters_with_context(
+                binding.params,  # Static parameters with dynamic templates
+                event.payload,   # Dynamic event data
+                context          # Full context (config, timing, etc.)
+            )
+            
+            # Call widget method with resolved parameters
+            method = getattr(widget, binding.action)
+            method(**resolved_params)
     
-    def _resolve_binding_parameters(self, binding, context: Dict[str, Any]) -> Dict[str, Any]:
-        """Resolve parameter templates in binding using context"""
-        if not hasattr(binding, 'params'):
-            return {}
+    def _resolve_parameters_with_context(self, static_params: dict, event_data: dict, context: dict) -> dict:
+        """Resolve parameters using OmegaConf resolvers with full context"""
+        # Create OmegaConf config with parameters
+        params_config = OmegaConf.create(static_params)
         
-        # Create OmegaConf config with context for resolution
-        params_config = OmegaConf.create(binding.params)
+        # Set resolver context for this event
+        OmegaConf.set_resolver("current_event", lambda: event_data)
+        OmegaConf.set_resolver("current_config", lambda: self.scene_config)
+        OmegaConf.set_resolver("current_timing", lambda: self.timing_config)
         
-        # Set resolver context
-        OmegaConf.set_resolver("current_context", lambda: context)
-        
-        # Resolve all interpolations
+        # Resolve all interpolations using registered resolvers
         resolved_config = OmegaConf.to_container(params_config, resolve=True)
         
         return resolved_config
     
-    def _execute_binding(self, binding, resolved_params: Dict[str, Any]) -> None:
-        """Execute event binding with resolved parameters"""
-        widget = self.scene_engine.widgets.get(binding.widget)
-        if widget and hasattr(widget, binding.action):
-            action_method = getattr(widget, binding.action)
-            action_method(**resolved_params)
-        else:
-            raise ValueError(f"Widget '{binding.widget}' does not have action '{binding.action}'")
+    def _initialize_widgets(self):
+        """Initialize widgets from scene configuration"""
+        for widget_name, widget_spec in self.scene_config.widgets.items():
+            widget = instantiate(widget_spec)
+            self.widgets[widget_name] = widget
+    
+    def _setup_event_bindings(self):
+        """Setup event bindings from scene configuration"""
+        for event_type, bindings in self.scene_config.event_bindings.items():
+            resolved_bindings = []
+            for binding_spec in bindings:
+                binding = instantiate(binding_spec)
+                resolved_bindings.append(binding)
+            self.event_bindings[event_type] = resolved_bindings
 ```
+
+### 6.4 Example: Complete Event Processing Flow
+
+```python
+# Example: BFS algorithm event processing
+def example_bfs_event_processing():
+    """Example showing complete event processing with dynamic parameters"""
+    
+    # 1. Scene configuration (static, hydra-zen first)
+    scene_config = {
+        "widgets": {
+            "grid": {"_target_": "GridWidget", "width": 15, "height": 15},
+            "queue": {"_target_": "QueueWidget", "max_visible": 10}
+        },
+        "event_bindings": {
+            "enqueue": [
+                {
+                    "widget": "queue",
+                    "action": "add_element",
+                    "params": {
+                        "element": "${event.node}",      # Dynamic: from event
+                        "style": "frontier"              # Static: widget behavior
+                    }
+                },
+                {
+                    "widget": "grid", 
+                    "action": "highlight_cell",
+                    "params": {
+                        "position": "${event.node.position}",  # Dynamic: from event
+                        "style": "frontier"                   # Static: widget behavior
+                    }
+                }
+            ]
+        }
+    }
+    
+    # 2. Event data (dynamic, from algorithm execution)
+    event_data = {
+        "type": "enqueue",
+        "node": {
+            "position": [3, 4],    # Dynamic: algorithm output
+            "color": "red",        # Dynamic: algorithm state
+            "weight": 5            # Dynamic: algorithm data
+        }
+    }
+    
+    # 3. Parameter resolution (runtime using OmegaConf resolvers)
+    from omegaconf import OmegaConf
+    
+    # Register resolvers with context
+    OmegaConf.set_resolver("current_event", lambda: event_data)
+    OmegaConf.set_resolver("current_config", lambda: scene_config)
+    OmegaConf.set_resolver("current_timing", lambda: timing_config)
+    
+    static_params = {"element": "${event.node}", "style": "frontier"}
+    params_config = OmegaConf.create(static_params)
+    resolved_params = OmegaConf.to_container(params_config, resolve=True)
+    # Result: {"element": {"position": [3, 4], "color": "red", "weight": 5}, "style": "frontier"}
+    
+    # 4. Widget method call
+    queue_widget.add_element(**resolved_params)
+```
+
+### 6.5 Benefits of Event-Driven Parameter Resolution with OmegaConf
+
+✅ **Hydra-zen First**: Scene configs are pure and predictable  
+✅ **OmegaConf Integration**: Leverages proven template resolution system  
+✅ **Runtime Flexibility**: Dynamic parameters from algorithm execution  
+✅ **Clear Separation**: Configuration vs runtime behavior  
+✅ **Full Context**: Event data, config, and timing available during resolution  
+✅ **Type Safety**: Static parameters validated at config time, dynamic at runtime  
+✅ **Consistent Syntax**: Same `${}` template syntax throughout the system  
 
 ---
 

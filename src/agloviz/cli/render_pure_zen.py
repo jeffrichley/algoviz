@@ -8,17 +8,19 @@ No Typer, no manual config management, no complex store handling.
 Just pure hydra-zen as intended.
 """
 
-from typing import Any, Dict
+from typing import Any
+
 from hydra_zen import builds, store, zen
 from rich.console import Console
 from rich.panel import Panel
 
 from agloviz.config.models import SceneConfig
 
+from ..config.models import ScenarioConfig, ThemeConfig, TimingConfig, TimingMode
+from ..rendering.config import RenderConfig, RenderFormat, RenderQuality
+
 # Import our components
 from ..rendering.renderer import SimpleRenderer
-from ..rendering.config import RenderConfig, RenderQuality, RenderFormat
-from ..config.models import ScenarioConfig, ThemeConfig, TimingConfig, TimingMode
 
 console = Console()
 
@@ -31,14 +33,14 @@ def render_algorithm_video(
     timing: TimingConfig,      # Must match hydra_defaults key
     scene: SceneConfig,       # Scene config instantiated by zen().hydra_main()
     output_path: str = "output.mp4"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Main render function - receives fully instantiated objects from hydra-zen.
     
     This is the pure business logic. Hydra-zen handles all configuration
     management, instantiation, and CLI generation automatically.
     """
     console.print(Panel(f"🎬 Rendering [bold cyan]{algorithm}[/] with Pure Hydra-zen", title="ALGOViz"))
-    
+
     console.print("✨ All objects automatically instantiated by hydra-zen!")
     quality = renderer.config.quality.value if hasattr(renderer.config.quality, 'value') else renderer.config.quality
     console.print(f"📊 Renderer: {quality} @ {renderer.config.resolution}")
@@ -47,11 +49,11 @@ def render_algorithm_video(
     mode = timing.mode.value if hasattr(timing.mode, 'value') else timing.mode
     console.print(f"⏱️  Timing: {mode}")
     console.print(f"🚀 Output: [bold green]{output_path}[/]")
-    
+
     # Scene config is already instantiated by zen().hydra_main()!
     console.print(f"🎬 Scene: {scene.name} with {len(scene.widgets)} widgets")
     console.print(f"   Widgets: {list(scene.widgets.keys())}")
-    
+
     # All objects are already instantiated by hydra-zen!
     result = renderer.render_algorithm_video(
         algorithm=algorithm,
@@ -61,7 +63,7 @@ def render_algorithm_video(
         timing_config=timing,
         output_path=output_path
     )
-    
+
     console.print(Panel(
         f"✅ Video rendered successfully!\n"
         f"📁 Output: {output_path}\n"
@@ -70,7 +72,7 @@ def render_algorithm_video(
         f"🎯 Algorithm: {algorithm}",
         title="[green]Render Complete[/]"
     ))
-    
+
     return result
 
 
@@ -151,7 +153,6 @@ NormalTimingConfig = builds(TimingConfig, mode=TimingMode.NORMAL)
 FastTimingConfig = builds(TimingConfig, mode=TimingMode.FAST)
 
 # Import scene configs from centralized hydra_zen.py
-from agloviz.config.hydra_zen import BFSBasicSceneConfig, BFSAdvancedSceneConfig
 
 # Store configurations - using centralized StoreManager
 from agloviz.config.store_manager import StoreManager
@@ -181,10 +182,10 @@ def main():
     print("🚀 ALGOViz Pure Hydra-zen CLI")
     print("Following hydra-zen documentation pattern exactly")
     print("=" * 60)
-    
+
     # Add all configurations to Hydra store
     store.add_to_hydra_store()
-    
+
     # Create CLI using zen().hydra_main() - this replaces ALL our manual code!
     zen(render_algorithm_video).hydra_main(
         config_name="main",
@@ -195,7 +196,7 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
+
     # This automatically creates a CLI that supports:
     #
     # Basic usage:

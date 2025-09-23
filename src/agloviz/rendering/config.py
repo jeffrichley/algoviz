@@ -6,14 +6,15 @@ and hydra-zen structured configs.
 
 from enum import Enum
 from pathlib import Path
-from pydantic import BaseModel, Field
+
 from hydra_zen import builds
+from pydantic import BaseModel, Field
 
 
 class RenderFormat(str, Enum):
     """Supported video output formats."""
     MP4 = "mp4"
-    GIF = "gif" 
+    GIF = "gif"
     PNG_SEQUENCE = "png_sequence"
 
 
@@ -35,7 +36,7 @@ class RenderConfig(BaseModel):
     format: RenderFormat = Field(default=RenderFormat.MP4, description="Output format")
     quality: RenderQuality = Field(default=RenderQuality.MEDIUM, description="Quality preset")
     output_dir: Path = Field(default=Path("output/"), description="Output directory")
-    
+
     class Config:
         """Pydantic configuration."""
         use_enum_values = True

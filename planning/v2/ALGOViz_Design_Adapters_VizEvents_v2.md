@@ -88,8 +88,8 @@ class BFSAdapter:
                     yield VizEvent("enqueue", {"node": nbr}, step_index=i); i += 1
 ```
 
-## 7. Routing Maps (Updated for v2.0)
-Scene configuration routing replaces simple routing maps:
+## 7. Event-Driven Architecture (Updated for v2.0)
+Scene configuration routing with **static widget configs** and **dynamic event parameters**:
 
 ```python
 # OLD v1.0 - Hard-coded BFS-specific methods
@@ -99,30 +99,42 @@ routing_map_bfs = {
     "goal_found": ["grid.flash_goal", "hud.show_success"]
 }
 
-# NEW v2.0 - Scene configuration with generic methods
+# NEW v2.0 - Static widget configs + dynamic event parameters
 BFSSceneConfig.create().event_bindings = {
     "enqueue": [
-        EventBinding(widget="queue", action="enqueue", params={"value": "${event.node}"}, order=1),
-        EventBinding(widget="grid", action="highlight_element", params={"index": "${event.pos}", "style": "frontier"}, order=2)
+        EventBinding(widget="queue", action="add_element", 
+                    params={"element": "${event.node}", "style": "frontier"}, order=1),
+        EventBinding(widget="grid", action="highlight_cell", 
+                    params={"position": "${event.node.position}", "style": "frontier"}, order=2)
     ],
     "dequeue": [
-        EventBinding(widget="queue", action="dequeue", params={}, order=1)
+        EventBinding(widget="queue", action="remove_element", params={}, order=1)
     ],
     "goal_found": [
-        EventBinding(widget="grid", action="highlight_element", params={"index": "${event.pos}", "style": "goal"}, order=1),
-        EventBinding(widget="hud", action="show_message", params={"text": "Goal Found!", "style": "success"}, order=2)
+        EventBinding(widget="grid", action="highlight_cell", 
+                    params={"position": "${event.node.position}", "style": "goal"}, order=1),
+        EventBinding(widget="hud", action="show_message", 
+                    params={"text": "Goal Found!", "style": "success"}, order=2)
     ]
+}
+
+# Event data contains dynamic parameters (resolved at runtime)
+event_data = {
+    "type": "enqueue",
+    "node": {"position": [3, 4], "color": "red", "weight": 5}
 }
 ```
 
-- **Generic widget methods**: `highlight_element`, `enqueue`, `dequeue`, `show_message`
-- **Parameter templates**: `${event.node}`, `${event.pos}` resolve to event data
+- **Static widget configs**: Widget size, appearance, behavior set at config time
+- **Dynamic parameter templates**: `${event.node.position}`, `${event.node.color}` resolved at runtime
+- **Event data**: Contains dynamic values (positions, colors, weights) from algorithm execution
+- **Generic widget methods**: `highlight_cell`, `add_element`, `remove_element`, `show_message`
 - **Execution order**: Multiple widgets can respond to same event in configured order
 
 ## 8. Director Integration (Updated for v2.0)
 - Director pulls algorithm adapter via registry.
 - SceneEngine handles event routing through scene configuration.
-- Events routed to generic widget methods with parameter template resolution.
+- **Event data contains dynamic parameters** resolved at runtime with full context.
 - Run time per event from `TimingConfig.events`, hybrid with narration.
 
 ```python
@@ -157,34 +169,73 @@ class SceneConfig(BaseModel):
     event_bindings: dict[str, list[EventBinding]]
 ```
 
-### 9.2 Parameter Template System
-Templates resolve event data to widget method parameters:
+### 9.2 Dynamic Parameter Resolution System
+Event data contains dynamic parameters with template resolution at runtime:
 
 ```python
-# Template examples:
-"${event.node}"          # Resolves to event.payload["node"]
-"${event.pos}"           # Resolves to event.payload["pos"]
-"${config.colors.frontier}"  # Resolves to configuration value
-"${timing.fast}"         # Resolves to timing configuration
+# Event data structure (from algorithm adapters):
+event_data = {
+    "type": "enqueue",
+    "node": {
+        "position": [3, 4],    # Dynamic: from algorithm
+        "color": "red",        # Dynamic: from algorithm state
+        "weight": 5            # Dynamic: from algorithm
+    }
+}
 
-# Runtime resolution in SceneEngine:
-def resolve_template(template: str, context: dict) -> Any:
-    if template.startswith("${event."):
-        key = template[8:-1]  # Remove ${event. and }
-        return context["event"].payload[key]
-    elif template.startswith("${config."):
-        path = template[9:-1].split(".")
-        return get_nested_value(context["config"], path)
-    # ... other template types
+# Scene config has static parameters with dynamic templates:
+EventBinding(
+    widget="grid", 
+    action="highlight_cell", 
+    params={
+        "style": "frontier",           # Static: widget behavior
+        "position": "${event.node.position}",  # Dynamic: resolved from event
+        "color": "${event.node.color}"         # Dynamic: resolved from event
+    }
+)
+
+# Runtime parameter resolution in SceneEngine:
+def resolve_event_parameters(static_params: dict, event_data: dict, context: dict) -> dict:
+    resolved = {}
+    for key, value in static_params.items():
+        if isinstance(value, str) and value.startswith("${"):
+            # Dynamic template resolution
+            if value.startswith("${event."):
+                # Resolve event data path like "${event.node.position}"
+                path = value[8:-1]  # Remove ${event. and }
+                resolved[key] = _resolve_event_path(path, event_data)
+            elif value.startswith("${config."):
+                # Resolve config path like "${config.colors.frontier}"
+                path = value[9:-1]  # Remove ${config. and }
+                resolved[key] = _resolve_config_path(path, context["config"])
+            elif value.startswith("${timing."):
+                # Resolve timing path like "${timing.events}"
+                path = value[9:-1]  # Remove ${timing. and }
+                resolved[key] = _resolve_timing_path(path, context["timing"])
+        else:
+            # Static value
+            resolved[key] = value
+    return resolved
+
+def _resolve_event_path(path: str, event_data: dict) -> Any:
+    """Resolve event data path like 'node.position' or 'node.color'"""
+    keys = path.split('.')
+    result = event_data
+    for key in keys:
+        if isinstance(result, dict) and key in result:
+            result = result[key]
+        else:
+            return None
+    return result
 ```
 
-### 9.3 Widget Resolution Process
-SceneEngine resolves events to widget actions:
+### 9.3 Event Processing Flow
+SceneEngine processes events with dynamic parameter resolution:
 
-1. **Event Received**: VizEvent from algorithm adapter
+1. **Event Received**: VizEvent from algorithm adapter with dynamic data
 2. **Binding Lookup**: Find event_bindings for event.type
 3. **Widget Resolution**: Get widget instances from scene configuration
-4. **Parameter Resolution**: Resolve template parameters with event context
+4. **Parameter Resolution**: Merge static config params with dynamic event data
 5. **Action Execution**: Call widget methods with resolved parameters
 6. **Order Enforcement**: Execute bindings in specified order
 
@@ -198,11 +249,12 @@ class SceneEngine:
         
         for binding in bindings:
             widget = self.widgets[binding.widget]
-            resolved_params = self.resolve_parameters(binding.params, {
-                "event": event,
-                "config": context.config,
-                "timing": context.timing
-            })
+            # Resolve dynamic templates with full context
+            resolved_params = self.resolve_event_parameters(
+                binding.params,  # Static parameters with dynamic templates
+                event.payload,   # Dynamic event data
+                context          # Full context (config, timing, etc.)
+            )
             
             # Call generic widget method
             method = getattr(widget, binding.action)
@@ -213,7 +265,8 @@ class SceneEngine:
 - **Unit tests**: Golden event sequences for known scenarios.
 - **Fuzz tests**: Randomized scenarios, ensure determinism.
 - **Coverage**: Ensure all VizEvent types have scene configuration bindings.
-- **Scene Configuration Tests**: Validate parameter template resolution.
+- **Dynamic Resolution Tests**: Validate parameter template resolution with event data.
+- **Template Tests**: Test `${event.*}`, `${config.*}`, `${timing.*}` template resolution.
 
 ## 11. Extensibility
 - Adding new algorithm: implement Adapter, register with scene configuration.
@@ -226,9 +279,37 @@ class SceneEngine:
 - Unknown event type → SceneEngine fails with context (adapter + index).
 - Empty event stream → log warning.
 - Missing widget in scene configuration → clear error with available widgets.
-- Template resolution failure → error with template and available context.
+- Template resolution failure → error with template syntax and available context.
+- Missing event data path → error with available event data structure.
 
-## 13. Open Questions
+## 13. Architectural Decision: Static Widget Configs + Dynamic Event Parameters
+
+### 13.1 Why This Architecture Makes Sense
+
+**Widgets = Static Configuration (Hydra-zen First)**
+- Widgets are **visual components** with **configuration** (size, appearance, layout)
+- These are **setup decisions**, not runtime decisions
+- Perfect for hydra-zen static configuration and CLI overrides
+
+**Events = Dynamic Parameters (Runtime Resolution)**
+- Events are **algorithm data** with **dynamic values** (positions, colors, states)
+- These are **algorithm output**, not configuration
+- Perfect for runtime parameter resolution with full context
+
+### 13.2 Benefits of This Approach
+
+✅ **Hydra-zen First**: Scene configs are pure and predictable  
+✅ **Runtime Flexibility**: Dynamic parameters from algorithm execution  
+✅ **Clear Separation**: Configuration vs runtime behavior  
+✅ **Best of Both Worlds**: Static setup + dynamic data  
+
+### 13.3 Example Flow
+
+1. **Scene Config**: "Grid should be 15x15, queue should show 10 items" (static)
+2. **Event Data**: "Node at [3,4] is being visited, color it red" (dynamic)
+3. **Resolution**: "Highlight cell at [3,4] with red color on 15x15 grid" (merge)
+
+## 14. Open Questions
 - Should we support **batched events** for performance? (Phase 2)
 - Should we **standardize payload keys** (`node`, `pos`, `weight`) across all graph algorithms? (Phase 1+)
 - Scene configuration composition and inheritance patterns? (Future)
