@@ -15,13 +15,17 @@ from agloviz.core.storyboard import Act, Beat, Shot, Storyboard
 
 class ActionHandler(Protocol):
     """Protocol for storyboard action handlers."""
-    def __call__(self, scene: Any, args: dict[str, Any], run_time: float, context: dict[str, Any]) -> None:
+
+    def __call__(
+        self, scene: Any, args: dict[str, Any], run_time: float, context: dict[str, Any]
+    ) -> None:
         """Execute the action with given parameters."""
         ...
 
 
 class VoiceoverContext:
     """Scaffolded voiceover context manager for Phase 3."""
+
     def __init__(self, text: str, enabled: bool = False):
         self.text = text
         self.enabled = enabled
@@ -36,6 +40,7 @@ class VoiceoverContext:
 
 class DirectorError(ConfigError):
     """Errors during Director execution."""
+
     pass
 
 
@@ -50,7 +55,7 @@ class Director:
         *,
         mode: str = "normal",
         with_voice: bool = False,
-        timing_tracker: TimingTracker | None = None
+        timing_tracker: TimingTracker | None = None,
     ):
         # Initialize SceneEngine from scene configuration
         self.scene_engine = SceneEngine(scene_config, timing)
@@ -75,10 +80,10 @@ class Director:
 
             self._exit_act(act, i_act)
 
-    def _run_beat(self, beat: Beat, act_index: int, shot_index: int, beat_index: int) -> None:
+    def _run_beat(
+        self, beat: Beat, act_index: int, shot_index: int, beat_index: int
+    ) -> None:
         """Execute a single beat - delegate ALL actions to SceneEngine."""
-        import time
-
         # Get timing
         run_time = self.timing.base_for(beat.action, mode=self.mode)
 
@@ -89,7 +94,11 @@ class Director:
             run_time = min(run_time, beat.max_duration)
 
         # Create context
-        context = {"act_index": act_index, "shot_index": shot_index, "beat_index": beat_index}
+        context = {
+            "act_index": act_index,
+            "shot_index": shot_index,
+            "beat_index": beat_index,
+        }
 
         # Handle voiceover timing
         if self.with_voice and beat.narration:
@@ -102,13 +111,13 @@ class Director:
         # Log timing
         beat_name = f"{act_index}-{shot_index}-{beat_index}"
         self.timing_tracker.log(
-            beat_name, 
-            beat.action, 
-            run_time, 
+            beat_name,
+            beat.action,
+            run_time,
             actual_time,
             mode=self.mode,
             act=f"Act {act_index}",
-            shot=f"Shot {shot_index}"
+            shot=f"Shot {shot_index}",
         )
 
     def _execute_with_timing(self, beat: Beat, run_time: float, context: dict) -> float:
@@ -121,7 +130,6 @@ class Director:
         self.scene_engine.execute_beat(beat, run_time, context)
 
         return time.time() - start_time
-
 
     def _enter_act(self, act: Act, index: int) -> None:
         """Handle act entry transition."""

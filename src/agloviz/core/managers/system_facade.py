@@ -21,10 +21,10 @@ class SystemFacade:
 
     def initialize_system(self, force: bool = False) -> None:
         """Initialize the complete system.
-        
+
         Args:
             force: If True, re-initialize even if already initialized
-            
+
         Raises:
             RuntimeError: If initialization fails
         """
@@ -37,7 +37,9 @@ class SystemFacade:
 
             # Register managers with mediator
             self._mediator.register_manager("resolver", self._resolver_manager, [])
-            self._mediator.register_manager("store", self._get_store_manager(), ["resolver"])
+            self._mediator.register_manager(
+                "store", self._get_store_manager(), ["resolver"]
+            )
             self._mediator.register_manager("builder", self._builder_manager, ["store"])
 
             # Initialize all managers in dependency order
@@ -53,6 +55,7 @@ class SystemFacade:
     def _get_store_manager(self):
         """Get the store manager instance."""
         from agloviz.config.store_manager import StoreManager
+
         return StoreManager
 
     def get_resolver_manager(self) -> ResolverManager:
@@ -92,5 +95,5 @@ class SystemFacade:
             "resolvers_registered": self._resolver_manager.is_registered(),
             "builders_initialized": self._builder_manager.is_initialized(),
             "store_initialized": self._get_store_manager()._initialized,
-            "initialization_order": self._mediator.get_initialization_order()
+            "initialization_order": self._mediator.get_initialization_order(),
         }

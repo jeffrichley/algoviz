@@ -16,6 +16,7 @@ from rich.text import Text
 
 class ErrorCategory(str, Enum):
     """Categories of errors in ALGOViz."""
+
     CONFIG = "ConfigError"
     STORYBOARD = "StoryboardError"
     ADAPTER = "AdapterError"
@@ -28,10 +29,11 @@ class ErrorCategory(str, Enum):
 
 class ErrorSeverity(str, Enum):
     """Severity levels for errors."""
+
     CRITICAL = "critical"  # Cannot continue
-    ERROR = "error"       # Can continue with degraded functionality
-    WARNING = "warning"   # Suboptimal but functional
-    INFO = "info"         # Informational only
+    ERROR = "error"  # Can continue with degraded functionality
+    WARNING = "warning"  # Suboptimal but functional
+    INFO = "info"  # Informational only
 
 
 class ErrorContext(ABC):
@@ -51,7 +53,9 @@ class ErrorContext(ABC):
 class FileContext(ErrorContext):
     """Context for file-based errors."""
 
-    def __init__(self, file_path: str, line_number: int | None = None, column: int | None = None):
+    def __init__(
+        self, file_path: str, line_number: int | None = None, column: int | None = None
+    ):
         self.file_path = file_path
         self.line_number = line_number
         self.column = column
@@ -98,7 +102,12 @@ class StoryboardContext(ErrorContext):
 class AlgorithmContext(ErrorContext):
     """Context for algorithm execution errors."""
 
-    def __init__(self, algorithm: str, step_index: int, current_state: dict[str, Any] | None = None):
+    def __init__(
+        self,
+        algorithm: str,
+        step_index: int,
+        current_state: dict[str, Any] | None = None,
+    ):
         self.algorithm = algorithm
         self.step_index = step_index
         self.current_state = current_state or {}
@@ -124,10 +133,7 @@ class SuggestionEngine:
         self.min_similarity = min_similarity
 
     def suggest_corrections(
-        self,
-        input_str: str,
-        valid_options: list[str],
-        context: str | None = None
+        self, input_str: str, valid_options: list[str], context: str | None = None
     ) -> list[str]:
         """Generate intelligent suggestions for typos and similar inputs.
 
@@ -150,7 +156,9 @@ class SuggestionEngine:
                 suggestions.append(option)
 
         # 2. Levenshtein distance-based suggestions
-        levenshtein_suggestions = self._get_levenshtein_suggestions(input_str, valid_options)
+        levenshtein_suggestions = self._get_levenshtein_suggestions(
+            input_str, valid_options
+        )
         suggestions.extend(levenshtein_suggestions)
 
         # 3. Fuzzy matching (substring and prefix matching)
@@ -159,7 +167,9 @@ class SuggestionEngine:
 
         # 4. Context-aware suggestions (if context provided)
         if context:
-            context_suggestions = self._get_context_suggestions(input_str, valid_options, context)
+            context_suggestions = self._get_context_suggestions(
+                input_str, valid_options, context
+            )
             suggestions.extend(context_suggestions)
 
         # Remove duplicates while preserving order
@@ -170,9 +180,11 @@ class SuggestionEngine:
                 seen.add(suggestion)
                 unique_suggestions.append(suggestion)
 
-        return unique_suggestions[:self.max_suggestions]
+        return unique_suggestions[: self.max_suggestions]
 
-    def _get_levenshtein_suggestions(self, input_str: str, valid_options: list[str]) -> list[str]:
+    def _get_levenshtein_suggestions(
+        self, input_str: str, valid_options: list[str]
+    ) -> list[str]:
         """Get suggestions based on Levenshtein distance."""
         suggestions = []
 
@@ -187,7 +199,9 @@ class SuggestionEngine:
         suggestions.sort(key=lambda x: x[1], reverse=True)
         return [suggestion[0] for suggestion in suggestions]
 
-    def _get_fuzzy_suggestions(self, input_str: str, valid_options: list[str]) -> list[str]:
+    def _get_fuzzy_suggestions(
+        self, input_str: str, valid_options: list[str]
+    ) -> list[str]:
         """Get suggestions based on fuzzy matching."""
         suggestions = []
         input_lower = input_str.lower()
@@ -199,12 +213,16 @@ class SuggestionEngine:
             if input_lower in option_lower or option_lower in input_lower:
                 suggestions.append(option)
             # Prefix match
-            elif option_lower.startswith(input_lower) or input_lower.startswith(option_lower):
+            elif option_lower.startswith(input_lower) or input_lower.startswith(
+                option_lower
+            ):
                 suggestions.append(option)
 
         return suggestions
 
-    def _get_context_suggestions(self, input_str: str, valid_options: list[str], context: str) -> list[str]:
+    def _get_context_suggestions(
+        self, input_str: str, valid_options: list[str], context: str
+    ) -> list[str]:
         """Get context-aware suggestions based on common usage patterns."""
         # Context-specific suggestion logic can be enhanced based on usage patterns
         context_lower = context.lower()
@@ -212,23 +230,38 @@ class SuggestionEngine:
 
         # For timing context, suggest timing-related options
         if "timing" in context_lower:
-            timing_options = [opt for opt in valid_options if any(
-                keyword in opt.lower() for keyword in ["ui", "event", "effect", "wait", "mode"]
-            )]
+            timing_options = [
+                opt
+                for opt in valid_options
+                if any(
+                    keyword in opt.lower()
+                    for keyword in ["ui", "event", "effect", "wait", "mode"]
+                )
+            ]
             suggestions.extend(timing_options)
 
         # For render context, suggest render-related options
         elif "render" in context_lower:
-            render_options = [opt for opt in valid_options if any(
-                keyword in opt.lower() for keyword in ["quality", "format", "resolution", "frame"]
-            )]
+            render_options = [
+                opt
+                for opt in valid_options
+                if any(
+                    keyword in opt.lower()
+                    for keyword in ["quality", "format", "resolution", "frame"]
+                )
+            ]
             suggestions.extend(render_options)
 
         # For scenario context, suggest scenario-related options
         elif "scenario" in context_lower:
-            scenario_options = [opt for opt in valid_options if any(
-                keyword in opt.lower() for keyword in ["start", "goal", "grid", "obstacle", "weight"]
-            )]
+            scenario_options = [
+                opt
+                for opt in valid_options
+                if any(
+                    keyword in opt.lower()
+                    for keyword in ["start", "goal", "grid", "obstacle", "weight"]
+                )
+            ]
             suggestions.extend(scenario_options)
 
         return suggestions
@@ -458,7 +491,7 @@ class StoryboardError(AGLOVizError):
                 "act": act,
                 "shot": shot,
                 "beat": beat,
-            }
+            },
         }
 
         super().__init__(
@@ -482,9 +515,7 @@ class AdapterError(AGLOVizError):
         remedy: str | None = None,
     ):
         context = AlgorithmContext(
-            algorithm=algorithm,
-            step_index=step_index,
-            current_state=current_state
+            algorithm=algorithm, step_index=step_index, current_state=current_state
         )
 
         # Auto-generate remedy for adapter errors
@@ -683,7 +714,9 @@ def create_unknown_key_error(
 ) -> ConfigError:
     """Factory for unknown configuration key errors."""
     suggestion_engine = SuggestionEngine()
-    suggestions = suggestion_engine.suggest_corrections(unknown_key, valid_keys, "config")
+    suggestions = suggestion_engine.suggest_corrections(
+        unknown_key, valid_keys, "config"
+    )
 
     return ConfigError(
         issue=f"Unknown config key '{unknown_key}'",
@@ -771,24 +804,26 @@ def create_component_collision_error(
 
 class DirectorError(AGLOVizError):
     """Errors during Director execution."""
+
     pass
 
 
-def create_director_error(context: str, issue: str, remedy: str = None) -> DirectorError:
+def create_director_error(
+    context: str, issue: str, remedy: str = None
+) -> DirectorError:
     """Factory for Director errors."""
     return DirectorError(
-        category="DirectorError",
-        context=context,
-        issue=issue,
-        remedy=remedy
+        category="DirectorError", context=context, issue=issue, remedy=remedy
     )
 
 
-def create_action_error(action: str, location: str, issue: str, remedy: str = None) -> DirectorError:
+def create_action_error(
+    action: str, location: str, issue: str, remedy: str = None
+) -> DirectorError:
     """Factory for action execution errors."""
     return DirectorError(
         category="ActionError",
         context=f"Action '{action}' at {location}",
         issue=issue,
-        remedy=remedy
+        remedy=remedy,
     )

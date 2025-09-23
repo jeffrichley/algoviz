@@ -1,10 +1,18 @@
-from manim import *
-from manim_voiceover import VoiceoverScene
-from manim_voiceover.services.coqui import CoquiService
+from manim import (
+    LEFT,
+    RIGHT,
+    Circle,
+    Create,
+    Square,
+    Transform,
+    Uncreate,
+)
+from manim_voiceover import VoiceoverScene  # type: ignore
+from manim_voiceover.services.coqui import CoquiService  # type: ignore
 
 
 class CoquiExample(VoiceoverScene):
-    def construct(self):
+    def construct(self) -> None:
         self.set_speech_service(CoquiService())
 
         circle = Circle()

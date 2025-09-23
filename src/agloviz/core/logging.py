@@ -59,7 +59,10 @@ class AGLOVizLogger:
 
         # Add file handler if enabled
         if enable_file_logging:
-            file_path = log_file_path or f"logs/{name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+            file_path = (
+                log_file_path
+                or f"logs/{name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+            )
             Path(file_path).parent.mkdir(parents=True, exist_ok=True)
 
             file_handler = logging.FileHandler(file_path)
@@ -77,7 +80,9 @@ class AGLOVizLogger:
         if enabled:
             self.logger.setLevel(logging.DEBUG)
             if self.console:
-                self.console.print("🐛 [bold yellow]Debug mode enabled[/bold yellow] - Full stack traces will be shown")
+                self.console.print(
+                    "🐛 [bold yellow]Debug mode enabled[/bold yellow] - Full stack traces will be shown"
+                )
         else:
             self.logger.setLevel(logging.INFO)
 
@@ -103,7 +108,7 @@ class AGLOVizLogger:
         self.logger.error(
             "ALGOViz Error: %s",
             error.format_message(),
-            extra={"structured_data": log_data}
+            extra={"structured_data": log_data},
         )
 
         # Display rich formatted error if enabled
@@ -143,7 +148,7 @@ class AGLOVizLogger:
             "Warning [%s]: %s",
             category,
             message,
-            extra={"structured_data": warning_data}
+            extra={"structured_data": warning_data},
         )
 
         # Display rich formatted warning
@@ -189,7 +194,7 @@ class AGLOVizLogger:
             "Suggestions for '%s': %s",
             original,
             ", ".join(suggestions),
-            extra={"structured_data": suggestion_data}
+            extra={"structured_data": suggestion_data},
         )
 
         if self.console:
@@ -282,38 +287,66 @@ class AGLOVizLogger:
             self.log_error(errors[0])
             return
 
-        # Group errors by category
+        error_groups = self._group_errors_by_category(errors)
+        self._log_errors_individually(errors)
+        self._display_aggregated_output(errors, error_groups)
+
+    def _group_errors_by_category(
+        self, errors: list[AGLOVizError]
+    ) -> dict[str, list[AGLOVizError]]:
+        """Group errors by category."""
         error_groups: dict[str, list[AGLOVizError]] = {}
         for error in errors:
             category = error.category
             if category not in error_groups:
                 error_groups[category] = []
             error_groups[category].append(error)
+        return error_groups
 
-        # Log each error individually for structured logging
+    def _log_errors_individually(self, errors: list[AGLOVizError]) -> None:
+        """Log each error individually for structured logging."""
         for error in errors:
             self.logger.error(
                 "Aggregated Error: %s",
                 error.format_message(),
-                extra={"structured_data": error.to_dict()}
+                extra={"structured_data": error.to_dict()},
             )
 
-        # Display aggregated rich output
-        if self.console:
-            self.console.print(f"\n❌ [bold red]Found {len(errors)} errors:[/bold red]\n")
+    def _display_aggregated_output(
+        self, errors: list[AGLOVizError], error_groups: dict[str, list[AGLOVizError]]
+    ) -> None:
+        """Display aggregated rich output."""
+        if not self.console:
+            return
 
-            for category, category_errors in error_groups.items():
-                self.console.print(f"📂 [bold]{category}[/bold] ({len(category_errors)} errors):")
+        self.console.print(f"\n❌ [bold red]Found {len(errors)} errors:[/bold red]\n")
 
-                for i, error in enumerate(category_errors, 1):
-                    location = error.context.format_location() if error.context else "Unknown location"
-                    self.console.print(f"  {i}. [{location}] {error.issue}")
+        for category, category_errors in error_groups.items():
+            self._display_category_errors(category, category_errors)
 
-                    if error.suggestions:
-                        suggestions_str = ", ".join(error.suggestions[:2])
-                        self.console.print(f"     💡 Try: {suggestions_str}", style="cyan")
+    def _display_category_errors(
+        self, category: str, category_errors: list[AGLOVizError]
+    ) -> None:
+        """Display errors for a specific category."""
+        self.console.print(
+            f"📂 [bold]{category}[/bold] ({len(category_errors)} errors):"
+        )
 
-                self.console.print()  # Empty line between categories
+        for i, error in enumerate(category_errors, 1):
+            self._display_single_error(i, error)
+
+        self.console.print()  # Empty line between categories
+
+    def _display_single_error(self, index: int, error: AGLOVizError) -> None:
+        """Display a single error with its details."""
+        location = (
+            error.context.format_location() if error.context else "Unknown location"
+        )
+        self.console.print(f"  {index}. [{location}] {error.issue}")
+
+        if error.suggestions:
+            suggestions_str = ", ".join(error.suggestions[:2])
+            self.console.print(f"     💡 Try: {suggestions_str}", style="cyan")
 
     def export_error_log(self, output_path: str, errors: list[AGLOVizError]) -> None:
         """Export errors to a structured JSON file for analysis.
@@ -333,11 +366,13 @@ class AGLOVizLogger:
             output_file = Path(output_path)
             output_file.parent.mkdir(parents=True, exist_ok=True)
 
-            with open(output_file, 'w') as f:
+            with open(output_file, "w") as f:
                 json.dump(export_data, f, indent=2, default=str)
 
             if self.console:
-                self.console.print(f"📄 Error log exported to: [bold blue]{output_path}[/bold blue]")
+                self.console.print(
+                    f"📄 Error log exported to: [bold blue]{output_path}[/bold blue]"
+                )
 
         except Exception as e:
             self.logger.error(f"Failed to export error log: {e}")
@@ -512,10 +547,7 @@ class ErrorCollector:
 
         context = FileContext(file_path, line_number) if file_path else None
         error = ConfigError(
-            issue=issue,
-            context=context,
-            config_key=config_key,
-            **kwargs
+            issue=issue, context=context, config_key=config_key, **kwargs
         )
         self.add_error(error)
 

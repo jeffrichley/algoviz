@@ -201,6 +201,7 @@ class TestEndToEndSceneLoading:
         # First binding should have dynamic parameters
         first_binding = enqueue_bindings[0]
         assert "element" in first_binding.params
-        assert "duration" in first_binding.params
-        # Note: Template resolution happens at runtime with custom resolvers
+        assert (
+            "duration" in first_binding.params
+        )  # Note: Template resolution happens at runtime with custom resolvers
         # For now, just verify the parameters exist - don't access template values directly

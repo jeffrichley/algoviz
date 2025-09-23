@@ -37,10 +37,10 @@ class TestSceneEngineHydraZenIntegration:
         queue_widget = engine.widgets["queue"]
 
         # Widgets should have the Widget protocol methods
-        assert hasattr(grid_widget, 'show')
-        assert hasattr(grid_widget, 'hide')
-        assert hasattr(queue_widget, 'show')
-        assert hasattr(queue_widget, 'hide')
+        assert hasattr(grid_widget, "show")
+        assert hasattr(grid_widget, "hide")
+        assert hasattr(queue_widget, "show")
+        assert hasattr(queue_widget, "hide")
 
     def test_scene_engine_with_advanced_scene_config(self):
         """Test SceneEngine with BFSAdvancedSceneConfig."""
@@ -94,35 +94,41 @@ class TestSceneEngineHydraZenIntegration:
         config = engine.get_scene_config()
 
         assert config is not None
-        assert hasattr(config, 'name')
-        assert hasattr(config, 'algorithm')
-        assert hasattr(config, 'event_bindings')
+        assert hasattr(config, "name")
+        assert hasattr(config, "algorithm")
+        assert hasattr(config, "event_bindings")
 
     def test_scene_engine_event_bindings_setup(self):
         """Test that SceneEngine properly sets up event bindings."""
         scene_config = instantiate(BFSBasicSceneConfig)
         engine = SceneEngine(scene_config)
 
-        # Check that event bindings are set up
-        assert hasattr(engine, 'event_bindings')
-        assert isinstance(engine.event_bindings, dict)
+        self._verify_event_bindings_structure(engine)
+        self._verify_enqueue_bindings(engine)
 
-        # Should have enqueue and dequeue bindings
+    def _verify_event_bindings_structure(self, engine):
+        """Verify basic event bindings structure."""
+        assert hasattr(engine, "event_bindings")
+        assert isinstance(engine.event_bindings, dict)
         assert "enqueue" in engine.event_bindings
         assert "dequeue" in engine.event_bindings
 
-        # Check enqueue bindings structure
+    def _verify_enqueue_bindings(self, engine):
+        """Verify enqueue bindings structure."""
         enqueue_bindings = engine.event_bindings["enqueue"]
         assert len(enqueue_bindings) == 2  # queue add_element + grid highlight_cell
 
-        # First binding should be queue add_element
-        queue_binding = enqueue_bindings[0]
+        self._verify_queue_binding(enqueue_bindings[0])
+        self._verify_grid_binding(enqueue_bindings[1])
+
+    def _verify_queue_binding(self, queue_binding):
+        """Verify queue binding details."""
         assert queue_binding.widget == "queue"
         assert queue_binding.action == "add_element"
         assert queue_binding.order == 1
 
-        # Second binding should be grid highlight_cell
-        grid_binding = enqueue_bindings[1]
+    def _verify_grid_binding(self, grid_binding):
+        """Verify grid binding details."""
         assert grid_binding.widget == "grid"
         assert grid_binding.action == "highlight_cell"
         assert grid_binding.params["color"] == "blue"
@@ -144,8 +150,8 @@ class TestSceneEngineHydraZenIntegration:
         grid_widget = engine.widgets["grid"]
         queue_widget = engine.widgets["queue"]
 
-        assert hasattr(grid_widget, 'show')
-        assert hasattr(queue_widget, 'show')
+        assert hasattr(grid_widget, "show")
+        assert hasattr(queue_widget, "show")
 
     def test_scene_engine_consistency_between_configs(self):
         """Test that both basic and advanced configs produce consistent SceneEngine behavior."""
@@ -155,20 +161,31 @@ class TestSceneEngineHydraZenIntegration:
         basic_engine = SceneEngine(basic_config)
         advanced_engine = SceneEngine(advanced_config)
 
-        # Both should have same algorithm
-        assert basic_engine.get_scene_algorithm() == advanced_engine.get_scene_algorithm()
+        self._verify_algorithm_consistency(basic_engine, advanced_engine)
+        self._verify_widget_consistency(basic_engine, advanced_engine)
+        self._verify_event_binding_consistency(basic_engine, advanced_engine)
+
+    def _verify_algorithm_consistency(self, basic_engine, advanced_engine):
+        """Verify algorithm consistency between engines."""
+        assert (
+            basic_engine.get_scene_algorithm() == advanced_engine.get_scene_algorithm()
+        )
         assert basic_engine.get_scene_algorithm() == "bfs"
 
-        # Both should have same widget count
+    def _verify_widget_consistency(self, basic_engine, advanced_engine):
+        """Verify widget consistency between engines."""
         assert basic_engine.get_widget_count() == advanced_engine.get_widget_count()
         assert basic_engine.get_widget_count() == 2
-
-        # Both should have same widget names
-        assert set(basic_engine.list_widget_names()) == set(advanced_engine.list_widget_names())
+        assert set(basic_engine.list_widget_names()) == set(
+            advanced_engine.list_widget_names()
+        )
         assert set(basic_engine.list_widget_names()) == {"grid", "queue"}
 
-        # Both should have same event binding structure
-        assert set(basic_engine.event_bindings.keys()) == set(advanced_engine.event_bindings.keys())
+    def _verify_event_binding_consistency(self, basic_engine, advanced_engine):
+        """Verify event binding consistency between engines."""
+        assert set(basic_engine.event_bindings.keys()) == set(
+            advanced_engine.event_bindings.keys()
+        )
         assert "enqueue" in basic_engine.event_bindings
         assert "dequeue" in basic_engine.event_bindings
 

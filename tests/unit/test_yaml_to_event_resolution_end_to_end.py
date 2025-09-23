@@ -8,6 +8,8 @@ This test demonstrates the complete flow:
 5. Resolve dynamic event parameters using the template system
 """
 
+from typing import Any
+
 from hydra_zen import instantiate
 from omegaconf import OmegaConf
 
@@ -20,7 +22,7 @@ from agloviz.core.scene import SceneEngine
 class TestYamlToEventResolutionEndToEnd:
     """Test complete flow from YAML file to dynamic event resolution."""
 
-    def test_yaml_file_to_dynamic_event_resolution(self):
+    def test_yaml_file_to_dynamic_event_resolution(self) -> None:
         """Test complete flow: YAML → Pydantic → SceneEngine → Event resolution."""
 
         # Step 1: Initialize the system via registry (registers resolvers, loads configs)
@@ -35,7 +37,9 @@ class TestYamlToEventResolutionEndToEnd:
 
         # Step 3: Create scene config from YAML using the orchestrator's context
         # The orchestrator has resolvers registered, so we can safely instantiate
-        scene_overrides = {k: v for k, v in yaml_config.items() if k != "timing_overrides"}
+        scene_overrides = {
+            k: v for k, v in yaml_config.items() if k != "timing_overrides"
+        }
         scene_config = instantiate(BFSBasicSceneConfig, **scene_overrides)
         print(f"Scene config created: {scene_config.name}")
 
@@ -49,9 +53,9 @@ class TestYamlToEventResolutionEndToEnd:
         test_event = {
             "event": {
                 "node": "node_42",  # The YAML expects just the node ID, not an object
-                "pos": [7, 3]       # The YAML expects "pos" not "position"
+                "pos": [7, 3],  # The YAML expects "pos" not "position"
             },
-            "step": 15
+            "step": 15,
         }
         print(f"Test event: {test_event}")
 
@@ -74,16 +78,22 @@ class TestYamlToEventResolutionEndToEnd:
 
         print("✅ End-to-end test passed!")
 
-    def test_show_actual_yaml_template_syntax(self):
+    def test_show_actual_yaml_template_syntax(self) -> None:
         """Show what the actual template syntax looks like in the YAML file."""
-
-        # Initialize system via registry
+        # Initialize system and get config
         SystemRegistry.reset()  # Clean state
         orchestrator = SystemRegistry.get_orchestrator()
-
-        # Get YAML config from orchestrator (with proper resolver context)
         yaml_config = orchestrator.get_yaml_config("bfs_pathfinding")
 
+        # Display template syntax
+        self._display_yaml_template_syntax(yaml_config)
+
+        # Verify template parameters
+        element_param_raw = self._extract_template_parameter(yaml_config)
+        self._verify_template_parameter(element_param_raw)
+
+    def _display_yaml_template_syntax(self, yaml_config: Any) -> None:
+        """Display the YAML template syntax for all event bindings."""
         print("\n=== YAML Template Syntax ===")
         for event_name, bindings in yaml_config.event_bindings.items():
             print(f"\nEvent: {event_name}")
@@ -93,11 +103,18 @@ class TestYamlToEventResolutionEndToEnd:
                 print(f"    Action: {binding.action}")
                 print(f"    Params: {binding.params}")
 
-        # Show that the templates are preserved in the raw YAML structure
-        # We need to access the raw data to see the template strings
+    def _extract_template_parameter(self, yaml_config: Any) -> str:
+        """Extract the raw template parameter from YAML data."""
         raw_yaml_data = OmegaConf.to_container(yaml_config, resolve=False)
-        first_binding_raw = raw_yaml_data['event_bindings']['enqueue'][0]
-        element_param_raw = first_binding_raw['params']['element']
+        if isinstance(raw_yaml_data, dict) and "event_bindings" in raw_yaml_data:
+            first_binding_raw = raw_yaml_data["event_bindings"]["enqueue"][0]
+            if isinstance(first_binding_raw, dict) and "params" in first_binding_raw:
+                element = first_binding_raw["params"]["element"]
+                return str(element)
+        return "template_not_found"
+
+    def _verify_template_parameter(self, element_param_raw: str) -> None:
+        """Verify that the template parameter has the expected format."""
         print(f"\nTemplate parameter (raw): {element_param_raw}")
         print(f"Template parameter type: {type(element_param_raw)}")
 

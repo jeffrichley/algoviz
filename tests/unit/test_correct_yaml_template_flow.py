@@ -17,7 +17,9 @@ class TestCorrectYamlTemplateFlow:
         # Load YAML - templates are preserved here
         yaml_config = OmegaConf.load("configs/scene/bfs_pathfinding.yaml")
         print("=== YAML Loaded ===")
-        print(f"Raw YAML element param: {yaml_config.event_bindings.enqueue[0].params.element}")
+        print(
+            f"Raw YAML element param: {yaml_config.event_bindings.enqueue[0].params.element}"
+        )
 
         # The problem: When we access the parameter, OmegaConf tries to resolve it
         # But our custom resolvers aren't registered, so it fails and returns None
@@ -31,7 +33,7 @@ class TestCorrectYamlTemplateFlow:
         """Test the correct approach: work with raw YAML until resolution time."""
 
         # Step 1: Load YAML and DON'T try to access template parameters yet
-        yaml_config = OmegaConf.load("configs/scene/bfs_pathfinding.yaml")
+        # yaml_config = OmegaConf.load("configs/scene/bfs_pathfinding.yaml")
 
         # Step 2: Register resolvers BEFORE doing any template resolution
         register_custom_resolvers()
@@ -43,7 +45,7 @@ class TestCorrectYamlTemplateFlow:
         test_event = {
             "event": {  # Note: YAML uses "event.node", not "node.id"
                 "node": "node_42",
-                "pos": [7, 3]
+                "pos": [7, 3],
             }
         }
 
@@ -56,6 +58,7 @@ class TestCorrectYamlTemplateFlow:
 
         # Resolve it with our custom resolvers
         from agloviz.core.resolvers import ResolverContext
+
         context = ResolverContext(event=test_event)
 
         with context:
@@ -80,24 +83,19 @@ class TestCorrectYamlTemplateFlow:
         print("=== What SceneEngine Should Do ===")
 
         # Load YAML with templates preserved
-        yaml_config = OmegaConf.load("configs/scene/bfs_pathfinding.yaml")
+        # yaml_config = OmegaConf.load("configs/scene/bfs_pathfinding.yaml")
 
         # Register resolvers
         register_custom_resolvers()
 
         # Create test event
-        test_event = {
-            "event": {
-                "node": "node_42",
-                "pos": [7, 3]
-            }
-        }
+        test_event = {"event": {"node": "node_42", "pos": [7, 3]}}
 
         # Simulate what SceneEngine._resolve_parameters should do:
         # 1. Take the original template parameters from YAML
         original_params = {
             "element": "${event_data:event.node}",
-            "duration": "${timing_value:ui}"
+            "duration": "${timing_value:ui}",
         }
 
         print(f"Original params: {original_params}")
@@ -107,6 +105,7 @@ class TestCorrectYamlTemplateFlow:
 
         # 3. Resolve with context
         from agloviz.core.resolvers import ResolverContext
+
         context = ResolverContext(event=test_event)
 
         with context:

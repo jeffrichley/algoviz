@@ -13,5 +13,5 @@ __all__ = [
     "create_preview_renderer",
     "RenderConfig",
     "RenderQuality",
-    "RenderFormat"
+    "RenderFormat",
 ]

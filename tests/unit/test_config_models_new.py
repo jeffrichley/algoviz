@@ -24,7 +24,7 @@ class TestScenarioConfig:
             obstacles=[(1, 1), (2, 2)],
             start=(0, 0),
             goal=(9, 9),
-            grid_size=(10, 10)
+            grid_size=(10, 10),
         )
 
         assert config.name == "test_scenario"
@@ -95,11 +95,7 @@ class TestTimingConfig:
     def test_valid_timing_config(self):
         """Test creating a valid timing configuration."""
         config = TimingConfig(
-            mode=TimingMode.DRAFT,
-            ui=0.5,
-            events=0.4,
-            effects=0.3,
-            waits=0.25
+            mode=TimingMode.DRAFT, ui=0.5, events=0.4, effects=0.3, waits=0.25
         )
 
         assert config.mode == TimingMode.DRAFT
@@ -144,13 +140,11 @@ class TestSceneConfig:
             algorithm="bfs",
             widgets={
                 "grid": {"_target_": "agloviz.widgets.grid.GridWidget", "width": 10},
-                "queue": {"_target_": "agloviz.widgets.queue.QueueWidget"}
+                "queue": {"_target_": "agloviz.widgets.queue.QueueWidget"},
             },
             event_bindings={
-                "enqueue": [
-                    {"widget": "queue", "action": "add_element", "order": 1}
-                ]
-            }
+                "enqueue": [{"widget": "queue", "action": "add_element", "order": 1}]
+            },
         )
 
         assert config.name == "test_scene"

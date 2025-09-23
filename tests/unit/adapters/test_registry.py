@@ -8,6 +8,7 @@ from agloviz.config.models import ScenarioConfig
 
 class MockAdapter1:
     """Mock adapter for testing."""
+
     name = "mock1"
 
     def run(self, scenario: ScenarioConfig):
@@ -16,6 +17,7 @@ class MockAdapter1:
 
 class MockAdapter2:
     """Another mock adapter for testing."""
+
     name = "mock2"
 
     def run(self, scenario: ScenarioConfig):

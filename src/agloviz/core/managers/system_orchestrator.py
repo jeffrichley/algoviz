@@ -15,18 +15,18 @@ class SystemOrchestrator:
         self._system_initialized = False
         logger.debug("SystemOrchestrator created")
 
-    def initialize(self, force: bool = False) -> 'SystemOrchestrator':
+    def initialize(self, force: bool = False) -> "SystemOrchestrator":
         """Initialize the complete ALGOViz system.
-        
+
         Uses the SystemMediator to handle proper dependency resolution
         and initialization order for all managers.
-        
+
         Args:
             force: If True, re-initialize even if already initialized
-            
+
         Returns:
             Self for method chaining
-            
+
         Raises:
             RuntimeError: If initialization fails
         """

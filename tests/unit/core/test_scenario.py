@@ -19,7 +19,9 @@ class TestGridScenario:
         assert scenario.goal == (2, 2)
         assert len(scenario.obstacles) == 0
 
-    def test_scenario_with_obstacles(self, simple_scenario_config, grid_data_with_obstacles):
+    def test_scenario_with_obstacles(
+        self, simple_scenario_config, grid_data_with_obstacles
+    ):
         """Test scenario with obstacles."""
         scenario = GridScenario(simple_scenario_config, grid_data_with_obstacles)
 
@@ -73,7 +75,7 @@ class TestGridScenario:
         assert scenario.cost((0, 0), (0, 1)) == 2.0
 
         # Non-adjacent nodes should return inf
-        assert scenario.cost((0, 0), (2, 2)) == float('inf')
+        assert scenario.cost((0, 0), (2, 2)) == float("inf")
 
 
 @pytest.mark.unit

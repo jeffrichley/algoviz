@@ -15,6 +15,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from agloviz.config.models import SceneConfig
+from agloviz.config.store_manager import StoreManager
 
 from ..config.models import ScenarioConfig, ThemeConfig, TimingConfig, TimingMode
 from ..rendering.config import RenderConfig, RenderFormat, RenderQuality
@@ -29,24 +30,33 @@ def render_algorithm_video(
     algorithm: str,
     renderer: SimpleRenderer,
     scenario: ScenarioConfig,  # Must match hydra_defaults key
-    theme: ThemeConfig,        # Must match hydra_defaults key
-    timing: TimingConfig,      # Must match hydra_defaults key
-    scene: SceneConfig,       # Scene config instantiated by zen().hydra_main()
-    output_path: str = "output.mp4"
+    theme: ThemeConfig,  # Must match hydra_defaults key
+    timing: TimingConfig,  # Must match hydra_defaults key
+    scene: SceneConfig,  # Scene config instantiated by zen().hydra_main()
+    output_path: str = "output.mp4",
 ) -> dict[str, Any]:
     """Main render function - receives fully instantiated objects from hydra-zen.
-    
+
     This is the pure business logic. Hydra-zen handles all configuration
     management, instantiation, and CLI generation automatically.
     """
-    console.print(Panel(f"🎬 Rendering [bold cyan]{algorithm}[/] with Pure Hydra-zen", title="ALGOViz"))
+    console.print(
+        Panel(
+            f"🎬 Rendering [bold cyan]{algorithm}[/] with Pure Hydra-zen",
+            title="ALGOViz",
+        )
+    )
 
     console.print("✨ All objects automatically instantiated by hydra-zen!")
-    quality = renderer.config.quality.value if hasattr(renderer.config.quality, 'value') else renderer.config.quality
+    quality = (
+        renderer.config.quality.value
+        if hasattr(renderer.config.quality, "value")
+        else renderer.config.quality
+    )
     console.print(f"📊 Renderer: {quality} @ {renderer.config.resolution}")
     console.print(f"🗺️  Scenario: {scenario.name} ({scenario.grid_size})")
     console.print(f"🎨 Theme: {theme.name}")
-    mode = timing.mode.value if hasattr(timing.mode, 'value') else timing.mode
+    mode = timing.mode.value if hasattr(timing.mode, "value") else timing.mode
     console.print(f"⏱️  Timing: {mode}")
     console.print(f"🚀 Output: [bold green]{output_path}[/]")
 
@@ -61,17 +71,19 @@ def render_algorithm_video(
         scene_config=scene,
         theme_config=theme,
         timing_config=timing,
-        output_path=output_path
+        output_path=output_path,
     )
 
-    console.print(Panel(
-        f"✅ Video rendered successfully!\n"
-        f"📁 Output: {output_path}\n"
-        f"⏱️  Duration: {result.get('duration', 'N/A')}s\n"
-        f"📊 Resolution: {result.get('resolution', 'N/A')}\n"
-        f"🎯 Algorithm: {algorithm}",
-        title="[green]Render Complete[/]"
-    ))
+    console.print(
+        Panel(
+            f"✅ Video rendered successfully!\n"
+            f"📁 Output: {output_path}\n"
+            f"⏱️  Duration: {result.get('duration', 'N/A')}s\n"
+            f"📊 Resolution: {result.get('resolution', 'N/A')}\n"
+            f"🎯 Algorithm: {algorithm}",
+            title="[green]Render Complete[/]",
+        )
+    )
 
     return result
 
@@ -88,8 +100,8 @@ DraftRenderer = builds(
         quality=RenderQuality.DRAFT,
         resolution=(854, 480),
         frame_rate=15,
-        format=RenderFormat.MP4
-    )
+        format=RenderFormat.MP4,
+    ),
 )
 
 MediumRenderer = builds(
@@ -99,8 +111,8 @@ MediumRenderer = builds(
         quality=RenderQuality.MEDIUM,
         resolution=(1280, 720),
         frame_rate=30,
-        format=RenderFormat.MP4
-    )
+        format=RenderFormat.MP4,
+    ),
 )
 
 HDRenderer = builds(
@@ -110,8 +122,8 @@ HDRenderer = builds(
         quality=RenderQuality.HIGH,
         resolution=(1920, 1080),
         frame_rate=60,
-        format=RenderFormat.MP4
-    )
+        format=RenderFormat.MP4,
+    ),
 )
 
 # Create scenario configurations
@@ -121,7 +133,7 @@ MazeSmallConfig = builds(
     obstacles=[(1, 1), (2, 2), (3, 1)],
     start=(0, 0),
     goal=(9, 9),
-    grid_size=(10, 10)
+    grid_size=(10, 10),
 )
 
 MazeLargeConfig = builds(
@@ -130,7 +142,7 @@ MazeLargeConfig = builds(
     obstacles=[(1, 1), (2, 2), (3, 1), (5, 5)],
     start=(0, 0),
     goal=(19, 19),
-    grid_size=(20, 20)
+    grid_size=(20, 20),
 )
 
 # Create theme configurations
@@ -144,8 +156,8 @@ DarkThemeConfig = builds(
         "goal": "#CF6679",
         "path": "#FF9800",
         "obstacle": "#1F1B24",
-        "grid": "#2D2D2D"
-    }
+        "grid": "#2D2D2D",
+    },
 )
 
 # Create timing configurations
@@ -155,7 +167,6 @@ FastTimingConfig = builds(TimingConfig, mode=TimingMode.FAST)
 # Import scene configs from centralized hydra_zen.py
 
 # Store configurations - using centralized StoreManager
-from agloviz.config.store_manager import StoreManager
 
 # Setup all stores through the centralized manager
 StoreManager.setup_store()
@@ -167,13 +178,13 @@ store(
     output_path="pure_zen_output.mp4",  # Default output
     hydra_defaults=[
         "_self_",
-        {"renderer": "medium"},      # Default to medium quality
+        {"renderer": "medium"},  # Default to medium quality
         {"scenario": "maze_small"},  # Default scenario
-        {"theme": "default"},        # Default theme
-        {"timing": "normal"},        # Default timing
-        {"scene": "bfs_basic"}       # Default scene (updated to match registered configs)
+        {"theme": "default"},  # Default theme
+        {"timing": "normal"},  # Default timing
+        {"scene": "bfs_basic"},  # Default scene (updated to match registered configs)
     ],
-    name="main"
+    name="main",
 )
 
 
@@ -188,9 +199,7 @@ def main():
 
     # Create CLI using zen().hydra_main() - this replaces ALL our manual code!
     zen(render_algorithm_video).hydra_main(
-        config_name="main",
-        config_path=None,
-        version_base="1.3"
+        config_name="main", config_path=None, version_base="1.3"
     )
 
 

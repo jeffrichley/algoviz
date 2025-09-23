@@ -11,11 +11,7 @@ class TestVizEvent:
 
     def test_create_basic_event(self):
         """Test creating a basic VizEvent."""
-        event = VizEvent(
-            type="enqueue",
-            payload={"node": (0, 0)},
-            step_index=0
-        )
+        event = VizEvent(type="enqueue", payload={"node": (0, 0)}, step_index=0)
 
         assert event.type == "enqueue"
         assert event.payload == {"node": (0, 0)}
@@ -28,7 +24,7 @@ class TestVizEvent:
             type="dequeue",
             payload={"node": (1, 1), "parent": (0, 0)},
             step_index=1,
-            metadata={"complexity": 5}
+            metadata={"complexity": 5},
         )
 
         assert event.type == "dequeue"
@@ -39,11 +35,7 @@ class TestVizEvent:
     def test_event_immutability_through_validation(self):
         """Test that VizEvent validates properly."""
         # Should work with valid data
-        event = VizEvent(
-            type="goal_found",
-            payload={"node": (5, 5)},
-            step_index=10
-        )
+        event = VizEvent(type="goal_found", payload={"node": (5, 5)}, step_index=10)
         assert event.type == "goal_found"
 
     def test_required_fields(self):
@@ -87,11 +79,7 @@ class TestValidateEventPayload:
 
     def test_valid_complex_payload(self):
         """Test validation passes for complex valid payload."""
-        payload = {
-            "node": (1, 2),
-            "parent": (0, 1),
-            "weight": 2.5
-        }
+        payload = {"node": (1, 2), "parent": (0, 1), "weight": 2.5}
         errors = validate_event_payload("enqueue", payload)
         assert errors == []
 
@@ -132,9 +120,6 @@ class TestValidateEventPayload:
 
     def test_multiple_errors(self):
         """Test validation returns multiple errors."""
-        payload = {
-            "node": "invalid",
-            "weight": -1.0
-        }
+        payload = {"node": "invalid", "weight": -1.0}
         errors = validate_event_payload("enqueue", payload)
         assert len(errors) == 2

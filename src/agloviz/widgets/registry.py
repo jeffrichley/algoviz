@@ -18,10 +18,10 @@ from .protocol import Widget
 
 class ComponentRegistry:
     """Component registry for widget lifecycle management.
-    
+
     The registry acts as a service locator and dependency injector,
     decoupling visualization logic from algorithm adapters and the Director.
-    
+
     Updated to support both legacy factory patterns and hydra-zen instantiation.
     """
 
@@ -44,23 +44,27 @@ class ComponentRegistry:
         # This avoids the builds() string target issue while demonstrating the pattern
 
         # Grid widget configuration
-        self.cs.store(group="widget", name="grid", node={
-            "_target_": "agloviz.widgets.grid.GridWidget"
-        })
+        self.cs.store(
+            group="widget",
+            name="grid",
+            node={"_target_": "agloviz.widgets.grid.GridWidget"},
+        )
 
         # Queue widget configuration
-        self.cs.store(group="widget", name="queue", node={
-            "_target_": "agloviz.widgets.queue.QueueWidget"
-        })
+        self.cs.store(
+            group="widget",
+            name="queue",
+            node={"_target_": "agloviz.widgets.queue.QueueWidget"},
+        )
 
     # Legacy factory pattern methods (maintained for backward compatibility)
     def register(self, name: str, factory: Callable[[], Widget]) -> None:
         """Register widget factory once at startup.
-        
+
         Args:
             name: Widget name for lookup
             factory: Factory function that creates widget instances
-            
+
         Raises:
             RegistryError: If widget name is already registered
         """
@@ -70,13 +74,13 @@ class ComponentRegistry:
 
     def get(self, name: str) -> Widget:
         """Retrieve a fresh widget instance for a scene.
-        
+
         Args:
             name: Widget name to instantiate
-            
+
         Returns:
             Fresh widget instance
-            
+
         Raises:
             RegistryError: If widget name is not registered
         """
@@ -89,14 +93,14 @@ class ComponentRegistry:
     # New hydra-zen pattern methods
     def create_widget(self, name: str, **overrides) -> Widget:
         """Create widget using hydra-zen instantiation.
-        
+
         Args:
             name: Widget name to instantiate
             **overrides: Parameter overrides for widget configuration
-            
+
         Returns:
             Widget instance created via hydra-zen
-            
+
         Raises:
             RegistryError: If widget configuration not found
         """
@@ -106,7 +110,11 @@ class ComponentRegistry:
             if name in self._registry:
                 return self._registry[name]()
 
-            available_zen = list(self.cs.repo.get("widget", {}).keys()) if "widget" in self.cs.repo else []
+            available_zen = (
+                list(self.cs.repo.get("widget", {}).keys())
+                if "widget" in self.cs.repo
+                else []
+            )
             available_legacy = list(self._registry.keys())
             available = available_zen + available_legacy
             raise RegistryError.missing_component(name, available)
@@ -124,10 +132,10 @@ class ComponentRegistry:
 
     def create_widget_from_spec(self, widget_spec: dict[str, Any]) -> Widget:
         """Create widget from widget specification dict.
-        
+
         Args:
             widget_spec: Widget specification with _target_ and parameters
-            
+
         Returns:
             Widget instance created via hydra-zen
         """
@@ -135,14 +143,14 @@ class ComponentRegistry:
             raise RegistryError(
                 issue="Widget spec missing _target_ field",
                 component_type="widget_spec",
-                suggestions=["Add '_target_' field pointing to widget class"]
+                suggestions=["Add '_target_' field pointing to widget class"],
             )
 
         return instantiate(widget_spec)
 
     def list_widgets(self) -> list[str]:
         """List all registered widget names.
-        
+
         Returns:
             Sorted list of registered widget names (both legacy and hydra-zen)
         """
@@ -150,14 +158,16 @@ class ComponentRegistry:
         zen_widgets = []
 
         if "widget" in self.cs.repo:
-            zen_widgets = [name.replace(".yaml", "") for name in self.cs.repo["widget"].keys()]
+            zen_widgets = [
+                name.replace(".yaml", "") for name in self.cs.repo["widget"].keys()
+            ]
 
         all_widgets = list(set(legacy_widgets + zen_widgets))
         return sorted(all_widgets)
 
     def clear(self) -> None:
         """Clear all registrations (for testing).
-        
+
         This method is primarily used in test cleanup to ensure test isolation.
         """
         self._registry.clear()

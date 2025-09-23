@@ -35,12 +35,12 @@ class TestSceneConfigBuilders:
 
         # Check that widgets are instantiated (not config dicts)
         grid_widget = scene.widgets["grid"]
-        assert hasattr(grid_widget, '__class__')
+        assert hasattr(grid_widget, "__class__")
         assert grid_widget.__class__.__name__ == "GridWidget"
 
         # Check queue widget configuration
         queue_widget = scene.widgets["queue"]
-        assert hasattr(queue_widget, '__class__')
+        assert hasattr(queue_widget, "__class__")
         assert queue_widget.__class__.__name__ == "QueueWidget"
 
     def test_bfs_advanced_scene_widget_configuration(self):
@@ -49,12 +49,12 @@ class TestSceneConfigBuilders:
 
         # Check that widgets are instantiated (not config dicts)
         grid_widget = scene.widgets["grid"]
-        assert hasattr(grid_widget, '__class__')
+        assert hasattr(grid_widget, "__class__")
         assert grid_widget.__class__.__name__ == "GridWidget"
 
         # Check queue widget configuration
         queue_widget = scene.widgets["queue"]
-        assert hasattr(queue_widget, '__class__')
+        assert hasattr(queue_widget, "__class__")
         assert queue_widget.__class__.__name__ == "QueueWidget"
 
         # Note: Custom parameters (width, height, max_visible_items) are applied during instantiation
@@ -66,7 +66,7 @@ class TestSceneConfigBuilders:
         scene = instantiate(BFSBasicSceneConfig)
 
         # Check that event bindings exist
-        assert hasattr(scene, 'event_bindings')
+        assert hasattr(scene, "event_bindings")
         assert isinstance(scene.event_bindings, dict)
 
         # Check enqueue event binding
@@ -92,7 +92,7 @@ class TestSceneConfigBuilders:
         scene = instantiate(BFSAdvancedSceneConfig)
 
         # Check that event bindings exist
-        assert hasattr(scene, 'event_bindings')
+        assert hasattr(scene, "event_bindings")
         assert isinstance(scene.event_bindings, dict)
 
         # Check enqueue event binding (should be same as basic)
@@ -115,24 +115,20 @@ class TestSceneConfigBuilders:
 
     def test_all_scene_configs_have_required_fields(self):
         """Test that all scene configs have required fields."""
-        configs = [
-            BFSBasicSceneConfig, BFSAdvancedSceneConfig
-        ]
+        configs = [BFSBasicSceneConfig, BFSAdvancedSceneConfig]
 
         for config in configs:
             scene = instantiate(config)
-            assert hasattr(scene, 'name')
-            assert hasattr(scene, 'algorithm')
-            assert hasattr(scene, 'widgets')
-            assert hasattr(scene, 'event_bindings')
+            assert hasattr(scene, "name")
+            assert hasattr(scene, "algorithm")
+            assert hasattr(scene, "widgets")
+            assert hasattr(scene, "event_bindings")
             assert len(scene.widgets) > 0
             assert scene.algorithm == "bfs"  # All current configs are BFS
 
     def test_scene_configs_instantiate_without_errors(self):
         """Test that all scene configs can be instantiated without errors."""
-        configs = [
-            BFSBasicSceneConfig, BFSAdvancedSceneConfig
-        ]
+        configs = [BFSBasicSceneConfig, BFSAdvancedSceneConfig]
 
         for config in configs:
             # Should not raise any exceptions

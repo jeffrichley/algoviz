@@ -21,7 +21,13 @@ class TestTimingConfig:
         """Test bucket resolution for UI actions."""
         config = TimingConfig()
 
-        ui_actions = ["show_title", "show_grid", "hide_grid", "show_widgets", "hide_widgets"]
+        ui_actions = [
+            "show_title",
+            "show_grid",
+            "hide_grid",
+            "show_widgets",
+            "hide_widgets",
+        ]
         for action in ui_actions:
             assert config._bucket_for_action(action) == "ui"
 
@@ -29,7 +35,13 @@ class TestTimingConfig:
         """Test bucket resolution for event actions."""
         config = TimingConfig()
 
-        event_actions = ["place_start", "place_goal", "visit_node", "add_to_queue", "remove_from_queue"]
+        event_actions = [
+            "place_start",
+            "place_goal",
+            "visit_node",
+            "add_to_queue",
+            "remove_from_queue",
+        ]
         for action in event_actions:
             assert config._bucket_for_action(action) == "events"
 
@@ -56,7 +68,7 @@ class TestTimingConfig:
         # Normal mode has 1.0 multiplier
         assert config.base_for("show_title") == 1.0  # ui * 1.0
         assert config.base_for("visit_node") == 0.8  # events * 1.0
-        assert config.base_for("highlight") == 0.5   # effects * 1.0
+        assert config.base_for("highlight") == 0.5  # effects * 1.0
 
     def test_base_for_draft_mode(self):
         """Test base_for calculation in draft mode."""
@@ -73,7 +85,7 @@ class TestTimingConfig:
 
         # Fast mode has 0.25 multiplier
         assert config.base_for("show_title") == 0.25  # ui * 0.25
-        assert config.base_for("visit_node") == 0.2   # events * 0.25
+        assert config.base_for("visit_node") == 0.2  # events * 0.25
         assert config.base_for("highlight") == 0.125  # effects * 0.25
 
     def test_base_for_with_mode_override(self):
@@ -82,27 +94,20 @@ class TestTimingConfig:
 
         # Override to draft mode
         assert config.base_for("show_title", mode="draft") == 0.5  # ui * 0.5
-        assert config.base_for("visit_node", mode="fast") == 0.2   # events * 0.25
+        assert config.base_for("visit_node", mode="fast") == 0.2  # events * 0.25
 
     def test_custom_timing_values(self):
         """Test base_for with custom timing values."""
-        config = TimingConfig(
-            ui=2.0,
-            events=1.5,
-            effects=1.0,
-            waits=0.8
-        )
+        config = TimingConfig(ui=2.0, events=1.5, effects=1.0, waits=0.8)
 
-        assert config.base_for("show_title") == 2.0   # ui * 1.0
-        assert config.base_for("visit_node") == 1.5   # events * 1.0
-        assert config.base_for("highlight") == 1.0    # effects * 1.0
+        assert config.base_for("show_title") == 2.0  # ui * 1.0
+        assert config.base_for("visit_node") == 1.5  # events * 1.0
+        assert config.base_for("highlight") == 1.0  # effects * 1.0
 
     def test_custom_multipliers(self):
         """Test base_for with custom multipliers."""
-        config = TimingConfig(
-            multipliers={"draft": 0.3, "normal": 1.2, "fast": 0.1}
-        )
+        config = TimingConfig(multipliers={"draft": 0.3, "normal": 1.2, "fast": 0.1})
 
         assert config.base_for("show_title", mode="draft") == 0.3  # ui * 0.3
         assert config.base_for("show_title", mode="normal") == 1.2  # ui * 1.2
-        assert config.base_for("show_title", mode="fast") == 0.1   # ui * 0.1
+        assert config.base_for("show_title", mode="fast") == 0.1  # ui * 0.1

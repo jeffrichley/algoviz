@@ -11,9 +11,10 @@ from hydra_zen import ZenStore
 
 logger = logging.getLogger(__name__)
 
+
 class StoreManager:
     """Centralized store manager with explicit state tracking.
-    
+
     Follows Google's principles:
     - Explicit initialization (no magic)
     - Clear error messages
@@ -30,10 +31,10 @@ class StoreManager:
     @classmethod
     def setup_store(cls, force: bool = False) -> None:
         """Initialize the store with explicit state management.
-        
+
         Args:
             force: If True, reinitialize even if already initialized
-            
+
         Raises:
             RuntimeError: If initialization fails
         """
@@ -53,12 +54,12 @@ class StoreManager:
 
             # Track what we've registered
             cls._registered_groups = {
-                'renderer': True,
-                'scenario': True,
-                'theme': True,
-                'timing': True,
-                'scene': True,
-                'director': True
+                "renderer": True,
+                "scenario": True,
+                "theme": True,
+                "timing": True,
+                "scene": True,
+                "director": True,
             }
 
             cls._initialized = True
@@ -132,12 +133,14 @@ class StoreManager:
         # Add to Hydra store
         cls._zen_store.add_to_hydra_store()
 
-        logger.debug("All configurations registered through ZenStore and added to Hydra store")
+        logger.debug(
+            "All configurations registered through ZenStore and added to Hydra store"
+        )
 
     @classmethod
     def reset_for_testing(cls) -> None:
         """Reset store state for testing.
-        
+
         Google's approach: Simple state reset, rely on overwrite_ok=True for actual cleanup.
         """
         # Just reset our tracking state
@@ -150,7 +153,7 @@ class StoreManager:
     @classmethod
     def setup_store_for_testing(cls) -> None:
         """Setup store specifically for testing with clean state.
-        
+
         Google's approach: Just setup the store, rely on overwrite_ok=True.
         """
         cls.setup_store(force=True)
@@ -158,7 +161,7 @@ class StoreManager:
     @classmethod
     def is_initialized(cls) -> bool:
         """Check if store is initialized.
-        
+
         Returns:
             True if store is initialized and ready to use
         """
@@ -167,7 +170,7 @@ class StoreManager:
     @classmethod
     def get_initialization_error(cls) -> Exception | None:
         """Get the last initialization error.
-        
+
         Returns:
             The last initialization error, or None if no error
         """
@@ -176,7 +179,7 @@ class StoreManager:
     @classmethod
     def get_registered_groups(cls) -> dict[str, Any]:
         """Get list of registered groups (for debugging).
-        
+
         Returns:
             Dictionary of registered group names
         """
@@ -185,7 +188,7 @@ class StoreManager:
     @classmethod
     def get_zen_store(cls) -> ZenStore | None:
         """Get the ZenStore instance.
-        
+
         Returns:
             The ZenStore instance, or None if not initialized
         """

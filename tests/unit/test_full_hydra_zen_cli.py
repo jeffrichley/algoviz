@@ -18,14 +18,21 @@ class TestFullHydraZenCLI:
         """Test render_algorithm_video function with basic scene config."""
         # Create test configurations
         scene_config = instantiate(BFSBasicSceneConfig)
-        scenario_config = ScenarioConfig(name="test", start=(0, 0), goal=(2, 2), grid_size=(3, 3))
+        scenario_config = ScenarioConfig(
+            name="test", start=(0, 0), goal=(2, 2), grid_size=(3, 3)
+        )
         theme_config = ThemeConfig(name="test_theme")
         timing_config = TimingConfig(mode=TimingMode.NORMAL)
-        render_config = RenderConfig(quality=RenderQuality.MEDIUM, resolution=[1280, 720], frame_rate=30, format=RenderFormat.MP4)
+        render_config = RenderConfig(
+            quality=RenderQuality.MEDIUM,
+            resolution=[1280, 720],
+            frame_rate=30,
+            format=RenderFormat.MP4,
+        )
         renderer = SimpleRenderer(render_config)
 
         # Mock the renderer to avoid actual video generation
-        with patch.object(renderer, 'render_algorithm_video') as mock_render:
+        with patch.object(renderer, "render_algorithm_video") as mock_render:
             mock_render.return_value = {"duration": 5.0, "resolution": [1280, 720]}
 
             # Test the function directly
@@ -36,7 +43,7 @@ class TestFullHydraZenCLI:
                 theme=theme_config,
                 timing=timing_config,
                 scene=scene_config,
-                output_path="test_output.mp4"
+                output_path="test_output.mp4",
             )
 
             # Verify the function was called correctly
@@ -46,7 +53,7 @@ class TestFullHydraZenCLI:
                 scene_config=scene_config,
                 theme_config=theme_config,
                 timing_config=timing_config,
-                output_path="test_output.mp4"
+                output_path="test_output.mp4",
             )
 
             # Verify result
@@ -57,14 +64,21 @@ class TestFullHydraZenCLI:
         """Test render_algorithm_video function with advanced scene config."""
         # Create test configurations
         scene_config = instantiate(BFSAdvancedSceneConfig)
-        scenario_config = ScenarioConfig(name="test", start=(0, 0), goal=(2, 2), grid_size=(3, 3))
+        scenario_config = ScenarioConfig(
+            name="test", start=(0, 0), goal=(2, 2), grid_size=(3, 3)
+        )
         theme_config = ThemeConfig(name="test_theme")
         timing_config = TimingConfig(mode=TimingMode.FAST)
-        render_config = RenderConfig(quality=RenderQuality.MEDIUM, resolution=[1280, 720], frame_rate=30, format=RenderFormat.MP4)
+        render_config = RenderConfig(
+            quality=RenderQuality.MEDIUM,
+            resolution=[1280, 720],
+            frame_rate=30,
+            format=RenderFormat.MP4,
+        )
         renderer = SimpleRenderer(render_config)
 
         # Mock the renderer to avoid actual video generation
-        with patch.object(renderer, 'render_algorithm_video') as mock_render:
+        with patch.object(renderer, "render_algorithm_video") as mock_render:
             mock_render.return_value = {"duration": 3.0, "resolution": [1280, 720]}
 
             # Test the function directly
@@ -75,7 +89,7 @@ class TestFullHydraZenCLI:
                 theme=theme_config,
                 timing=timing_config,
                 scene=scene_config,
-                output_path="test_advanced_output.mp4"
+                output_path="test_advanced_output.mp4",
             )
 
             # Verify the function was called correctly
@@ -85,7 +99,7 @@ class TestFullHydraZenCLI:
                 scene_config=scene_config,
                 theme_config=theme_config,
                 timing_config=timing_config,
-                output_path="test_advanced_output.mp4"
+                output_path="test_advanced_output.mp4",
             )
 
             # Verify result
@@ -126,9 +140,9 @@ class TestFullHydraZenCLI:
             grid_widget = scene.widgets["grid"]
             queue_widget = scene.widgets["queue"]
 
-            assert hasattr(grid_widget, '__class__')
+            assert hasattr(grid_widget, "__class__")
             assert grid_widget.__class__.__name__ == "GridWidget"
-            assert hasattr(queue_widget, '__class__')
+            assert hasattr(queue_widget, "__class__")
             assert queue_widget.__class__.__name__ == "QueueWidget"
 
     def test_scene_config_event_bindings_structure(self):
@@ -141,18 +155,36 @@ class TestFullHydraZenCLI:
             assert "enqueue" in scene.event_bindings
             assert "dequeue" in scene.event_bindings
 
+    def test_scene_config_enqueue_bindings_structure(self):
+        """Test that scene configs have proper enqueue bindings structure."""
+        basic_scene = instantiate(BFSBasicSceneConfig)
+        advanced_scene = instantiate(BFSAdvancedSceneConfig)
+
+        for scene in [basic_scene, advanced_scene]:
             # Check enqueue bindings
             enqueue_bindings = scene.event_bindings["enqueue"]
             assert len(enqueue_bindings) == 2
 
+    def test_scene_config_queue_binding(self):
+        """Test that scene configs have proper queue binding."""
+        basic_scene = instantiate(BFSBasicSceneConfig)
+        advanced_scene = instantiate(BFSAdvancedSceneConfig)
+
+        for scene in [basic_scene, advanced_scene]:
             # First binding should be queue add_element
-            queue_binding = enqueue_bindings[0]
+            queue_binding = scene.event_bindings["enqueue"][0]
             assert queue_binding["widget"] == "queue"
             assert queue_binding["action"] == "add_element"
             assert queue_binding["order"] == 1
 
+    def test_scene_config_grid_binding(self):
+        """Test that scene configs have proper grid binding."""
+        basic_scene = instantiate(BFSBasicSceneConfig)
+        advanced_scene = instantiate(BFSAdvancedSceneConfig)
+
+        for scene in [basic_scene, advanced_scene]:
             # Second binding should be grid highlight_cell
-            grid_binding = enqueue_bindings[1]
+            grid_binding = scene.event_bindings["enqueue"][1]
             assert grid_binding["widget"] == "grid"
             assert grid_binding["action"] == "highlight_cell"
             assert grid_binding["params"]["color"] == "blue"
@@ -179,16 +211,23 @@ class TestFullHydraZenCLI:
     def test_render_algorithm_video_with_different_timing_modes(self):
         """Test render_algorithm_video with different timing modes."""
         scene_config = instantiate(BFSBasicSceneConfig)
-        scenario_config = ScenarioConfig(name="test", start=(0, 0), goal=(2, 2), grid_size=(3, 3))
+        scenario_config = ScenarioConfig(
+            name="test", start=(0, 0), goal=(2, 2), grid_size=(3, 3)
+        )
         theme_config = ThemeConfig(name="test_theme")
-        render_config = RenderConfig(quality=RenderQuality.MEDIUM, resolution=[1280, 720], frame_rate=30, format=RenderFormat.MP4)
+        render_config = RenderConfig(
+            quality=RenderQuality.MEDIUM,
+            resolution=[1280, 720],
+            frame_rate=30,
+            format=RenderFormat.MP4,
+        )
         renderer = SimpleRenderer(render_config)
 
         # Test different timing modes
         for mode in [TimingMode.DRAFT, TimingMode.NORMAL, TimingMode.FAST]:
             timing_config = TimingConfig(mode=mode)
 
-            with patch.object(renderer, 'render_algorithm_video') as mock_render:
+            with patch.object(renderer, "render_algorithm_video") as mock_render:
                 mock_render.return_value = {"duration": 2.0, "resolution": [1280, 720]}
 
                 result = render_algorithm_video(
@@ -198,7 +237,7 @@ class TestFullHydraZenCLI:
                     theme=theme_config,
                     timing=timing_config,
                     scene=scene_config,
-                    output_path=f"test_{mode.value}_output.mp4"
+                    output_path=f"test_{mode.value}_output.mp4",
                 )
 
                 # Verify the function was called correctly
@@ -208,9 +247,16 @@ class TestFullHydraZenCLI:
     def test_render_algorithm_video_with_different_themes(self):
         """Test render_algorithm_video with different theme configurations."""
         scene_config = instantiate(BFSBasicSceneConfig)
-        scenario_config = ScenarioConfig(name="test", start=(0, 0), goal=(2, 2), grid_size=(3, 3))
+        scenario_config = ScenarioConfig(
+            name="test", start=(0, 0), goal=(2, 2), grid_size=(3, 3)
+        )
         timing_config = TimingConfig(mode=TimingMode.NORMAL)
-        render_config = RenderConfig(quality=RenderQuality.MEDIUM, resolution=[1280, 720], frame_rate=30, format=RenderFormat.MP4)
+        render_config = RenderConfig(
+            quality=RenderQuality.MEDIUM,
+            resolution=[1280, 720],
+            frame_rate=30,
+            format=RenderFormat.MP4,
+        )
         renderer = SimpleRenderer(render_config)
 
         # Test different themes
@@ -218,7 +264,7 @@ class TestFullHydraZenCLI:
         for theme_name in themes:
             theme_config = ThemeConfig(name=theme_name)
 
-            with patch.object(renderer, 'render_algorithm_video') as mock_render:
+            with patch.object(renderer, "render_algorithm_video") as mock_render:
                 mock_render.return_value = {"duration": 2.0, "resolution": [1280, 720]}
 
                 result = render_algorithm_video(
@@ -228,7 +274,7 @@ class TestFullHydraZenCLI:
                     theme=theme_config,
                     timing=timing_config,
                     scene=scene_config,
-                    output_path=f"test_{theme_name}_output.mp4"
+                    output_path=f"test_{theme_name}_output.mp4",
                 )
 
                 # Verify the function was called correctly

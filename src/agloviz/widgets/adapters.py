@@ -16,9 +16,11 @@ from .queue import QueueWidget
 class GridWidgetAdapter:
     """Adapter that processes VizEvents for GridWidget."""
 
-    def update(self, widget: GridWidget, scene: Any, event: VizEvent, run_time: float) -> None:
+    def update(
+        self, widget: GridWidget, scene: Any, event: VizEvent, run_time: float
+    ) -> None:
         """Process VizEvent and call appropriate GridWidget visual methods.
-        
+
         Args:
             widget: GridWidget instance
             scene: Manim scene instance
@@ -36,7 +38,9 @@ class GridWidgetAdapter:
         """Get VizEvent types this adapter handles."""
         return ["enqueue", "dequeue", "goal_found"]
 
-    def _handle_enqueue(self, widget: GridWidget, scene: Any, event: VizEvent, run_time: float):
+    def _handle_enqueue(
+        self, widget: GridWidget, scene: Any, event: VizEvent, run_time: float
+    ):
         """Handle enqueue event by calling widget's visual methods."""
         if PayloadKey.NODE in event.payload:
             pos = event.payload[PayloadKey.NODE]
@@ -44,7 +48,9 @@ class GridWidgetAdapter:
             widget.highlight_cell(pos, "#0000FF", opacity=0.7)
             scene.play(widget.cell_map[pos].animate, run_time=run_time)
 
-    def _handle_dequeue(self, widget: GridWidget, scene: Any, event: VizEvent, run_time: float):
+    def _handle_dequeue(
+        self, widget: GridWidget, scene: Any, event: VizEvent, run_time: float
+    ):
         """Handle dequeue event by calling widget's visual methods."""
         if PayloadKey.NODE in event.payload:
             pos = event.payload[PayloadKey.NODE]
@@ -52,7 +58,9 @@ class GridWidgetAdapter:
             widget.highlight_cell(pos, "#808080", opacity=0.5)
             scene.play(widget.cell_map[pos].animate, run_time=run_time)
 
-    def _handle_goal_found(self, widget: GridWidget, scene: Any, event: VizEvent, run_time: float):
+    def _handle_goal_found(
+        self, widget: GridWidget, scene: Any, event: VizEvent, run_time: float
+    ):
         """Handle goal_found event by calling widget's visual methods."""
         if PayloadKey.NODE in event.payload:
             pos = event.payload[PayloadKey.NODE]
@@ -64,9 +72,11 @@ class GridWidgetAdapter:
 class QueueWidgetAdapter:
     """Adapter that processes VizEvents for QueueWidget."""
 
-    def update(self, widget: QueueWidget, scene: Any, event: VizEvent, run_time: float) -> None:
+    def update(
+        self, widget: QueueWidget, scene: Any, event: VizEvent, run_time: float
+    ) -> None:
         """Process VizEvent and call appropriate QueueWidget visual methods.
-        
+
         Args:
             widget: QueueWidget instance
             scene: Manim scene instance
@@ -82,7 +92,9 @@ class QueueWidgetAdapter:
         """Get VizEvent types this adapter handles."""
         return ["enqueue", "dequeue"]
 
-    def _handle_enqueue(self, widget: QueueWidget, scene: Any, event: VizEvent, run_time: float):
+    def _handle_enqueue(
+        self, widget: QueueWidget, scene: Any, event: VizEvent, run_time: float
+    ):
         """Handle enqueue event by calling widget's visual methods."""
         if PayloadKey.NODE in event.payload:
             node = event.payload[PayloadKey.NODE]
@@ -95,7 +107,9 @@ class QueueWidgetAdapter:
                 scene.add(element_widget)
                 scene.play(element_widget.animate, run_time=run_time)
 
-    def _handle_dequeue(self, widget: QueueWidget, scene: Any, event: VizEvent, run_time: float):
+    def _handle_dequeue(
+        self, widget: QueueWidget, scene: Any, event: VizEvent, run_time: float
+    ):
         """Handle dequeue event by calling widget's visual methods."""
         # Call pure visual method
         removed_data, removed_widget = widget.remove_element(0)
@@ -103,6 +117,7 @@ class QueueWidgetAdapter:
         if removed_widget:
             # Animate removal
             from manim import FadeOut
+
             scene.play(FadeOut(removed_widget), run_time=run_time)
 
 

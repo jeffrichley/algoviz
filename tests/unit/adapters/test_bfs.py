@@ -46,7 +46,9 @@ class TestBFSAdapter:
             assert e1.type == e2.type
             assert e1.payload == e2.payload
 
-    def test_bfs_start_equals_goal(self, bfs_adapter, start_equals_goal_scenario_config):
+    def test_bfs_start_equals_goal(
+        self, bfs_adapter, start_equals_goal_scenario_config
+    ):
         """Test BFS when start equals goal."""
         events = list(bfs_adapter.run(start_equals_goal_scenario_config))
 
@@ -61,7 +63,11 @@ class TestBFSAdapter:
         events = list(bfs_adapter.run(small_scenario_config))
 
         # Check event type validity
-        valid_types = {BFSEventType.ENQUEUE, BFSEventType.DEQUEUE, BFSEventType.GOAL_FOUND}
+        valid_types = {
+            BFSEventType.ENQUEUE,
+            BFSEventType.DEQUEUE,
+            BFSEventType.GOAL_FOUND,
+        }
         for event in events:
             assert event.type in valid_types
 

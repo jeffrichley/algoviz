@@ -23,9 +23,14 @@ def register_core_widgets() -> None:
     except ImportError:
         # If Manim is not available, register mock widgets for testing
         class MockWidget:
-            def show(self, scene, **kwargs): pass
-            def update(self, scene, event, run_time): pass
-            def hide(self, scene): pass
+            def show(self, scene, **kwargs):
+                pass
+
+            def update(self, scene, event, run_time):
+                pass
+
+            def hide(self, scene):
+                pass
 
         component_registry.register("grid", lambda: MockWidget())
         component_registry.register("queue", lambda: MockWidget())
@@ -33,7 +38,7 @@ def register_core_widgets() -> None:
 
 def get_available_widgets() -> list[str]:
     """Get list of currently available widgets.
-    
+
     Returns:
         List of registered widget names
     """
@@ -48,5 +53,5 @@ __all__ = [
     "ComponentRegistry",
     "component_registry",
     "register_core_widgets",
-    "get_available_widgets"
+    "get_available_widgets",
 ]

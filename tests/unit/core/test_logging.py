@@ -214,10 +214,9 @@ class TestErrorCollector:
         assert not collector.has_critical_errors()
 
         # Add critical error
-        collector.add_error(AGLOVizError(
-            issue="Critical error",
-            severity=ErrorSeverity.CRITICAL
-        ))
+        collector.add_error(
+            AGLOVizError(issue="Critical error", severity=ErrorSeverity.CRITICAL)
+        )
         assert collector.has_critical_errors()
 
     def test_get_errors_by_category(self):
@@ -384,7 +383,9 @@ class TestLoggingIntegration:
         assert summary["total_errors"] == 4
         assert summary["by_category"]["ConfigError"] == 2
         assert summary["by_category"]["AGLOVizError"] == 2
-        assert summary["by_severity"]["error"] == 2  # 2 ConfigErrors (no AGLOVizError with ERROR severity)
+        assert (
+            summary["by_severity"]["error"] == 2
+        )  # 2 ConfigErrors (no AGLOVizError with ERROR severity)
         assert summary["by_severity"]["warning"] == 1
         assert summary["by_severity"]["critical"] == 1
         assert summary["has_critical"] is True
@@ -452,12 +453,14 @@ class TestErrorCollectorAdvanced:
             valid_options=["start", "goal"],
         )
 
-        collector.add_error(AGLOVizError(
-            issue="Generic error",
-            severity=ErrorSeverity.WARNING,
-            suggestions=["try this", "or this"],
-            metadata={"custom": "data"},
-        ))
+        collector.add_error(
+            AGLOVizError(
+                issue="Generic error",
+                severity=ErrorSeverity.WARNING,
+                suggestions=["try this", "or this"],
+                metadata={"custom": "data"},
+            )
+        )
 
         # Export to file
         output_file = tmp_path / "collector_test.json"
@@ -604,4 +607,6 @@ class TestRealWorldErrorScenarios:
 
         for typo, valid_options, expected in test_cases:
             suggestions = engine.suggest_corrections(typo, valid_options)
-            assert expected in suggestions, f"Expected '{expected}' in suggestions for '{typo}'"
+            assert expected in suggestions, (
+                f"Expected '{expected}' in suggestions for '{typo}'"
+            )

@@ -10,11 +10,7 @@ class TestEventParameterResolution:
 
     def test_resolve_simple_event_path(self):
         """Test resolving simple event data paths."""
-        event_data = {
-            "node": "A",
-            "position": [1, 2],
-            "color": "red"
-        }
+        event_data = {"node": "A", "position": [1, 2], "color": "red"}
 
         # Test simple path resolution
         assert _resolve_event_path("node", event_data) == "A"
@@ -27,10 +23,7 @@ class TestEventParameterResolution:
             "node": {
                 "position": [3, 4],
                 "color": "blue",
-                "metadata": {
-                    "weight": 5,
-                    "visited": True
-                }
+                "metadata": {"weight": 5, "visited": True},
             }
         }
 
@@ -42,10 +35,7 @@ class TestEventParameterResolution:
 
     def test_resolve_missing_event_path(self):
         """Test resolving missing event data paths."""
-        event_data = {
-            "node": "A",
-            "position": [1, 2]
-        }
+        event_data = {"node": "A", "position": [1, 2]}
 
         # Test missing path resolution
         assert _resolve_event_path("missing", event_data) is None
@@ -54,12 +44,7 @@ class TestEventParameterResolution:
 
     def test_resolve_event_path_with_context(self):
         """Test resolving event paths using ResolverContext."""
-        event_data = {
-            "node": {
-                "position": [5, 6],
-                "color": "green"
-            }
-        }
+        event_data = {"node": {"position": [5, 6], "color": "green"}}
 
         context = ResolverContext(event=event_data)
 
@@ -75,47 +60,75 @@ class TestEventParameterResolution:
 
     def test_resolve_complex_event_data(self):
         """Test resolving complex event data structures."""
-        event_data = {
+        event_data = self._create_complex_event_data()
+        self._test_complex_paths(event_data)
+
+    def _create_complex_event_data(self):
+        """Create complex event data for testing."""
+        return {
             "algorithm": "bfs",
             "step": 3,
             "current_node": {
                 "id": "node_5",
                 "position": [2, 3],
                 "neighbors": ["node_1", "node_7", "node_9"],
-                "properties": {
-                    "distance": 3,
-                    "parent": "node_2",
-                    "visited": True
-                }
+                "properties": {"distance": 3, "parent": "node_2", "visited": True},
             },
             "queue": ["node_7", "node_9", "node_12"],
-            "path": [["node_0", "node_2", "node_5"]]
+            "path": [["node_0", "node_2", "node_5"]],
         }
 
-        # Test various complex paths
+    def _test_complex_paths(self, event_data):
+        """Test various complex paths."""
+        self._test_basic_paths(event_data)
+        self._test_node_paths(event_data)
+        self._test_properties_paths(event_data)
+        self._test_collection_paths(event_data)
+
+    def _test_basic_paths(self, event_data):
+        """Test basic path resolution."""
         assert _resolve_event_path("algorithm", event_data) == "bfs"
         assert _resolve_event_path("step", event_data) == 3
+
+    def _test_node_paths(self, event_data):
+        """Test current node path resolution."""
         assert _resolve_event_path("current_node.id", event_data) == "node_5"
         assert _resolve_event_path("current_node.position", event_data) == [2, 3]
-        assert _resolve_event_path("current_node.neighbors", event_data) == ["node_1", "node_7", "node_9"]
+        assert _resolve_event_path("current_node.neighbors", event_data) == [
+            "node_1",
+            "node_7",
+            "node_9",
+        ]
+
+    def _test_properties_paths(self, event_data):
+        """Test properties path resolution."""
         assert _resolve_event_path("current_node.properties.distance", event_data) == 3
-        assert _resolve_event_path("current_node.properties.parent", event_data) == "node_2"
-        assert _resolve_event_path("current_node.properties.visited", event_data) is True
-        assert _resolve_event_path("queue", event_data) == ["node_7", "node_9", "node_12"]
-        assert _resolve_event_path("path", event_data) == [["node_0", "node_2", "node_5"]]
+        assert (
+            _resolve_event_path("current_node.properties.parent", event_data)
+            == "node_2"
+        )
+        assert (
+            _resolve_event_path("current_node.properties.visited", event_data) is True
+        )
+
+    def _test_collection_paths(self, event_data):
+        """Test collection path resolution."""
+        assert _resolve_event_path("queue", event_data) == [
+            "node_7",
+            "node_9",
+            "node_12",
+        ]
+        assert _resolve_event_path("path", event_data) == [
+            ["node_0", "node_2", "node_5"]
+        ]
 
     def test_resolve_event_path_with_omega_conf_templates(self):
         """Test resolving event paths with OmegaConf template syntax."""
-        event_data = {
-            "node": {
-                "position": [7, 8],
-                "color": "purple"
-            }
-        }
+        event_data = {"node": {"position": [7, 8], "color": "purple"}}
 
         # Test with OmegaConf template resolution
         template = "${event_data:node.position}"
-        params_config = OmegaConf.create({"position": template})
+        OmegaConf.create({"position": template})
 
         # This would be resolved by OmegaConf with the resolver
         # For now, test the direct resolver function

@@ -23,8 +23,8 @@ DraftRenderer = builds(
         quality=RenderQuality.DRAFT,
         resolution=(854, 480),
         frame_rate=15,
-        format=RenderFormat.MP4
-    )
+        format=RenderFormat.MP4,
+    ),
 )
 
 MediumRenderer = builds(
@@ -34,8 +34,8 @@ MediumRenderer = builds(
         quality=RenderQuality.MEDIUM,
         resolution=(1280, 720),
         frame_rate=30,
-        format=RenderFormat.MP4
-    )
+        format=RenderFormat.MP4,
+    ),
 )
 
 HDRenderer = builds(
@@ -45,8 +45,8 @@ HDRenderer = builds(
         quality=RenderQuality.HIGH,
         resolution=(1920, 1080),
         frame_rate=60,
-        format=RenderFormat.MP4
-    )
+        format=RenderFormat.MP4,
+    ),
 )
 
 # =====================================================================
@@ -60,7 +60,7 @@ MazeSmallConfig = builds(
     obstacles=[(1, 1), (2, 2), (3, 1)],
     start=(0, 0),
     goal=(9, 9),
-    grid_size=(10, 10)
+    grid_size=(10, 10),
 )
 
 MazeLargeConfig = builds(
@@ -69,7 +69,7 @@ MazeLargeConfig = builds(
     obstacles=[(1, 1), (2, 2), (3, 1), (5, 5)],
     start=(0, 0),
     goal=(19, 19),
-    grid_size=(20, 20)
+    grid_size=(20, 20),
 )
 
 WeightedGraphConfig = builds(
@@ -78,7 +78,7 @@ WeightedGraphConfig = builds(
     obstacles=[],
     start=(0, 0),
     goal=(9, 9),
-    grid_size=(10, 10)
+    grid_size=(10, 10),
 )
 
 # =====================================================================
@@ -97,8 +97,8 @@ DarkThemeConfig = builds(
         "goal": "#CF6679",
         "path": "#FF9800",
         "obstacle": "#1F1B24",
-        "grid": "#2D2D2D"
-    }
+        "grid": "#2D2D2D",
+    },
 )
 
 HighContrastThemeConfig = builds(
@@ -110,8 +110,8 @@ HighContrastThemeConfig = builds(
         "goal": "#FF0000",
         "path": "#FFFF00",
         "obstacle": "#000000",
-        "grid": "#FFFFFF"
-    }
+        "grid": "#FFFFFF",
+    },
 )
 
 # =====================================================================
@@ -126,7 +126,7 @@ DraftTimingConfig = builds(
     events=0.4,
     effects=0.25,
     waits=0.25,
-    multipliers={"draft": 0.5, "normal": 1.0, "fast": 0.25}
+    multipliers={"draft": 0.5, "normal": 1.0, "fast": 0.25},
 )
 
 NormalTimingConfig = builds(
@@ -136,7 +136,7 @@ NormalTimingConfig = builds(
     events=0.8,
     effects=0.5,
     waits=0.5,
-    multipliers={"draft": 0.5, "normal": 1.0, "fast": 0.25}
+    multipliers={"draft": 0.5, "normal": 1.0, "fast": 0.25},
 )
 
 FastTimingConfig = builds(
@@ -146,7 +146,7 @@ FastTimingConfig = builds(
     events=0.2,
     effects=0.125,
     waits=0.125,
-    multipliers={"draft": 0.5, "normal": 1.0, "fast": 0.25}
+    multipliers={"draft": 0.5, "normal": 1.0, "fast": 0.25},
 )
 
 # =====================================================================
@@ -160,17 +160,20 @@ BFSBasicSceneConfig = builds(
     algorithm="bfs",
     widgets={
         "grid": {"_target_": "agloviz.widgets.grid.GridWidget"},
-        "queue": {"_target_": "agloviz.widgets.queue.QueueWidget"}
+        "queue": {"_target_": "agloviz.widgets.queue.QueueWidget"},
     },
     event_bindings={
         "enqueue": [
             {"widget": "queue", "action": "add_element", "order": 1},
-            {"widget": "grid", "action": "highlight_cell", "params": {"color": "blue"}, "order": 2}
+            {
+                "widget": "grid",
+                "action": "highlight_cell",
+                "params": {"color": "blue"},
+                "order": 2,
+            },
         ],
-        "dequeue": [
-            {"widget": "queue", "action": "remove_element", "order": 1}
-        ]
-    }
+        "dequeue": [{"widget": "queue", "action": "remove_element", "order": 1}],
+    },
 )
 
 # BFS Advanced Scene with custom widget parameters (proves CLI overrides work)
@@ -179,18 +182,28 @@ BFSAdvancedSceneConfig = builds(
     name="bfs_advanced",
     algorithm="bfs",
     widgets={
-        "grid": {"_target_": "agloviz.widgets.grid.GridWidget", "width": 15, "height": 15},
-        "queue": {"_target_": "agloviz.widgets.queue.QueueWidget", "max_visible_items": 12}
+        "grid": {
+            "_target_": "agloviz.widgets.grid.GridWidget",
+            "width": 15,
+            "height": 15,
+        },
+        "queue": {
+            "_target_": "agloviz.widgets.queue.QueueWidget",
+            "max_visible_items": 12,
+        },
     },
     event_bindings={
         "enqueue": [
             {"widget": "queue", "action": "add_element", "order": 1},
-            {"widget": "grid", "action": "highlight_cell", "params": {"color": "blue"}, "order": 2}
+            {
+                "widget": "grid",
+                "action": "highlight_cell",
+                "params": {"color": "blue"},
+                "order": 2,
+            },
         ],
-        "dequeue": [
-            {"widget": "queue", "action": "remove_element", "order": 1}
-        ]
-    }
+        "dequeue": [{"widget": "queue", "action": "remove_element", "order": 1}],
+    },
 )
 
 # BFS Dynamic Scene with dynamic parameter templates
@@ -199,8 +212,15 @@ BFSDynamicSceneConfig = builds(
     name="bfs_dynamic",
     algorithm="bfs",
     widgets={
-        "grid": {"_target_": "agloviz.widgets.grid.GridWidget", "width": 15, "height": 15},
-        "queue": {"_target_": "agloviz.widgets.queue.QueueWidget", "max_visible_items": 12}
+        "grid": {
+            "_target_": "agloviz.widgets.grid.GridWidget",
+            "width": 15,
+            "height": 15,
+        },
+        "queue": {
+            "_target_": "agloviz.widgets.queue.QueueWidget",
+            "max_visible_items": 12,
+        },
     },
     event_bindings={
         "enqueue": [
@@ -210,9 +230,9 @@ BFSDynamicSceneConfig = builds(
                 "params": {
                     "element": "${event_data:node.id}",
                     "style": "frontier",
-                    "duration": "${timing_value:events}"
+                    "duration": "${timing_value:events}",
                 },
-                "order": 1
+                "order": 1,
             },
             {
                 "widget": "grid",
@@ -220,23 +240,20 @@ BFSDynamicSceneConfig = builds(
                 "params": {
                     "position": "${event_data:node.position}",
                     "color": "${event_data:node.color}",
-                    "duration": "${timing_value:effects}"
+                    "duration": "${timing_value:effects}",
                 },
-                "order": 2
-            }
+                "order": 2,
+            },
         ],
         "dequeue": [
             {
                 "widget": "queue",
                 "action": "remove_element",
-                "params": {
-                    "index": 0,
-                    "animation_duration": "${timing_value:ui}"
-                },
-                "order": 1
+                "params": {"index": 0, "animation_duration": "${timing_value:ui}"},
+                "order": 1,
             }
-        ]
-    }
+        ],
+    },
 )
 
 # =====================================================================
@@ -252,5 +269,5 @@ DirectorConfigZen = builds(
     mode="normal",  # Default mode
     with_voice=False,  # Default voice disabled
     timing_tracker=None,  # Created internally
-    populate_full_signature=True
+    populate_full_signature=True,
 )

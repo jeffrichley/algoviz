@@ -12,11 +12,14 @@ from agloviz.core.scenario import ContractTestHarness, ScenarioLoader
 class TestBFSIntegration:
     """Test complete BFS workflow from config to events."""
 
-
-    def test_bfs_complete_workflow(self, bfs_wrapper_from_registry, simple_scenario_config):
+    def test_bfs_complete_workflow(
+        self, bfs_wrapper_from_registry, simple_scenario_config
+    ):
         """Test complete BFS workflow from config to events."""
         # Generate events
-        events = list(bfs_wrapper_from_registry.run_with_indexing(simple_scenario_config))
+        events = list(
+            bfs_wrapper_from_registry.run_with_indexing(simple_scenario_config)
+        )
 
         # Validate event sequence
         assert len(events) > 0
@@ -33,10 +36,7 @@ class TestBFSIntegration:
     def test_scenario_contract_compliance(self):
         """Test that scenarios satisfy the runtime contract."""
         config = ScenarioConfig(
-            name="test",
-            start=(0, 0),
-            goal=(2, 2),
-            grid_size=(3, 3)
+            name="test", start=(0, 0), goal=(2, 2), grid_size=(3, 3)
         )
 
         scenario = ScenarioLoader.from_config(config)
@@ -58,11 +58,17 @@ class TestBFSIntegration:
         # Routing is now handled dynamically by scene configurations
         # This test validates that the adapter registry still works independently
 
-    def test_deterministic_behavior(self, bfs_wrapper_from_registry, small_scenario_config):
+    def test_deterministic_behavior(
+        self, bfs_wrapper_from_registry, small_scenario_config
+    ):
         """Test that the system produces deterministic results."""
         # Run twice and compare
-        events1 = list(bfs_wrapper_from_registry.run_with_indexing(small_scenario_config))
-        events2 = list(bfs_wrapper_from_registry.run_with_indexing(small_scenario_config))
+        events1 = list(
+            bfs_wrapper_from_registry.run_with_indexing(small_scenario_config)
+        )
+        events2 = list(
+            bfs_wrapper_from_registry.run_with_indexing(small_scenario_config)
+        )
 
         assert len(events1) == len(events2)
 
@@ -73,7 +79,9 @@ class TestBFSIntegration:
 
     def test_complex_scenario(self, bfs_wrapper_from_registry, complex_scenario_config):
         """Test BFS on complex scenario with obstacles."""
-        events = list(bfs_wrapper_from_registry.run_with_indexing(complex_scenario_config))
+        events = list(
+            bfs_wrapper_from_registry.run_with_indexing(complex_scenario_config)
+        )
 
         # Should find goal despite obstacles
         assert len(events) > 0
@@ -83,9 +91,13 @@ class TestBFSIntegration:
         enqueue_events = [e for e in events if e.type == "enqueue"]
         assert len(enqueue_events) > 1
 
-    def test_unreachable_goal_handling(self, bfs_wrapper_from_registry, unreachable_scenario_config):
+    def test_unreachable_goal_handling(
+        self, bfs_wrapper_from_registry, unreachable_scenario_config
+    ):
         """Test system behavior with unreachable goal."""
-        events = list(bfs_wrapper_from_registry.run_with_indexing(unreachable_scenario_config))
+        events = list(
+            bfs_wrapper_from_registry.run_with_indexing(unreachable_scenario_config)
+        )
 
         # Should not find goal
         goal_found_events = [e for e in events if e.type == "goal_found"]
@@ -94,11 +106,15 @@ class TestBFSIntegration:
         # Should still generate events for reachable nodes
         assert len(events) > 0
 
-    def test_event_payload_validation(self, bfs_wrapper_from_registry, small_scenario_config):
+    def test_event_payload_validation(
+        self, bfs_wrapper_from_registry, small_scenario_config
+    ):
         """Test that generated events have valid payloads."""
         from agloviz.core.events import validate_event_payload
 
-        events = list(bfs_wrapper_from_registry.run_with_indexing(small_scenario_config))
+        events = list(
+            bfs_wrapper_from_registry.run_with_indexing(small_scenario_config)
+        )
 
         # Validate all event payloads
         for event in events:

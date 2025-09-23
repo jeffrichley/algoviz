@@ -7,13 +7,17 @@ from agloviz.core.errors import RegistryError
 
 class ActionHandler(Protocol):
     """Protocol for storyboard action handlers."""
-    def __call__(self, scene: Any, args: dict[str, Any], run_time: float, context: dict[str, Any]) -> None:
+
+    def __call__(
+        self, scene: Any, args: dict[str, Any], run_time: float, context: dict[str, Any]
+    ) -> None:
         """Execute the action with given parameters."""
         ...
 
 
 class ActionRegistry:
     """Registry for storyboard actions."""
+
     _actions: dict[str, ActionHandler] = {}
 
     @classmethod
@@ -21,10 +25,10 @@ class ActionRegistry:
         """Register an action handler."""
         if name in cls._actions:
             raise RegistryError(
-                category="ActionRegistry",
-                context=f"Action '{name}'",
                 issue="already registered",
-                remedy="Use a different name or unregister first"
+                component_type="ActionRegistry",
+                component_name=name,
+                suggestions=["Use a different name or unregister first"],
             )
         cls._actions[name] = handler
 
@@ -32,12 +36,12 @@ class ActionRegistry:
     def get(cls, name: str) -> ActionHandler:
         """Get action handler by name."""
         if name not in cls._actions:
-            available = ", ".join(sorted(cls._actions.keys()))
+            available = list(cls._actions.keys())
             raise RegistryError(
-                category="ActionRegistry",
-                context=f"Action '{name}'",
                 issue="not registered",
-                remedy=f"Available actions: {available}"
+                component_type="ActionRegistry",
+                component_name=name,
+                available_options=available,
             )
         return cls._actions[name]
 

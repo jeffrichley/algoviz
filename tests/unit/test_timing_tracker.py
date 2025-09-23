@@ -28,7 +28,7 @@ class TestTimingTracker:
             mode="normal",
             act="Act 1",
             shot="Shot 1",
-            timestamp=1234567890.0
+            timestamp=1234567890.0,
         )
 
         assert record.beat_name == "0-0-0"
@@ -51,7 +51,7 @@ class TestTimingTracker:
             variance=-0.2,
             mode="normal",
             act="Act 1",
-            shot="Shot 1"
+            shot="Shot 1",
         )
 
         assert record.timestamp is not None
@@ -68,7 +68,7 @@ class TestTimingTracker:
             actual=0.8,
             mode="normal",
             act="Act 1",
-            shot="Shot 1"
+            shot="Shot 1",
         )
 
         assert len(tracker.records) == 1
@@ -99,73 +99,88 @@ class TestTimingTracker:
     def test_timing_tracker_export_csv(self):
         """Test TimingTracker CSV export."""
         tracker = TimingTracker()
+        self._add_test_data(tracker)
 
-        # Add some test data
-        tracker.log("0-0-0", "show_title", 1.0, 0.8, "normal", "Act 1", "Shot 1")
-        tracker.log("0-0-1", "show_grid", 0.5, 0.6, "normal", "Act 1", "Shot 1")
-
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
             temp_path = Path(f.name)
 
         try:
             tracker.export_csv(temp_path)
-
-            # Read and verify CSV content
-            with open(temp_path) as f:
-                lines = f.readlines()
-
-            assert len(lines) == 3  # Header + 2 data rows
-            assert "beat_name,action,expected_duration,actual_duration,variance,mode,act,shot,timestamp" in lines[0]
-            assert "0-0-0,show_title,1.0,0.8" in lines[1] and "normal,Act 1,Shot 1" in lines[1]
-            assert "0-0-1,show_grid,0.5,0.6" in lines[2] and "normal,Act 1,Shot 1" in lines[2]
-
+            self._verify_csv_content(temp_path)
         finally:
             temp_path.unlink()
+
+    def _add_test_data(self, tracker):
+        """Add test data to tracker."""
+        tracker.log("0-0-0", "show_title", 1.0, 0.8, "normal", "Act 1", "Shot 1")
+        tracker.log("0-0-1", "show_grid", 0.5, 0.6, "normal", "Act 1", "Shot 1")
+
+    def _verify_csv_content(self, temp_path):
+        """Verify CSV content."""
+        with open(temp_path) as f:
+            lines = f.readlines()
+
+        assert len(lines) == 3  # Header + 2 data rows
+        assert (
+            "beat_name,action,expected_duration,actual_duration,variance,mode,act,shot,timestamp"
+            in lines[0]
+        )
+        assert (
+            "0-0-0,show_title,1.0,0.8" in lines[1] and "normal,Act 1,Shot 1" in lines[1]
+        )
+        assert (
+            "0-0-1,show_grid,0.5,0.6" in lines[2] and "normal,Act 1,Shot 1" in lines[2]
+        )
 
     def test_timing_tracker_export_json(self):
         """Test TimingTracker JSON export."""
         tracker = TimingTracker()
+        self._add_test_data(tracker)
 
-        # Add some test data
-        tracker.log("0-0-0", "show_title", 1.0, 0.8, "normal", "Act 1", "Shot 1")
-        tracker.log("0-0-1", "show_grid", 0.5, 0.6, "normal", "Act 1", "Shot 1")
-
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             temp_path = Path(f.name)
 
         try:
             tracker.export_json(temp_path)
-
-            # Read and verify JSON content
-            with open(temp_path) as f:
-                data = json.load(f)
-
-            assert 'records' in data
-            assert 'summary' in data
-            assert len(data['records']) == 2
-            assert data['records'][0]['beat_name'] == "0-0-0"
-            assert data['records'][1]['beat_name'] == "0-0-1"
-            assert data['summary']['record_count'] == 2
-
+            self._verify_json_content(temp_path)
         finally:
             temp_path.unlink()
+
+    def _verify_json_content(self, temp_path):
+        """Verify JSON content."""
+        with open(temp_path) as f:
+            data = json.load(f)
+
+        assert "records" in data
+        assert "summary" in data
+        assert len(data["records"]) == 2
+        assert data["records"][0]["beat_name"] == "0-0-0"
+        assert data["records"][1]["beat_name"] == "0-0-1"
+        assert data["summary"]["record_count"] == 2
 
     def test_timing_tracker_summary_generation(self):
         """Test TimingTracker summary statistics."""
         tracker = TimingTracker()
+        self._add_summary_test_data(tracker)
 
-        # Add test data with known values
+        summary = tracker._generate_summary()
+        self._verify_summary_stats(summary)
+
+    def _add_summary_test_data(self, tracker):
+        """Add test data for summary testing."""
         tracker.log("0-0-0", "show_title", 1.0, 0.8, "normal", "Act 1", "Shot 1")
         tracker.log("0-0-1", "show_grid", 0.5, 0.6, "normal", "Act 1", "Shot 1")
         tracker.log("1-0-0", "visit_node", 0.8, 0.7, "normal", "Act 2", "Shot 1")
 
-        summary = tracker._generate_summary()
-
-        assert summary['total_expected_duration'] == 2.3  # 1.0 + 0.5 + 0.8
-        assert summary['total_actual_duration'] == 2.1    # 0.8 + 0.6 + 0.7
-        assert summary['total_variance'] == pytest.approx(-0.2)          # 2.1 - 2.3
-        assert summary['average_variance'] == pytest.approx(-0.2 / 3)    # -0.2 / 3 records
-        assert summary['record_count'] == 3
+    def _verify_summary_stats(self, summary):
+        """Verify summary statistics."""
+        assert summary["total_expected_duration"] == 2.3  # 1.0 + 0.5 + 0.8
+        assert summary["total_actual_duration"] == 2.1  # 0.8 + 0.6 + 0.7
+        assert summary["total_variance"] == pytest.approx(-0.2)  # 2.1 - 2.3
+        assert summary["average_variance"] == pytest.approx(
+            -0.2 / 3
+        )  # -0.2 / 3 records
+        assert summary["record_count"] == 3
 
     def test_timing_tracker_empty_summary(self):
         """Test TimingTracker summary with no records."""
@@ -177,7 +192,10 @@ class TestTimingTracker:
     def test_timing_tracker_variance_calculation(self):
         """Test variance calculation in log method."""
         tracker = TimingTracker()
+        self._test_variance_cases(tracker)
 
+    def _test_variance_cases(self, tracker):
+        """Test different variance calculation cases."""
         # Test positive variance (actual > expected)
         tracker.log("0-0-0", "show_title", 1.0, 1.2, "normal", "Act 1", "Shot 1")
         assert tracker.records[0].variance == pytest.approx(0.2)

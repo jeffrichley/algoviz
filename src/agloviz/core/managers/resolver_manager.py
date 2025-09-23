@@ -16,10 +16,10 @@ class ResolverManager:
 
     def register_all(self, force: bool = False) -> None:
         """Register all custom resolvers.
-        
+
         Args:
             force: If True, re-register even if already registered
-            
+
         Raises:
             RuntimeError: If registration fails
         """
@@ -32,13 +32,14 @@ class ResolverManager:
 
             # Import and register resolvers
             from agloviz.core.resolvers import register_custom_resolvers
+
             register_custom_resolvers()
 
             # Track what we've registered
             self._registered_resolvers = {
-                'event_data': True,
-                'timing_value': True,
-                'config_value': True
+                "event_data": True,
+                "timing_value": True,
+                "config_value": True,
             }
 
             self._resolvers_registered = True

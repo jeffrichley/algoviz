@@ -17,11 +17,7 @@ class TestSceneEngineParameterResolution:
         engine = SceneEngine(scene_config)
 
         # Test valid parameters
-        valid_params = {
-            "element": "node_A",
-            "position": [1, 2],
-            "color": "blue"
-        }
+        valid_params = {"element": "node_A", "position": [1, 2], "color": "blue"}
 
         # Should not raise any exceptions
         engine._validate_parameters(valid_params)
@@ -30,7 +26,7 @@ class TestSceneEngineParameterResolution:
         invalid_params = {
             "element": "${invalid_syntax",
             "position": "${missing_resolver:path}",
-            "color": "blue"
+            "color": "blue",
         }
 
         # Should raise ValueError for invalid syntax
@@ -45,12 +41,8 @@ class TestSceneEngineParameterResolution:
 
         # Create event data
         event_data = {
-            "node": {
-                "position": [3, 4],
-                "color": "red",
-                "id": "node_5"
-            },
-            "step": 2
+            "node": {"position": [3, 4], "color": "red", "id": "node_5"},
+            "step": 2,
         }
 
         # Test parameter resolution with event data
@@ -58,7 +50,7 @@ class TestSceneEngineParameterResolution:
             "element": "${event_data:node.id}",
             "position": "${event_data:node.position}",
             "color": "${event_data:node.color}",
-            "step": "${event_data:step}"
+            "step": "${event_data:step}",
         }
 
         # Note: This test would require the actual OmegaConf template resolution
@@ -71,14 +63,16 @@ class TestSceneEngineParameterResolution:
     def test_scene_engine_parameter_resolution_with_timing_config(self):
         """Test parameter resolution with timing configuration in SceneEngine."""
         scene_config = instantiate(BFSBasicSceneConfig)
-        timing_config = TimingConfig(mode=TimingMode.FAST, ui=0.25, events=0.2, effects=0.125, waits=0.125)
+        timing_config = TimingConfig(
+            mode=TimingMode.FAST, ui=0.25, events=0.2, effects=0.125, waits=0.125
+        )
         engine = SceneEngine(scene_config, timing_config)
 
         # Test parameter resolution with timing templates
         params_with_timing = {
             "duration": "${timing_value:ui}",
             "effect_duration": "${timing_value:effects}",
-            "mode": "${timing_value:mode}"
+            "mode": "${timing_value:mode}",
         }
 
         # Note: This test would require the actual OmegaConf template resolution
@@ -97,7 +91,7 @@ class TestSceneEngineParameterResolution:
         params_with_config = {
             "scene_name": "${config_value:name}",
             "algorithm": "${config_value:algorithm}",
-            "widget_count": "${config_value:widgets}"
+            "widget_count": "${config_value:widgets}",
         }
 
         # Note: This test would require the actual OmegaConf template resolution
@@ -116,7 +110,7 @@ class TestSceneEngineParameterResolution:
         invalid_params = {
             "element": "${invalid_template}",
             "position": [1, 2],
-            "color": "blue"
+            "color": "blue",
         }
 
         # Should fallback to original parameters
@@ -162,14 +156,10 @@ class TestSceneEngineParameterResolution:
                 "id": "node_10",
                 "position": [5, 6],
                 "neighbors": ["node_5", "node_15", "node_20"],
-                "properties": {
-                    "distance": 5,
-                    "parent": "node_5",
-                    "visited": True
-                }
+                "properties": {"distance": 5, "parent": "node_5", "visited": True},
             },
             "queue": ["node_15", "node_20", "node_25"],
-            "path": [["node_0", "node_5", "node_10"]]
+            "path": [["node_0", "node_5", "node_10"]],
         }
 
         # Test parameter resolution with complex event data
@@ -179,12 +169,14 @@ class TestSceneEngineParameterResolution:
             "node_distance": "${event_data:current_node.properties.distance}",
             "node_parent": "${event_data:current_node.properties.parent}",
             "queue_size": "${event_data:queue}",
-            "step_number": "${event_data:step}"
+            "step_number": "${event_data:step}",
         }
 
         # Note: This test would require the actual OmegaConf template resolution
         # For now, test that the method doesn't crash
-        resolved_params = engine._resolve_parameters(params_with_complex_templates, complex_event_data)
+        resolved_params = engine._resolve_parameters(
+            params_with_complex_templates, complex_event_data
+        )
 
         # Should return some resolved parameters (or fallback to original)
         assert isinstance(resolved_params, dict)
@@ -199,17 +191,23 @@ class TestSceneEngineParameterResolution:
             "element": "${event_data:missing.path}",
             "position": "${config_value:missing.config}",
             "timing": "${timing_value:missing.timing}",
-            "valid_param": "static_value"
+            "valid_param": "static_value",
         }
 
         # Should handle errors gracefully and fallback
         resolved_params = engine._resolve_parameters(problematic_params, {})
 
         # Should return resolved parameters (template pattern for missing data)
-        assert resolved_params["element"] == "${event_data:missing.path}"  # Missing event data
+        assert (
+            resolved_params["element"] == "${event_data:missing.path}"
+        )  # Missing event data
         assert resolved_params["position"] is None  # Missing config data
-        assert resolved_params["timing"] == "${timing_value:missing.timing}"  # Missing timing data (template pattern)
-        assert resolved_params["valid_param"] == "static_value"  # Static value preserved
+        assert (
+            resolved_params["timing"] == "${timing_value:missing.timing}"
+        )  # Missing timing data (template pattern)
+        assert (
+            resolved_params["valid_param"] == "static_value"
+        )  # Static value preserved
 
     def test_scene_engine_parameter_resolution_performance(self):
         """Test parameter resolution performance in SceneEngine."""
@@ -223,6 +221,7 @@ class TestSceneEngineParameterResolution:
 
         # Test performance with large parameter set
         import time
+
         start_time = time.time()
 
         resolved_params = engine._resolve_parameters(large_params, {})

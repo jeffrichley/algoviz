@@ -1,7 +1,5 @@
 """Test script to verify grid data fixtures work correctly."""
 
-import pytest
-
 def test_simple_grid_data_fixture(simple_grid_data):
     """Test that simple_grid_data fixture works."""
     assert simple_grid_data["width"] == 3

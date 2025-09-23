@@ -20,14 +20,14 @@ class TestWidgetAdapterSeparation:
         grid = GridWidget()
 
         # Should have pure visual methods
-        assert hasattr(grid, 'highlight_cell')
-        assert hasattr(grid, 'flash_cell')
-        assert hasattr(grid, 'set_cell_label')
+        assert hasattr(grid, "highlight_cell")
+        assert hasattr(grid, "flash_cell")
+        assert hasattr(grid, "set_cell_label")
 
         # Should NOT have event processing methods
-        assert not hasattr(grid, '_mark_frontier')
-        assert not hasattr(grid, '_mark_visited')
-        assert not hasattr(grid, '_flash_goal')
+        assert not hasattr(grid, "_mark_frontier")
+        assert not hasattr(grid, "_mark_visited")
+        assert not hasattr(grid, "_flash_goal")
 
     def test_adapter_handles_event_processing(self):
         """Test that adapters handle event processing and call widget methods."""
@@ -47,7 +47,6 @@ class TestWidgetAdapterSeparation:
         adapter.update(grid, mock_scene, mock_event, run_time=1.0)
 
         # Verify adapter called widget's visual method (cell should be highlighted)
-        cell = grid.cell_map[(1, 2)]
         # If we get here without exception, the architecture works
         assert True
 
@@ -81,12 +80,13 @@ class TestPrimitiveWidgets:
 
         # Should be a Manim Circle
         from manim import Circle
+
         assert isinstance(token, Circle)
 
         # Should have pure visual methods
-        assert hasattr(token, 'highlight')
-        assert hasattr(token, 'set_label')
-        assert hasattr(token, 'pulse')
+        assert hasattr(token, "highlight")
+        assert hasattr(token, "set_label")
+        assert hasattr(token, "pulse")
 
         # Test visual operations work
         token.highlight("#FF0000", opacity=0.8)
@@ -99,12 +99,13 @@ class TestPrimitiveWidgets:
 
         # Should be a Manim VGroup
         from manim import VGroup
+
         assert isinstance(container, VGroup)
 
         # Should have layout methods
-        assert hasattr(container, 'arrange_horizontal')
-        assert hasattr(container, 'arrange_vertical')
-        assert hasattr(container, 'arrange_in_grid')
+        assert hasattr(container, "arrange_horizontal")
+        assert hasattr(container, "arrange_vertical")
+        assert hasattr(container, "arrange_in_grid")
 
         # Test layout operations
         container.arrange_horizontal(spacing=0.5)

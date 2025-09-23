@@ -1,18 +1,20 @@
 """Factory for creating SystemOrchestrator instances via Hydra-zen using Registry Pattern."""
 
+from typing import Any
+
 from hydra_zen import builds
 
 from ..core.managers import SystemRegistry
 
 
 # Factory function for Hydra-zen injection using Registry Pattern
-def create_orchestrator():
+def create_orchestrator() -> Any:
     """Factory that returns the singleton SystemOrchestrator instance via registry.
-    
+
     This factory uses the SystemRegistry to ensure proper singleton behavior
     and initialization order. The registry handles creating and initializing
     the orchestrator with all dependencies properly resolved.
-    
+
     Returns:
         SystemOrchestrator: The singleton orchestrator instance (fully initialized)
     """
@@ -20,16 +22,17 @@ def create_orchestrator():
 
 
 # Alternative factory for direct creation (for testing)
-def create_orchestrator_direct():
+def create_orchestrator_direct() -> Any:
     """Factory that creates a new SystemOrchestrator instance directly.
-    
+
     This bypasses the registry and creates a fresh instance.
     Useful for testing or when you need multiple instances.
-    
+
     Returns:
         SystemOrchestrator: A new orchestrator instance (not initialized)
     """
     from ..core.managers import SystemOrchestrator
+
     return SystemOrchestrator()
 
 

@@ -26,6 +26,12 @@ class TestSystemOrchestrator:
         assert orchestrator.is_initialized()
         assert SystemRegistry.is_initialized()
 
+    def test_system_components_initialization(self):
+        """Test that all system components are properly initialized."""
+        # Reset registry for clean test
+        SystemRegistry.reset()
+        orchestrator = SystemRegistry.get_orchestrator()
+
         # Verify all components are initialized
         status = orchestrator.get_status()
         assert status["system_initialized"] is True
@@ -33,7 +39,14 @@ class TestSystemOrchestrator:
         assert status["builders_initialized"] is True
         assert status["store_initialized"] is True
 
+    def test_system_initialization_order(self):
+        """Test that system components are initialized in correct order."""
+        # Reset registry for clean test
+        SystemRegistry.reset()
+        orchestrator = SystemRegistry.get_orchestrator()
+
         # Verify initialization order
+        status = orchestrator.get_status()
         order = status["initialization_order"]
         assert "resolver" in order
         assert "store" in order

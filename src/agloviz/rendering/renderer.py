@@ -7,7 +7,7 @@ with hydra-zen configuration and our widget architecture.
 from pathlib import Path
 from typing import Any
 
-from hydra_zen import builds, instantiate
+from hydra_zen import builds
 from manim import Scene
 from manim import config as manim_config
 
@@ -23,7 +23,7 @@ class SimpleRenderer:
         self.config = render_config
         self._setup_manim_config()
 
-    def _setup_manim_config(self):
+    def _setup_manim_config(self) -> None:
         """Configure Manim settings based on render config."""
         # Set Manim global config
         manim_config.frame_width = self.config.resolution[0] / 100  # Manim units
@@ -31,7 +31,11 @@ class SimpleRenderer:
         manim_config.frame_rate = self.config.frame_rate
 
         # Quality settings - handle both enum and string values
-        quality_value = self.config.quality.value if hasattr(self.config.quality, 'value') else self.config.quality
+        quality_value = (
+            self.config.quality.value
+            if hasattr(self.config.quality, "value")
+            else self.config.quality
+        )
         if quality_value == "draft":
             manim_config.quality = "low_quality"
         elif quality_value == "medium":
@@ -46,18 +50,18 @@ class SimpleRenderer:
         scene_config: Any,
         theme_config: Any,
         timing_config: Any,
-        output_path: str
+        output_path: str,
     ) -> dict[str, Any]:
         """Render algorithm visualization to video.
-        
+
         Args:
             algorithm: Algorithm name
             scenario_config: Scenario configuration
-            scene_config: Scene configuration  
+            scene_config: Scene configuration
             theme_config: Theme configuration
             timing_config: Timing configuration
             output_path: Output video file path
-            
+
         Returns:
             Render result metadata
         """
@@ -86,22 +90,27 @@ class SimpleRenderer:
             "duration": "N/A",  # TODO: Calculate from timing
             "resolution": self.config.resolution,
             "algorithm": algorithm,
-            "output_path": output_path
+            "output_path": output_path,
         }
 
-    def _create_manim_scene_class(self, scene_engine: SceneEngine, scenario_config: Any,
-                                 theme_config: Any, algorithm: str):
+    def _create_manim_scene_class(
+        self,
+        scene_engine: SceneEngine,
+        scenario_config: Any,
+        theme_config: Any,
+        algorithm: str,
+    ) -> type[Scene]:
         """Create Manim Scene class for rendering."""
 
         class AlgorithmScene(Scene):
-            def construct(self):
+            def construct(self) -> None:
                 # Initialize widgets from scene engine
-                for widget_name, widget in scene_engine.widgets.items():
-                    if hasattr(widget, 'show'):
+                for _widget_name, widget in scene_engine.widgets.items():
+                    if hasattr(widget, "show"):
                         widget.show(self, width=10, height=10)  # Basic setup
-                        if hasattr(widget, 'grid_group') and widget.grid_group:
+                        if hasattr(widget, "grid_group") and widget.grid_group:
                             self.add(widget.grid_group)
-                        elif hasattr(widget, 'queue_group') and widget.queue_group:
+                        elif hasattr(widget, "queue_group") and widget.queue_group:
                             self.add(widget.queue_group)
 
                 # Simple animation - just show the widgets
@@ -113,14 +122,16 @@ class SimpleRenderer:
 class PreviewRenderer:
     """Fast preview renderer for quick iteration."""
 
-    def __init__(self, max_frames: int = 120):
+    def __init__(self, max_frames: int = 120) -> None:
         self.max_frames = max_frames
 
         # Configure for fast preview
         manim_config.quality = "low_quality"
         manim_config.frame_rate = 15  # Lower FPS for preview
 
-    def render_preview(self, algorithm: str, scenario: str, output_path: str) -> dict[str, Any]:
+    def render_preview(
+        self, algorithm: str, scenario: str, output_path: str
+    ) -> dict[str, Any]:
         """Render quick preview."""
         # Simple preview implementation
         output_file = Path(output_path)
@@ -128,8 +139,9 @@ class PreviewRenderer:
 
         # Create minimal scene
         class PreviewScene(Scene):
-            def construct(self):
+            def construct(self) -> None:
                 from manim import Text
+
                 title = Text(f"Preview: {algorithm}")
                 self.add(title)
                 self.wait(1)
@@ -143,7 +155,7 @@ class PreviewRenderer:
         return {
             "algorithm": algorithm,
             "frames": self.max_frames,
-            "output_path": output_path
+            "output_path": output_path,
         }
 
 
@@ -152,14 +164,11 @@ SimpleRendererConfigZen = builds(
     SimpleRenderer,
     render_config=builds(RenderConfig),
     zen_partial=True,
-    populate_full_signature=True
+    populate_full_signature=True,
 )
 
 PreviewRendererConfigZen = builds(
-    PreviewRenderer,
-    max_frames=120,
-    zen_partial=True,
-    populate_full_signature=True
+    PreviewRenderer, max_frames=120, zen_partial=True, populate_full_signature=True
 )
 
 
@@ -171,4 +180,4 @@ def create_renderer(render_config: RenderConfig) -> SimpleRenderer:
 
 def create_preview_renderer(max_frames: int = 120) -> PreviewRenderer:
     """Factory function to create preview renderer with hydra-zen."""
-    return instantiate(PreviewRendererConfigZen, max_frames=max_frames)
+    return PreviewRenderer(max_frames=max_frames)

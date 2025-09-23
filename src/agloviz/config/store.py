@@ -3,6 +3,8 @@
 Just register configs and add to hydra store - that's it!
 """
 
+from typing import Any
+
 from hydra_zen import store
 
 from .hydra_zen import (
@@ -30,7 +32,7 @@ from .hydra_zen import (
 )
 
 
-def register_all_configs():
+def register_all_configs() -> None:
     """Register all hydra-zen configurations - simple and clean."""
 
     # Renderer configurations
@@ -67,21 +69,9 @@ def register_all_configs():
     director_store(DirectorConfigZen, name="base")
 
 
-def setup_store():
+def setup_store() -> Any:
     """Setup hydra-zen store using the new StoreManager (recommended)."""
     from .store_manager import StoreManager
+
     StoreManager.setup_store()
     return StoreManager.get_zen_store()
-
-
-# Legacy function for backward compatibility
-def register_all_configs():
-    """Legacy function - use StoreManager.setup_store() instead."""
-    import warnings
-    warnings.warn(
-        "register_all_configs() is deprecated. Use StoreManager.setup_store() instead.",
-        DeprecationWarning,
-        stacklevel=2
-    )
-    from .store_manager import StoreManager
-    StoreManager.setup_store()

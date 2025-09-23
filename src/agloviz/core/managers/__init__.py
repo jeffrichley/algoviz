@@ -13,5 +13,5 @@ __all__ = [
     "SystemMediator",
     "SystemFacade",
     "SystemOrchestrator",
-    "SystemRegistry"
+    "SystemRegistry",
 ]

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import subprocess
 import json
-import sys
 import shutil
-from pathlib import Path
+import subprocess
+import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 
 ROOT = Path(__file__).parent
 ISSUES_DIR = ROOT / "issues"
@@ -30,23 +30,23 @@ def run(cmd):
 def count_issues(data):
     """Count total issues in a file's data."""
     count = 0
-    
+
     # Count ruff issues
     if data.get("ruff"):
         count += len(data["ruff"])
-    
+
     # Count mypy issues (lines with content)
     if data.get("mypy"):
         count += len([line for line in data["mypy"].split('\n') if line.strip()])
-    
+
     # Count xenon issues (lines with content)
     if data.get("xenon"):
         count += len([line for line in data["xenon"].split('\n') if line.strip()])
-    
+
     # Count pytest issues (if there's coverage data)
     if data.get("pytest"):
         count += 1
-    
+
     return count
 
 def has_issues(data):
@@ -54,43 +54,43 @@ def has_issues(data):
     # Check ruff issues
     if data.get("ruff"):
         return True
-    
+
     # Check mypy issues
     if data.get("mypy") and data.get("mypy").strip():
         return True
-    
+
     # Check xenon issues
     if data.get("xenon") and data.get("xenon").strip():
         return True
-    
+
     # Check pytest coverage issues (only if not 100% coverage)
     pytest_data = data.get("pytest", "").strip()
     if pytest_data and "100%" not in pytest_data:
         return True
-    
+
     return False
 
 def distribute_files(files_with_issues, num_agents):
     """Distribute files evenly among agents based on issue count."""
     if num_agents <= 0:
         return {}
-    
+
     # Sort files by issue count (heaviest first)
     sorted_files = sorted(files_with_issues.items(), key=lambda x: x[1], reverse=True)
-    
+
     # Initialize agent workloads
     agent_workloads = [[] for _ in range(num_agents)]
     agent_totals = [0] * num_agents
-    
+
     # Distribute files using round-robin with weights
     for filename, issue_count in sorted_files:
         # Find agent with smallest current workload
         min_agent = min(range(num_agents), key=lambda i: agent_totals[i])
-        
+
         # Assign file to that agent
         agent_workloads[min_agent].append(filename)
         agent_totals[min_agent] += issue_count
-    
+
     return agent_workloads
 
 def collect_issues():
@@ -157,10 +157,10 @@ def collect_issues():
     # 7. Filter and organize files
     files_with_issues = {}
     clean_files = []
-    
+
     for f, data in results.items():
         base = f.replace("/", "_")
-        
+
         if has_issues(data):
             # File has issues - move to found directory
             files_with_issues[base] = count_issues(data)
@@ -171,7 +171,7 @@ def collect_issues():
             clean_files.append(base)
             with open(CLEAN_DIR / f"{base}.json", "w") as out:
                 json.dump(data, out, indent=2)
-    
+
     return files_with_issues, clean_files
 
 def distribute_to_agents(files_with_issues, num_agents):
@@ -179,22 +179,22 @@ def distribute_to_agents(files_with_issues, num_agents):
     if not files_with_issues:
         print("📭 No files with issues found!")
         return
-    
+
     print(f"📦 Found {len(files_with_issues)} files with issues")
-    
+
     # Distribute files among agents
     agent_workloads = distribute_files(files_with_issues, num_agents)
-    
+
     # Move files to assigned directories
     for agent_id, files in enumerate(agent_workloads, 1):
         agent_dir = ASSIGNED_DIR / f"agent_{agent_id}"
         todo_dir = agent_dir / "todo"
         done_dir = agent_dir / "done"
-        
+
         # Create agent directories
         todo_dir.mkdir(parents=True, exist_ok=True)
         done_dir.mkdir(parents=True, exist_ok=True)
-        
+
         agent_total_issues = 0
         for file_base in files:
             # Move file from found to agent's todo directory
@@ -203,7 +203,7 @@ def distribute_to_agents(files_with_issues, num_agents):
             if src.exists():
                 src.rename(dst)
                 agent_total_issues += files_with_issues[file_base]
-        
+
         print(f"🤖 Agent {agent_id}: {len(files)} files, {agent_total_issues} issues")
 
 def clean_issues_directory():
@@ -212,7 +212,7 @@ def clean_issues_directory():
         print("🧹 Cleaning issues directory...")
         shutil.rmtree(ISSUES_DIR)
         print("✅ Issues directory cleaned")
-    
+
     # Recreate the base directory
     ISSUES_DIR.mkdir(exist_ok=True)
 
@@ -224,37 +224,37 @@ def main():
             num_agents = int(sys.argv[1])
         except ValueError:
             print("❌ Invalid number of agents. Using default: 1")
-    
+
     # Clean slate - delete everything in issues directory
     clean_issues_directory()
-    
+
     # Create all directories
     FOUND_DIR.mkdir(parents=True, exist_ok=True)
     ASSIGNED_DIR.mkdir(parents=True, exist_ok=True)
     CLEAN_DIR.mkdir(parents=True, exist_ok=True)
-    
+
     print(f"🔍 Collecting issues and distributing to {num_agents} agents...")
     print("=" * 60)
-    
+
     # Collect issues
     files_with_issues, clean_files = collect_issues()
-    
-    print(f"📊 Collection Summary:")
+
+    print("📊 Collection Summary:")
     print(f"   • Total files analyzed: {len(files_with_issues) + len(clean_files)}")
     print(f"   • Files with issues: {len(files_with_issues)}")
     print(f"   • Clean files: {len(clean_files)}")
     print(f"   • Total issues: {sum(files_with_issues.values())}")
-    
+
     if files_with_issues:
-        print(f"\n📋 Distribution Summary:")
+        print("\n📋 Distribution Summary:")
         print("-" * 40)
         distribute_to_agents(files_with_issues, num_agents)
-    
-    print(f"\n🎉 Setup complete!")
+
+    print("\n🎉 Setup complete!")
     print(f"   • Clean files: {CLEAN_DIR}/")
     print(f"   • Issue files: {FOUND_DIR}/")
     print(f"   • Agent assignments: {ASSIGNED_DIR}/")
-    print(f"   • Each agent has: todo/ (work to do) and done/ (completed work)")
+    print("   • Each agent has: todo/ (work to do) and done/ (completed work)")
 
 if __name__ == "__main__":
     main()

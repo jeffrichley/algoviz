@@ -15,6 +15,7 @@ from agloviz.core.scenario import ScenarioLoader
 
 class BFSEventType(str, Enum):
     """Event types emitted by BFS adapter."""
+
     ENQUEUE = "enqueue"
     DEQUEUE = "dequeue"
     GOAL_FOUND = "goal_found"
@@ -22,20 +23,21 @@ class BFSEventType(str, Enum):
 
 class BFSAdapter:
     """BFS algorithm adapter.
-    
+
     Implements breadth-first search algorithm and emits VizEvents
     for each step of the algorithm execution.
     """
+
     name = "bfs"
 
     def run(self, scenario: ScenarioConfig) -> Iterator[VizEvent]:
         """Generate VizEvents for BFS algorithm execution.
-        
+
         Note: Events yielded WITHOUT step_index - AdapterWrapper assigns them.
-        
+
         Args:
             scenario: Scenario configuration containing grid, start, goal, etc.
-            
+
         Yields:
             VizEvent objects representing BFS state changes
         """
@@ -49,7 +51,7 @@ class BFSAdapter:
         yield VizEvent(
             type=BFSEventType.ENQUEUE,
             payload={"node": scenario_runtime.start},
-            step_index=0  # Will be overridden by AdapterWrapper
+            step_index=0,  # Will be overridden by AdapterWrapper
         )
 
         while queue:
@@ -57,14 +59,14 @@ class BFSAdapter:
             yield VizEvent(
                 type=BFSEventType.DEQUEUE,
                 payload={"node": node},
-                step_index=0  # Will be overridden by AdapterWrapper
+                step_index=0,  # Will be overridden by AdapterWrapper
             )
 
             if node == scenario_runtime.goal:
                 yield VizEvent(
                     type=BFSEventType.GOAL_FOUND,
                     payload={"node": node},
-                    step_index=0  # Will be overridden by AdapterWrapper
+                    step_index=0,  # Will be overridden by AdapterWrapper
                 )
                 break
 
@@ -78,5 +80,5 @@ class BFSAdapter:
                     yield VizEvent(
                         type=BFSEventType.ENQUEUE,
                         payload={"node": neighbor},
-                        step_index=0  # Will be overridden by AdapterWrapper
+                        step_index=0,  # Will be overridden by AdapterWrapper
                     )

@@ -14,13 +14,17 @@ class TestSuggestionEngineContext:
         engine = SuggestionEngine()
 
         # Test input prefix matches option
-        suggestions = engine.suggest_corrections("qual", ["quality", "quantity", "other"])
+        suggestions = engine.suggest_corrections(
+            "qual", ["quality", "quantity", "other"]
+        )
         assert "quality" in suggestions
         # quantity might not meet similarity threshold, so just check other is not included
         assert "other" not in suggestions
 
         # Test option prefix matches input
-        suggestions = engine.suggest_corrections("resolution", ["res", "format", "quality"])
+        suggestions = engine.suggest_corrections(
+            "resolution", ["res", "format", "quality"]
+        )
         assert "res" in suggestions
         assert "format" not in suggestions
 
@@ -28,14 +32,24 @@ class TestSuggestionEngineContext:
         """Test context-aware suggestions for render context."""
         engine = SuggestionEngine()
 
-        options = ["quality", "format", "resolution", "frame_rate", "start", "goal", "grid_file"]
+        options = [
+            "quality",
+            "format",
+            "resolution",
+            "frame_rate",
+            "start",
+            "goal",
+            "grid_file",
+        ]
 
         # Test render context prioritizes render-related options
         suggestions = engine.suggest_corrections("qual", options, context="render")
         assert "quality" in suggestions
 
         # Test with different render keywords
-        suggestions = engine.suggest_corrections("res", options, context="render_config")
+        suggestions = engine.suggest_corrections(
+            "res", options, context="render_config"
+        )
         assert "resolution" in suggestions
 
         suggestions = engine.suggest_corrections("fram", options, context="render")
@@ -49,13 +63,23 @@ class TestSuggestionEngineContext:
         """Test context-aware suggestions for scenario context."""
         engine = SuggestionEngine()
 
-        options = ["start", "goal", "grid_file", "obstacles", "weighted", "quality", "format"]
+        options = [
+            "start",
+            "goal",
+            "grid_file",
+            "obstacles",
+            "weighted",
+            "quality",
+            "format",
+        ]
 
         # Test scenario context prioritizes scenario-related options
         suggestions = engine.suggest_corrections("sta", options, context="scenario")
         assert "start" in suggestions
 
-        suggestions = engine.suggest_corrections("goa", options, context="scenario_config")
+        suggestions = engine.suggest_corrections(
+            "goa", options, context="scenario_config"
+        )
         assert "goal" in suggestions
 
         suggestions = engine.suggest_corrections("grid", options, context="scenario")
@@ -71,13 +95,23 @@ class TestSuggestionEngineContext:
         """Test context-aware suggestions for timing context."""
         engine = SuggestionEngine()
 
-        options = ["ui", "events", "effects", "waits", "multipliers", "quality", "format"]
+        options = [
+            "ui",
+            "events",
+            "effects",
+            "waits",
+            "multipliers",
+            "quality",
+            "format",
+        ]
 
         # Test timing context prioritizes timing-related options
         suggestions = engine.suggest_corrections("u", options, context="timing")
         assert "ui" in suggestions
 
-        suggestions = engine.suggest_corrections("event", options, context="timing_config")
+        suggestions = engine.suggest_corrections(
+            "event", options, context="timing_config"
+        )
         assert "events" in suggestions
 
         suggestions = engine.suggest_corrections("effect", options, context="timing")
@@ -96,12 +130,16 @@ class TestSuggestionEngineContext:
         options = ["quality", "format", "start", "goal"]
 
         # Unknown context should still provide suggestions based on similarity
-        suggestions = engine.suggest_corrections("qual", options, context="unknown_context")
+        suggestions = engine.suggest_corrections(
+            "qual", options, context="unknown_context"
+        )
         assert "quality" in suggestions
 
         # Should work the same as no context for unknown contexts
         suggestions_no_context = engine.suggest_corrections("qual", options)
-        suggestions_unknown_context = engine.suggest_corrections("qual", options, context="unknown")
+        suggestions_unknown_context = engine.suggest_corrections(
+            "qual", options, context="unknown"
+        )
 
         # Both should find "quality" since it's a close match
         assert "quality" in suggestions_no_context
@@ -125,9 +163,15 @@ class TestSuggestionEngineContext:
         options = ["quality", "format", "resolution"]
 
         # Different case variations of render context
-        suggestions_lower = engine.suggest_corrections("qual", options, context="render")
-        suggestions_upper = engine.suggest_corrections("qual", options, context="RENDER")
-        suggestions_mixed = engine.suggest_corrections("qual", options, context="Render_Config")
+        suggestions_lower = engine.suggest_corrections(
+            "qual", options, context="render"
+        )
+        suggestions_upper = engine.suggest_corrections(
+            "qual", options, context="RENDER"
+        )
+        suggestions_mixed = engine.suggest_corrections(
+            "qual", options, context="Render_Config"
+        )
 
         # All should find quality
         assert "quality" in suggestions_lower
@@ -173,5 +217,7 @@ class TestSuggestionEngineContext:
         # Quality should appear (render-related) even though it's not the closest match
         if suggestions:  # Only test if suggestions are found
             # At minimum, quality should be suggested since it matches render context
-            render_options = [opt for opt in suggestions if opt in ["quality", "format"]]
+            render_options = [
+                opt for opt in suggestions if opt in ["quality", "format"]
+            ]
             assert len(render_options) > 0

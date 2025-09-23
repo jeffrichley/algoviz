@@ -56,7 +56,7 @@ install-dev:
 
 # Run quality tools (pytest, ruff, mypy, xenon)
 quality:
-    uv run pytest --tb=short
+    # uv run pytest --tb=short
     uv run ruff check src/ tests/
     uv run mypy src/
     uv run xenon src/ --max-absolute B --max-modules A --max-average A

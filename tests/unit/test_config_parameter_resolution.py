@@ -1,7 +1,5 @@
 """Tests for configuration parameter resolution."""
 
-from omegaconf import OmegaConf
-
 from agloviz.core.resolvers import ResolverContext, _resolve_config_path
 
 
@@ -13,11 +11,7 @@ class TestConfigParameterResolution:
         scene_config = {
             "name": "bfs_scene",
             "algorithm": "bfs",
-            "colors": {
-                "frontier": "#2196F3",
-                "visited": "#4CAF50",
-                "goal": "#FF9800"
-            }
+            "colors": {"frontier": "#2196F3", "visited": "#4CAF50", "goal": "#FF9800"},
         }
 
         # Test simple path resolution
@@ -26,29 +20,17 @@ class TestConfigParameterResolution:
         assert _resolve_config_path("colors", scene_config) == {
             "frontier": "#2196F3",
             "visited": "#4CAF50",
-            "goal": "#FF9800"
+            "goal": "#FF9800",
         }
 
     def test_resolve_nested_config_path(self):
         """Test resolving nested configuration paths."""
         scene_config = {
             "widgets": {
-                "grid": {
-                    "width": 15,
-                    "height": 15,
-                    "cell_size": 0.5
-                },
-                "queue": {
-                    "max_visible": 10,
-                    "orientation": "horizontal"
-                }
+                "grid": {"width": 15, "height": 15, "cell_size": 0.5},
+                "queue": {"max_visible": 10, "orientation": "horizontal"},
             },
-            "theme": {
-                "colors": {
-                    "frontier": "#2196F3",
-                    "visited": "#4CAF50"
-                }
-            }
+            "theme": {"colors": {"frontier": "#2196F3", "visited": "#4CAF50"}},
         }
 
         # Test nested path resolution
@@ -60,24 +42,21 @@ class TestConfigParameterResolution:
 
     def test_resolve_config_path_with_defaults(self):
         """Test resolving configuration paths with default values."""
-        scene_config = {
-            "name": "test_scene",
-            "algorithm": "bfs"
-        }
+        scene_config = {"name": "test_scene", "algorithm": "bfs"}
 
         # Test with default values
-        assert _resolve_config_path("name", scene_config, "default_name") == "test_scene"
-        assert _resolve_config_path("missing", scene_config, "default_value") == "default_value"
+        assert (
+            _resolve_config_path("name", scene_config, "default_name") == "test_scene"
+        )
+        assert (
+            _resolve_config_path("missing", scene_config, "default_value")
+            == "default_value"
+        )
         assert _resolve_config_path("missing.nested", scene_config, 42) == 42
 
     def test_resolve_config_path_with_context(self):
         """Test resolving configuration paths using ResolverContext."""
-        scene_config = {
-            "colors": {
-                "frontier": "#2196F3",
-                "visited": "#4CAF50"
-            }
-        }
+        scene_config = {"colors": {"frontier": "#2196F3", "visited": "#4CAF50"}}
 
         context = ResolverContext(config=scene_config)
 
@@ -88,19 +67,19 @@ class TestConfigParameterResolution:
     def test_resolve_config_path_without_context(self):
         """Test resolving configuration paths without context."""
         # Should return default when no context and no scene_config provided
-        assert _resolve_config_path("colors", default="default_color") == "default_color"
+        assert (
+            _resolve_config_path("colors", default="default_color") == "default_color"
+        )
         assert _resolve_config_path("missing", default=42) == 42
 
     def test_resolve_config_path_with_object_attributes(self):
         """Test resolving configuration paths with object attributes."""
+
         class MockConfig:
             def __init__(self):
                 self.name = "object_config"
                 self.algorithm = "dfs"
-                self.colors = {
-                    "frontier": "#FF5722",
-                    "visited": "#8BC34A"
-                }
+                self.colors = {"frontier": "#FF5722", "visited": "#8BC34A"}
 
         config_obj = MockConfig()
 
@@ -109,15 +88,12 @@ class TestConfigParameterResolution:
         assert _resolve_config_path("algorithm", config_obj) == "dfs"
         assert _resolve_config_path("colors", config_obj) == {
             "frontier": "#FF5722",
-            "visited": "#8BC34A"
+            "visited": "#8BC34A",
         }
 
     def test_resolve_config_path_missing_keys(self):
         """Test resolving missing configuration keys."""
-        scene_config = {
-            "name": "test_scene",
-            "algorithm": "bfs"
-        }
+        scene_config = {"name": "test_scene", "algorithm": "bfs"}
 
         # Test missing key resolution
         assert _resolve_config_path("missing", scene_config) is None
@@ -126,17 +102,9 @@ class TestConfigParameterResolution:
 
     def test_resolve_config_path_with_omega_conf_templates(self):
         """Test resolving configuration paths with OmegaConf template syntax."""
-        scene_config = {
-            "colors": {
-                "frontier": "#2196F3",
-                "visited": "#4CAF50"
-            }
-        }
+        scene_config = {"colors": {"frontier": "#2196F3", "visited": "#4CAF50"}}
 
         # Test with OmegaConf template resolution
-        template = "${config_value:colors.frontier}"
-        params_config = OmegaConf.create({"color": template})
-
         # This would be resolved by OmegaConf with the resolver
         # For now, test the direct resolver function
         assert _resolve_config_path("colors.frontier", scene_config) == "#2196F3"
@@ -164,42 +132,88 @@ class TestConfigParameterResolution:
                     "width": 20,
                     "height": 20,
                     "cell_size": 0.4,
-                    "show_coordinates": True
+                    "show_coordinates": True,
                 },
                 "queue": {
                     "max_visible": 15,
                     "orientation": "vertical",
-                    "show_indices": True
+                    "show_indices": True,
                 },
                 "legend": {
                     "position": "top_right",
                     "legend_items": [
                         {"name": "unvisited", "color": "#E0E0E0"},
                         {"name": "frontier", "color": "#2196F3"},
-                        {"name": "visited", "color": "#4CAF50"}
-                    ]
-                }
+                        {"name": "visited", "color": "#4CAF50"},
+                    ],
+                },
             },
-            "timing": {
-                "events": 0.8,
-                "effects": 0.5,
-                "ui": 1.0
+            "timing": {"events": 0.8, "effects": 0.5, "ui": 1.0},
+        }
+
+        # Test basic paths
+        assert _resolve_config_path("name", scene_config) == "complex_scene"
+        assert _resolve_config_path("algorithm", scene_config) == "dijkstra"
+
+    def test_resolve_complex_widget_configs(self):
+        """Test resolving complex widget configuration paths."""
+        scene_config = {
+            "widgets": {
+                "grid": {
+                    "width": 20,
+                    "height": 20,
+                    "cell_size": 0.4,
+                    "show_coordinates": True,
+                },
+                "queue": {
+                    "max_visible": 15,
+                    "orientation": "vertical",
+                    "show_indices": True,
+                },
             }
         }
 
-        # Test various complex paths
-        assert _resolve_config_path("name", scene_config) == "complex_scene"
-        assert _resolve_config_path("algorithm", scene_config) == "dijkstra"
+        # Test widget paths
         assert _resolve_config_path("widgets.grid.width", scene_config) == 20
-        assert _resolve_config_path("widgets.grid.show_coordinates", scene_config) is True
-        assert _resolve_config_path("widgets.queue.orientation", scene_config) == "vertical"
-        assert _resolve_config_path("widgets.legend.position", scene_config) == "top_right"
+        assert (
+            _resolve_config_path("widgets.grid.show_coordinates", scene_config) is True
+        )
+        assert (
+            _resolve_config_path("widgets.queue.orientation", scene_config)
+            == "vertical"
+        )
+
+    def test_resolve_complex_legend_config(self):
+        """Test resolving complex legend configuration paths."""
+        scene_config = {
+            "widgets": {
+                "legend": {
+                    "position": "top_right",
+                    "legend_items": [
+                        {"name": "unvisited", "color": "#E0E0E0"},
+                        {"name": "frontier", "color": "#2196F3"},
+                        {"name": "visited", "color": "#4CAF50"},
+                    ],
+                }
+            }
+        }
+
+        # Test legend paths
+        assert (
+            _resolve_config_path("widgets.legend.position", scene_config) == "top_right"
+        )
         # Test legend items structure
         legend_items = _resolve_config_path("widgets.legend.legend_items", scene_config)
         assert isinstance(legend_items, list)
         assert len(legend_items) == 3
         assert legend_items[0]["name"] == "unvisited"
         assert legend_items[0]["color"] == "#E0E0E0"
+
+    def test_resolve_complex_timing_config(self):
+        """Test resolving complex timing configuration paths."""
+        scene_config = {"timing": {"events": 0.8, "effects": 0.5, "ui": 1.0}}
+
+        # Test timing paths
         assert _resolve_config_path("timing.events", scene_config) == 0.8
         assert _resolve_config_path("timing.effects", scene_config) == 0.5
         assert _resolve_config_path("timing.ui", scene_config) == 1.0

@@ -149,10 +149,18 @@ class TestHydraZenBenefits:
         """Test that builds() provides type safety through signature inspection."""
         # If any of these configs had type mismatches, builds() would fail at definition time
         configs = [
-            DraftRenderer, MediumRenderer, HDRenderer,
-            MazeSmallConfig, MazeLargeConfig, WeightedGraphConfig,
-            DefaultThemeConfig, DarkThemeConfig, HighContrastThemeConfig,
-            DraftTimingConfig, NormalTimingConfig, FastTimingConfig
+            DraftRenderer,
+            MediumRenderer,
+            HDRenderer,
+            MazeSmallConfig,
+            MazeLargeConfig,
+            WeightedGraphConfig,
+            DefaultThemeConfig,
+            DarkThemeConfig,
+            HighContrastThemeConfig,
+            DraftTimingConfig,
+            NormalTimingConfig,
+            FastTimingConfig,
         ]
 
         # All configs should instantiate without type errors
@@ -183,15 +191,23 @@ class TestHydraZenBenefits:
         """Test that all configuration objects are hydra-zen builds."""
 
         configs = [
-            DraftRenderer, MediumRenderer, HDRenderer,
-            MazeSmallConfig, MazeLargeConfig, WeightedGraphConfig,
-            DefaultThemeConfig, DarkThemeConfig, HighContrastThemeConfig,
-            DraftTimingConfig, NormalTimingConfig, FastTimingConfig
+            DraftRenderer,
+            MediumRenderer,
+            HDRenderer,
+            MazeSmallConfig,
+            MazeLargeConfig,
+            WeightedGraphConfig,
+            DefaultThemeConfig,
+            DarkThemeConfig,
+            HighContrastThemeConfig,
+            DraftTimingConfig,
+            NormalTimingConfig,
+            FastTimingConfig,
         ]
 
         for config in configs:
             # All should be hydra-zen builds objects
-            assert hasattr(config, '_target_'), f"Config {config} missing _target_"
+            assert hasattr(config, "_target_"), f"Config {config} missing _target_"
 
 
 if __name__ == "__main__":

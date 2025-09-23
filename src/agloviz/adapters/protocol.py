@@ -13,20 +13,21 @@ from agloviz.core.events import VizEvent
 
 class AlgorithmAdapter(Protocol):
     """Protocol that all algorithm adapters must implement.
-    
+
     Each algorithm ships with an Adapter that converts algorithm logic
     into a standardized stream of VizEvents.
     """
+
     name: str
 
     def run(self, scenario: ScenarioConfig) -> Iterator[VizEvent]:
         """Generate VizEvents for algorithm execution.
-        
+
         Note: Events yielded WITHOUT step_index - AdapterWrapper assigns them.
-        
+
         Args:
             scenario: Scenario configuration containing grid, start, goal, etc.
-            
+
         Yields:
             VizEvent objects representing algorithm state changes
         """
@@ -35,14 +36,14 @@ class AlgorithmAdapter(Protocol):
 
 class AdapterWrapper:
     """Wrapper that automatically assigns step indices to adapter events.
-    
+
     As specified in SDD Section 8.3, adapters yield raw events without
     step indices, and this wrapper assigns sequential step numbers.
     """
 
     def __init__(self, adapter: AlgorithmAdapter):
         """Initialize wrapper with an adapter.
-        
+
         Args:
             adapter: The algorithm adapter to wrap
         """
@@ -50,10 +51,10 @@ class AdapterWrapper:
 
     def run_with_indexing(self, scenario: ScenarioConfig) -> Iterator[VizEvent]:
         """Wrap adapter to automatically assign step indices.
-        
+
         Args:
             scenario: Scenario configuration to pass to adapter
-            
+
         Yields:
             VizEvent objects with sequential step_index values
         """
@@ -63,5 +64,5 @@ class AdapterWrapper:
                 type=event.type,
                 payload=event.payload,
                 step_index=i,
-                metadata=event.metadata
+                metadata=event.metadata,
             )

@@ -15,11 +15,11 @@ class SystemRegistry:
     @classmethod
     def get_orchestrator(cls) -> SystemOrchestrator:
         """Get the singleton orchestrator instance.
-        
+
         Creates and initializes the orchestrator on first access.
         The orchestrator uses the SystemMediator to handle proper
         dependency resolution and initialization order.
-        
+
         Returns:
             SystemOrchestrator: The singleton orchestrator instance
         """
@@ -32,7 +32,7 @@ class SystemRegistry:
     @classmethod
     def reset(cls) -> None:
         """Reset registry state.
-        
+
         This allows starting with a clean state.
         """
         if cls._orchestrator:
@@ -43,7 +43,7 @@ class SystemRegistry:
     @classmethod
     def is_initialized(cls) -> bool:
         """Check if orchestrator is initialized.
-        
+
         Returns:
             bool: True if orchestrator exists and is initialized
         """
@@ -52,7 +52,7 @@ class SystemRegistry:
     @classmethod
     def get_status(cls) -> dict:
         """Get comprehensive system status.
-        
+
         Returns:
             dict: Status information about the system
         """

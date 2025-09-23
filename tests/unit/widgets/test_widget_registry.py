@@ -4,7 +4,6 @@ Tests widget registry operations, factory patterns, and error handling
 following project testing standards.
 """
 
-
 import pytest
 
 from agloviz.core.errors import RegistryError
@@ -142,9 +141,9 @@ class TestComponentRegistry:
         widget = registry.get("mock")
 
         # Verify protocol methods exist
-        assert hasattr(widget, 'show')
-        assert hasattr(widget, 'update')
-        assert hasattr(widget, 'hide')
+        assert hasattr(widget, "show")
+        assert hasattr(widget, "update")
+        assert hasattr(widget, "hide")
         assert callable(widget.show)
         assert callable(widget.update)
         assert callable(widget.hide)

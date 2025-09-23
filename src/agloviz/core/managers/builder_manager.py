@@ -10,17 +10,17 @@ logger = logging.getLogger(__name__)
 class BuilderManager:
     """Manages scene builders and YAML config loading."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._builders_initialized = False
         self._yaml_configs: dict[str, Any] = {}
         self._initialization_error: Exception | None = None
 
     def initialize_builders(self, force: bool = False) -> None:
         """Initialize all builders and load YAML configs.
-        
+
         Args:
             force: If True, re-initialize even if already initialized
-            
+
         Raises:
             RuntimeError: If initialization fails
         """

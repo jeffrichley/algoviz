@@ -12,10 +12,11 @@ from agloviz.config.models import ScenarioConfig
 
 class Scenario(Protocol):
     """Runtime contract for algorithm scenarios.
-    
+
     This protocol defines the interface that all scenario implementations
     must provide for algorithms to interact with their environment.
     """
+
     width: int
     height: int
     start: tuple[int, int]
@@ -23,10 +24,10 @@ class Scenario(Protocol):
 
     def neighbors(self, node: tuple[int, int]) -> list[tuple[int, int]]:
         """Get valid neighbors for a node.
-        
+
         Args:
             node: The node to get neighbors for
-            
+
         Returns:
             List of valid neighbor positions
         """
@@ -34,10 +35,10 @@ class Scenario(Protocol):
 
     def in_bounds(self, pos: tuple[int, int]) -> bool:
         """Check if position is within grid bounds.
-        
+
         Args:
             pos: Position to check
-            
+
         Returns:
             True if position is within bounds
         """
@@ -45,10 +46,10 @@ class Scenario(Protocol):
 
     def passable(self, pos: tuple[int, int]) -> bool:
         """Check if position is passable (not an obstacle).
-        
+
         Args:
             pos: Position to check
-            
+
         Returns:
             True if position is passable
         """
@@ -56,11 +57,11 @@ class Scenario(Protocol):
 
     def cost(self, from_node: tuple[int, int], to_node: tuple[int, int]) -> float:
         """Get movement cost between adjacent nodes.
-        
+
         Args:
             from_node: Starting position
             to_node: Destination position
-            
+
         Returns:
             Movement cost, or float('inf') if not adjacent
         """
@@ -69,14 +70,14 @@ class Scenario(Protocol):
 
 class GridScenario:
     """Grid-based scenario implementation.
-    
+
     Implements the Scenario protocol for 2D grid environments with
     obstacles and optional edge weights.
     """
 
     def __init__(self, config: ScenarioConfig, grid_data: dict[str, Any]):
         """Initialize grid scenario.
-        
+
         Args:
             config: Scenario configuration
             grid_data: Grid data loaded from YAML file
@@ -85,16 +86,18 @@ class GridScenario:
         self.height = grid_data["height"]
         self.start = tuple(config.start)
         self.goal = tuple(config.goal)
-        self.obstacles = set(tuple(pos) for pos in grid_data.get("obstacles", []))
+        self.obstacles = {tuple(pos) for pos in grid_data.get("obstacles", [])}
         self.default_cost = grid_data.get("default_cost", 1.0)
         self.edge_weights = self._parse_edge_weights(grid_data.get("weights", []))
 
-    def _parse_edge_weights(self, weights_data: list[dict[str, Any]]) -> dict[tuple[tuple[int, int], tuple[int, int]], float]:
+    def _parse_edge_weights(
+        self, weights_data: list[dict[str, Any]]
+    ) -> dict[tuple[tuple[int, int], tuple[int, int]], float]:
         """Parse edge weights from YAML data.
-        
+
         Args:
             weights_data: List of weight specifications from YAML
-            
+
         Returns:
             Dictionary mapping (from, to) tuples to costs
         """
@@ -109,9 +112,8 @@ class GridScenario:
     def neighbors(self, node: tuple[int, int]) -> list[tuple[int, int]]:
         """Get 4-directional neighbors (N, S, E, W), filtered by bounds and passability."""
         x, y = node
-        candidates = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]
-        return [pos for pos in candidates
-                if self.in_bounds(pos) and self.passable(pos)]
+        candidates = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+        return [pos for pos in candidates if self.in_bounds(pos) and self.passable(pos)]
 
     def in_bounds(self, pos: tuple[int, int]) -> bool:
         """Check if position is within grid bounds."""
@@ -131,24 +133,24 @@ class GridScenario:
 
         # Verify nodes are adjacent
         if to_node not in self.neighbors(from_node):
-            return float('inf')
+            return float("inf")
 
         return self.default_cost
 
 
 class ScenarioLoader:
     """Factory for loading scenarios from configuration.
-    
+
     Provides static methods for creating Scenario objects from various sources.
     """
 
     @staticmethod
     def from_file(path: str) -> Scenario:
         """Load scenario from YAML file path.
-        
+
         Args:
             path: Path to scenario YAML file
-            
+
         Returns:
             Scenario object
         """
@@ -159,10 +161,10 @@ class ScenarioLoader:
     @staticmethod
     def from_config(config: ScenarioConfig) -> Scenario:
         """Convert ScenarioConfig to runtime Scenario.
-        
+
         Args:
             config: Scenario configuration
-            
+
         Returns:
             Scenario object
         """
@@ -173,19 +175,19 @@ class ScenarioLoader:
             "height": height,
             "default_cost": 1.0,
             "obstacles": list(config.obstacles),
-            "weights": []
+            "weights": [],
         }
         return GridScenario(config, grid_data)
 
     @staticmethod
     def random_grid(width: int, height: int, obstacle_density: float = 0.2) -> Scenario:
         """Generate random grid scenario for testing.
-        
+
         Args:
             width: Grid width
             height: Grid height
             obstacle_density: Fraction of cells that should be obstacles
-            
+
         Returns:
             Random scenario
         """
@@ -195,17 +197,17 @@ class ScenarioLoader:
 
 class ContractTestHarness:
     """Test harness for validating scenario contract compliance.
-    
+
     Provides comprehensive validation that scenario implementations
     satisfy the Scenario protocol requirements.
     """
 
     def verify_scenario(self, scenario: Scenario) -> list[str]:
         """Return list of contract violations, empty if compliant.
-        
+
         Args:
             scenario: Scenario to validate
-            
+
         Returns:
             List of violation descriptions
         """
@@ -225,9 +227,13 @@ class ContractTestHarness:
                     neighbors = scenario.neighbors(node)
                     for neighbor in neighbors:
                         if not scenario.in_bounds(neighbor):
-                            violations.append(f"neighbors({node}) returned out-of-bounds {neighbor}")
+                            violations.append(
+                                f"neighbors({node}) returned out-of-bounds {neighbor}"
+                            )
                         if not scenario.passable(neighbor):
-                            violations.append(f"neighbors({node}) returned impassable {neighbor}")
+                            violations.append(
+                                f"neighbors({node}) returned impassable {neighbor}"
+                            )
 
         # Cost function compliance
         test_node = scenario.start
@@ -244,8 +250,10 @@ class ContractTestHarness:
             non_adjacent = (scenario.width + 10, scenario.height + 10)
             try:
                 cost = scenario.cost(test_node, non_adjacent)
-                if cost != float('inf'):
-                    violations.append("cost() should return inf or raise for non-adjacent nodes")
+                if cost != float("inf"):
+                    violations.append(
+                        "cost() should return inf or raise for non-adjacent nodes"
+                    )
             except ValueError:
                 pass  # Expected behavior
 

@@ -15,15 +15,16 @@ from agloviz.core.scene import SceneEngine
 class TestInvalidStructuredConfigInstantiation:
     """Test invalid structured config instantiation."""
 
-    def test_invalid_structured_config_parameters(self):
+    def test_invalid_structured_config_parameters(self) -> None:
         """Test invalid parameters for structured configs."""
         # Test with invalid parameters that should cause instantiation to fail
         from hydra.errors import InstantiationException
+
         with pytest.raises(InstantiationException):
             # Try to instantiate with invalid parameters
             instantiate(BFSBasicSceneConfig, name=123)  # Invalid type for name
 
-    def test_missing_required_structured_config_fields(self):
+    def test_missing_required_structured_config_fields(self) -> None:
         """Test missing required fields in structured configs."""
         # Test that structured configs require certain fields
         # This should work - structured configs have defaults
@@ -35,26 +36,28 @@ class TestInvalidStructuredConfigInstantiation:
 class TestInvalidTimingConfig:
     """Test invalid timing configuration."""
 
-    def test_invalid_timing_mode(self):
+    def test_invalid_timing_mode(self) -> None:
         """Test invalid timing mode."""
         with pytest.raises(ValidationError):
             TimingConfig(mode="invalid_mode")
 
-    def test_invalid_timing_values(self):
+    def test_invalid_timing_values(self) -> None:
         """Test invalid timing values."""
         with pytest.raises(ValidationError):
             TimingConfig(mode=TimingMode.NORMAL, ui=-1.0)  # Negative timing
 
-    def test_invalid_timing_types(self):
+    def test_invalid_timing_types(self) -> None:
         """Test invalid timing types."""
         with pytest.raises(ValidationError):
-            TimingConfig(mode=TimingMode.NORMAL, ui="invalid")  # String instead of float
+            TimingConfig(
+                mode=TimingMode.NORMAL, ui="invalid"
+            )  # String instead of float
 
 
 class TestSceneEngineErrorHandling:
     """Test SceneEngine error handling with valid but problematic configs."""
 
-    def test_scene_engine_with_none_timing_config(self):
+    def test_scene_engine_with_none_timing_config(self) -> None:
         """Test SceneEngine with None timing config."""
         # Create valid scene config
         scene_config = instantiate(BFSBasicSceneConfig)
@@ -63,7 +66,7 @@ class TestSceneEngineErrorHandling:
         scene_engine = SceneEngine(scene_config, None)
         assert scene_engine.timing_config is None
 
-    def test_scene_engine_with_invalid_timing_config_type(self):
+    def test_scene_engine_with_invalid_timing_config_type(self) -> None:
         """Test SceneEngine with invalid timing config type."""
         # Create valid scene config
         scene_config = instantiate(BFSBasicSceneConfig)
@@ -73,21 +76,21 @@ class TestSceneEngineErrorHandling:
         scene_engine = SceneEngine(scene_config, "invalid_timing_config")
         assert scene_engine.timing_config == "invalid_timing_config"
 
-    def test_scene_engine_with_missing_scene_config_fields(self):
+    def test_scene_engine_with_missing_scene_config_fields(self) -> None:
         """Test SceneEngine with scene config missing fields."""
         # This test verifies that structured configs always have required fields
         # since they're defined with defaults
         scene_config = instantiate(BFSBasicSceneConfig)
-        assert hasattr(scene_config, 'name')
-        assert hasattr(scene_config, 'algorithm')
-        assert hasattr(scene_config, 'widgets')
-        assert hasattr(scene_config, 'event_bindings')
+        assert hasattr(scene_config, "name")
+        assert hasattr(scene_config, "algorithm")
+        assert hasattr(scene_config, "widgets")
+        assert hasattr(scene_config, "event_bindings")
 
 
 class TestYAMLConfigurationErrorHandling:
     """Test YAML configuration error handling."""
 
-    def test_invalid_yaml_syntax(self):
+    def test_invalid_yaml_syntax(self) -> None:
         """Test invalid YAML syntax."""
         # Test with actually invalid YAML syntax
         invalid_yaml = """
@@ -103,11 +106,12 @@ class TestYAMLConfigurationErrorHandling:
         """
 
         # This should raise a YAML parsing error
-        import yaml
+        import yaml  # type: ignore[import-untyped]
+
         with pytest.raises(yaml.parser.ParserError):
             OmegaConf.create(invalid_yaml)
 
-    def test_yaml_with_invalid_target_references(self):
+    def test_yaml_with_invalid_target_references(self) -> None:
         """Test YAML with invalid _target_ references."""
         invalid_yaml = """
         name: "test_scene"
@@ -123,10 +127,11 @@ class TestYAMLConfigurationErrorHandling:
 
         # The YAML loads fine, but instantiation should fail
         from hydra.errors import InstantiationException
+
         with pytest.raises(InstantiationException):
             instantiate(config)
 
-    def test_yaml_with_missing_required_fields(self):
+    def test_yaml_with_missing_required_fields(self) -> None:
         """Test YAML with missing required fields."""
         incomplete_yaml = """
         algorithm: "bfs"
@@ -147,7 +152,7 @@ class TestYAMLConfigurationErrorHandling:
 class TestTemplateResolutionErrorHandling:
     """Test template resolution error handling."""
 
-    def test_malformed_template_syntax(self):
+    def test_malformed_template_syntax(self) -> None:
         """Test malformed template syntax."""
         malformed_yaml = """
         name: "test_scene"
@@ -166,10 +171,11 @@ class TestTemplateResolutionErrorHandling:
 
         # This should raise a template parsing error
         from omegaconf.errors import GrammarParseError
+
         with pytest.raises(GrammarParseError):
             OmegaConf.create(malformed_yaml)
 
-    def test_undefined_template_resolver(self):
+    def test_undefined_template_resolver(self) -> None:
         """Test undefined template resolver."""
         undefined_resolver_yaml = """
         name: "test_scene"
@@ -198,25 +204,26 @@ class TestTemplateResolutionErrorHandling:
 class TestConfigurationValidation:
     """Test configuration validation."""
 
-    def test_scene_config_validation_with_invalid_types(self):
+    def test_scene_config_validation_with_invalid_types(self) -> None:
         """Test scene config validation with invalid types."""
         # Test that structured configs enforce type validation
         from hydra.errors import InstantiationException
+
         with pytest.raises(InstantiationException):
             # Try to create a config with invalid types
             instantiate(BFSBasicSceneConfig, name=123, algorithm=456)
 
-    def test_timing_config_validation_with_invalid_values(self):
+    def test_timing_config_validation_with_invalid_values(self) -> None:
         """Test timing config validation with invalid values."""
         with pytest.raises(ValidationError):
             TimingConfig(
                 mode=TimingMode.NORMAL,
                 ui=-1.0,  # Invalid negative value
                 events=2.0,  # Invalid value > 1.0
-                effects="invalid"  # Invalid type
+                effects="invalid",  # Invalid type
             )
 
-    def test_scene_engine_validation_with_invalid_config_combination(self):
+    def test_scene_engine_validation_with_invalid_config_combination(self) -> None:
         """Test SceneEngine validation with invalid config combination."""
         # Create valid scene config
         scene_config = instantiate(BFSBasicSceneConfig)

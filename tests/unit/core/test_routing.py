@@ -19,17 +19,17 @@ class TestRoutingMap:
         sample_routing = {
             "enqueue": ["queue.add_element", "grid.highlight_element"],
             "dequeue": ["queue.remove_element"],
-            "goal_found": ["grid.highlight_element"]
+            "goal_found": ["grid.highlight_element"],
         }
 
         assert isinstance(sample_routing, dict)
 
         # Check handler format
-        for event_type, handlers in sample_routing.items():
+        for _event_type, handlers in sample_routing.items():
             assert isinstance(handlers, list)
             for handler in handlers:
                 assert isinstance(handler, str)
-                assert '.' in handler  # Should be widget.action format
+                assert "." in handler  # Should be widget.action format
 
     def test_v2_routing_handlers(self):
         """Test v2.0 compliant routing handlers."""
@@ -37,7 +37,7 @@ class TestRoutingMap:
         sample_routing = {
             "enqueue": ["queue.add_element", "grid.highlight_element"],
             "dequeue": ["queue.remove_element"],
-            "goal_found": ["grid.highlight_element"]
+            "goal_found": ["grid.highlight_element"],
         }
 
         # Test enqueue handlers - should use generic methods
@@ -125,7 +125,7 @@ class TestValidateRoutingMap:
         """Test validation passes for valid routing map."""
         routing_map = {
             "enqueue": ["queue.highlight", "grid.mark"],
-            "dequeue": ["queue.unhighlight"]
+            "dequeue": ["queue.unhighlight"],
         }
 
         errors = validate_routing_map(routing_map)
@@ -184,8 +184,8 @@ class TestValidateRoutingMap:
     def test_empty_widget_or_action(self):
         """Test validation fails for empty widget or action name."""
         routing_map = {
-            "event1": [".action"],   # Empty widget
-            "event2": ["widget."]    # Empty action
+            "event1": [".action"],  # Empty widget
+            "event2": ["widget."],  # Empty action
         }
 
         errors = validate_routing_map(routing_map)
@@ -196,7 +196,7 @@ class TestValidateRoutingMap:
         """Test validation returns multiple errors."""
         routing_map = {
             123: "invalid",  # Non-string event type, non-list handlers
-            "event": [456]   # Non-string handler
+            "event": [456],  # Non-string handler
         }
 
         errors = validate_routing_map(routing_map)
@@ -212,7 +212,7 @@ class TestValidateEventCoverage:
         routing_map = {
             "enqueue": ["handler1"],
             "dequeue": ["handler2"],
-            "goal_found": ["handler3"]
+            "goal_found": ["handler3"],
         }
         event_types = {"enqueue", "dequeue", "goal_found"}
 
@@ -223,7 +223,7 @@ class TestValidateEventCoverage:
         """Test validation fails when event type is missing."""
         routing_map = {
             "enqueue": ["handler1"],
-            "dequeue": ["handler2"]
+            "dequeue": ["handler2"],
             # Missing goal_found
         }
         event_types = {"enqueue", "dequeue", "goal_found"}
@@ -236,7 +236,7 @@ class TestValidateEventCoverage:
         routing_map = {
             "enqueue": ["handler1"],
             "dequeue": [],  # Empty handlers
-            "goal_found": ["handler3"]
+            "goal_found": ["handler3"],
         }
         event_types = {"enqueue", "dequeue", "goal_found"}
 
@@ -248,7 +248,7 @@ class TestValidateEventCoverage:
         routing_map = {
             "enqueue": ["handler1"],
             "dequeue": ["handler2"],
-            "extra_event": ["handler3"]  # Not in required set
+            "extra_event": ["handler3"],  # Not in required set
         }
         event_types = {"enqueue", "dequeue"}
 

@@ -115,8 +115,9 @@ class TestSuggestionEngine:
 
         # Test timing context
         suggestions = engine.suggest_corrections(
-            "ui", ["ui", "events", "effects", "waits", "resolution", "quality"],
-            context="timing"
+            "ui",
+            ["ui", "events", "effects", "waits", "resolution", "quality"],
+            context="timing",
         )
 
         # Should prioritize timing-related options
@@ -151,7 +152,8 @@ class TestSuggestionEngine:
         engine = SuggestionEngine(min_similarity=0.8)
 
         suggestions = engine.suggest_corrections(
-            "abc", ["xyz", "def", "abcd"]  # Only "abcd" should be similar enough
+            "abc",
+            ["xyz", "def", "abcd"],  # Only "abcd" should be similar enough
         )
 
         # Should only include very similar options
@@ -243,6 +245,7 @@ class TestAGLOVizError:
 
         # Should be valid JSON
         import json
+
         parsed = json.loads(json_str)
         assert parsed["category"] == "AGLOVizError"
 
@@ -503,7 +506,7 @@ class TestErrorMessageFormatting:
         """Test rich console message formatting."""
         # This test verifies the method runs without error
         # Full rich output testing would require more complex mocking
-        console = Console(file=open('/dev/null', 'w'))  # Suppress output
+        console = Console(file=open("/dev/null", "w"))  # Suppress output
 
         error = AGLOVizError(
             issue="Test error",
@@ -620,7 +623,11 @@ class TestErrorIntegrationPatterns:
         errors = [
             ConfigError(issue="Missing field 'start'", config_key="start"),
             ConfigError(issue="Invalid type for 'goal'", config_key="goal"),
-            ConfigError(issue="Unknown key 'tming'", config_key="tming", valid_options=["timing"]),
+            ConfigError(
+                issue="Unknown key 'tming'",
+                config_key="tming",
+                valid_options=["timing"],
+            ),
         ]
 
         # Verify all errors are properly structured

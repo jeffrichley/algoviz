@@ -21,7 +21,7 @@ class EventPlayback:
         adapter: AlgorithmAdapter,
         scenario: ScenarioConfig,
         routing_map: RoutingMap,
-        event_run_time: float
+        event_run_time: float,
     ) -> Iterator[VizEvent]:
         """Play algorithm events through widget routing."""
 
@@ -33,7 +33,9 @@ class EventPlayback:
             self._route_event(event, routing_map, event_run_time)
             yield event
 
-    def _route_event(self, event: VizEvent, routing_map: RoutingMap, run_time: float) -> None:
+    def _route_event(
+        self, event: VizEvent, routing_map: RoutingMap, run_time: float
+    ) -> None:
         """Route a single event to appropriate widget handlers."""
         if event.type not in routing_map:
             return

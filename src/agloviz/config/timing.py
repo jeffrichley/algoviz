@@ -15,7 +15,10 @@ from pydantic import BaseModel, Field
 
 class TimingRecord(BaseModel):
     """A single timing record for a beat/action."""
-    beat_name: str = Field(..., description="Unique identifier for the beat (e.g., '0-0-0')")
+
+    beat_name: str = Field(
+        ..., description="Unique identifier for the beat (e.g., '0-0-0')"
+    )
     action: str = Field(..., description="Action that was executed")
     expected_duration: float = Field(..., description="Expected duration in seconds")
     actual_duration: float = Field(..., description="Actual duration in seconds")
@@ -27,12 +30,16 @@ class TimingRecord(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         extra = "forbid"
 
 
 class TimingTracker(BaseModel):
     """Tracks timing records for algorithm visualization beats."""
-    records: list[TimingRecord] = Field(default_factory=list, description="List of timing records")
+
+    records: list[TimingRecord] = Field(
+        default_factory=list, description="List of timing records"
+    )
 
     def log(
         self,
@@ -42,7 +49,7 @@ class TimingTracker(BaseModel):
         actual: float,
         mode: str,
         act: str,
-        shot: str
+        shot: str,
     ) -> None:
         """Log a timing record."""
         variance = actual - expected
@@ -54,32 +61,49 @@ class TimingTracker(BaseModel):
             variance=variance,
             mode=mode,
             act=act,
-            shot=shot
+            shot=shot,
         )
         self.records.append(record)
 
     def export_csv(self, path: Path) -> None:
         """Export timing records to CSV."""
-        with open(path, 'w', newline='') as f:
+        with open(path, "w", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow([
-                'beat_name', 'action', 'expected_duration', 'actual_duration',
-                'variance', 'mode', 'act', 'shot', 'timestamp'
-            ])
+            writer.writerow(
+                [
+                    "beat_name",
+                    "action",
+                    "expected_duration",
+                    "actual_duration",
+                    "variance",
+                    "mode",
+                    "act",
+                    "shot",
+                    "timestamp",
+                ]
+            )
             for record in self.records:
-                writer.writerow([
-                    record.beat_name, record.action, record.expected_duration,
-                    record.actual_duration, record.variance, record.mode,
-                    record.act, record.shot, record.timestamp
-                ])
+                writer.writerow(
+                    [
+                        record.beat_name,
+                        record.action,
+                        record.expected_duration,
+                        record.actual_duration,
+                        record.variance,
+                        record.mode,
+                        record.act,
+                        record.shot,
+                        record.timestamp,
+                    ]
+                )
 
     def export_json(self, path: Path) -> None:
         """Export timing records to JSON."""
         data = {
-            'records': [record.dict() for record in self.records],
-            'summary': self._generate_summary()
+            "records": [record.dict() for record in self.records],
+            "summary": self._generate_summary(),
         }
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             json.dump(data, f, indent=2)
 
     def _generate_summary(self) -> dict[str, Any]:
@@ -91,13 +115,15 @@ class TimingTracker(BaseModel):
         total_actual = sum(r.actual_duration for r in self.records)
 
         return {
-            'total_expected_duration': total_expected,
-            'total_actual_duration': total_actual,
-            'total_variance': total_actual - total_expected,
-            'average_variance': sum(r.variance for r in self.records) / len(self.records),
-            'record_count': len(self.records)
+            "total_expected_duration": total_expected,
+            "total_actual_duration": total_actual,
+            "total_variance": total_actual - total_expected,
+            "average_variance": sum(r.variance for r in self.records)
+            / len(self.records),
+            "record_count": len(self.records),
         }
 
     class Config:
         """Pydantic configuration."""
+
         extra = "forbid"

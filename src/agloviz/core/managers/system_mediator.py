@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ManagerInfo:
     """Information about a registered manager."""
+
     name: str
     manager: Any
     dependencies: list[str]
@@ -19,14 +20,16 @@ class ManagerInfo:
 class SystemMediator:
     """Mediates communication and initialization between managers."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._managers: dict[str, ManagerInfo] = {}
         self._initialization_order: list[str] = []
         self._initialization_complete = False
 
-    def register_manager(self, name: str, manager: Any, dependencies: list[str] = None) -> None:
+    def register_manager(
+        self, name: str, manager: Any, dependencies: list[str] | None = None
+    ) -> None:
         """Register a manager with its dependencies.
-        
+
         Args:
             name: Unique name for the manager
             manager: The manager instance
@@ -36,9 +39,7 @@ class SystemMediator:
             dependencies = []
 
         manager_info = ManagerInfo(
-            name=name,
-            manager=manager,
-            dependencies=dependencies
+            name=name, manager=manager, dependencies=dependencies
         )
 
         self._managers[name] = manager_info
@@ -46,10 +47,10 @@ class SystemMediator:
 
     def initialize_all(self, force: bool = False) -> None:
         """Initialize all managers in dependency order.
-        
+
         Args:
             force: If True, re-initialize even if already initialized
-            
+
         Raises:
             RuntimeError: If initialization fails
         """
@@ -81,9 +82,11 @@ class SystemMediator:
         temp_visited = set()
         order = []
 
-        def visit(manager_name: str):
+        def visit(manager_name: str) -> None:
             if manager_name in temp_visited:
-                raise RuntimeError(f"Circular dependency detected involving: {manager_name}")
+                raise RuntimeError(
+                    f"Circular dependency detected involving: {manager_name}"
+                )
             if manager_name in visited:
                 return
 
@@ -93,7 +96,9 @@ class SystemMediator:
             manager_info = self._managers[manager_name]
             for dep in manager_info.dependencies:
                 if dep not in self._managers:
-                    raise RuntimeError(f"Manager '{manager_name}' depends on unknown manager: {dep}")
+                    raise RuntimeError(
+                        f"Manager '{manager_name}' depends on unknown manager: {dep}"
+                    )
                 visit(dep)
 
             temp_visited.remove(manager_name)
@@ -120,14 +125,16 @@ class SystemMediator:
             logger.info(f"Initializing manager: {manager_name}")
 
             # Call the appropriate initialization method based on manager type
-            if hasattr(manager_info.manager, 'register_all'):
+            if hasattr(manager_info.manager, "register_all"):
                 manager_info.manager.register_all()
-            elif hasattr(manager_info.manager, 'setup_store'):
+            elif hasattr(manager_info.manager, "setup_store"):
                 manager_info.manager.setup_store()
-            elif hasattr(manager_info.manager, 'initialize_builders'):
+            elif hasattr(manager_info.manager, "initialize_builders"):
                 manager_info.manager.initialize_builders()
             else:
-                logger.warning(f"Manager {manager_name} has no recognized initialization method")
+                logger.warning(
+                    f"Manager {manager_name} has no recognized initialization method"
+                )
 
             manager_info.initialized = True
             logger.info(f"Manager {manager_name} initialized successfully")
@@ -152,7 +159,7 @@ class SystemMediator:
     def reset_for_testing(self) -> None:
         """Reset mediator state for testing."""
         for manager_info in self._managers.values():
-            if hasattr(manager_info.manager, 'reset_for_testing'):
+            if hasattr(manager_info.manager, "reset_for_testing"):
                 manager_info.manager.reset_for_testing()
             manager_info.initialized = False
 

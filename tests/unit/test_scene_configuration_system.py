@@ -13,80 +13,57 @@ from agloviz.config.models import TimingConfig, TimingMode
 from agloviz.core.scene import SceneEngine
 
 
-class TestSceneEngineInitialization:
-    """Test SceneEngine initialization with different scene config types."""
+def create_scene_engine(scene_config, timing_mode=TimingMode.NORMAL):
+    """Helper function to create SceneEngine with timing config."""
+    timing_config = TimingConfig(mode=timing_mode)
+    return SceneEngine(scene_config, timing_config)
+
+
+class TestSceneEngineBasicConfigs:
+    """Test SceneEngine initialization with basic scene config types."""
 
     def test_scene_engine_with_bfs_basic_scene_config(self):
         """Test SceneEngine with BFSBasicSceneConfig."""
-        # Create structured config
         scene_config = instantiate(BFSBasicSceneConfig)
-
-        # Create timing config
-        timing_config = TimingConfig(mode=TimingMode.NORMAL)
-
-        # Create SceneEngine
-        scene_engine = SceneEngine(scene_config, timing_config)
-
-        # Verify SceneEngine was created successfully
+        scene_engine = create_scene_engine(scene_config)
         assert scene_engine.get_scene_name() == "bfs_basic"
         assert scene_engine.get_scene_algorithm() == "bfs"
-        assert scene_engine.get_widget_count() == 2  # grid + queue
+        assert scene_engine.get_widget_count() == 2
         assert "grid" in scene_engine.list_widget_names()
         assert "queue" in scene_engine.list_widget_names()
 
     def test_scene_engine_with_bfs_advanced_scene_config(self):
         """Test SceneEngine with BFSAdvancedSceneConfig."""
-        # Create structured config
         scene_config = instantiate(BFSAdvancedSceneConfig)
-
-        # Create timing config
-        timing_config = TimingConfig(mode=TimingMode.NORMAL)
-
-        # Create SceneEngine
-        scene_engine = SceneEngine(scene_config, timing_config)
-
-        # Verify SceneEngine was created successfully
+        scene_engine = create_scene_engine(scene_config)
         assert scene_engine.get_scene_name() == "bfs_advanced"
         assert scene_engine.get_scene_algorithm() == "bfs"
-        assert scene_engine.get_widget_count() == 2  # grid + queue
+        assert scene_engine.get_widget_count() == 2
         assert "grid" in scene_engine.list_widget_names()
         assert "queue" in scene_engine.list_widget_names()
 
     def test_scene_engine_with_bfs_dynamic_scene_config(self):
         """Test SceneEngine with BFSDynamicSceneConfig."""
-        # Create structured config
         scene_config = instantiate(BFSDynamicSceneConfig)
-
-        # Create timing config
-        timing_config = TimingConfig(mode=TimingMode.NORMAL)
-
-        # Create SceneEngine
-        scene_engine = SceneEngine(scene_config, timing_config)
-
-        # Verify SceneEngine was created successfully
+        scene_engine = create_scene_engine(scene_config)
         assert scene_engine.get_scene_name() == "bfs_dynamic"
         assert scene_engine.get_scene_algorithm() == "bfs"
-        assert scene_engine.get_widget_count() == 2  # grid + queue
+        assert scene_engine.get_widget_count() == 2
         assert "grid" in scene_engine.list_widget_names()
         assert "queue" in scene_engine.list_widget_names()
 
+
+class TestSceneEngineYamlConfigs:
+    """Test SceneEngine initialization with YAML configs."""
+
     def test_scene_engine_with_yaml_configs(self):
         """Test SceneEngine with YAML-loaded configs converted to Pydantic models."""
-        # Load YAML as overrides for a structured config
         yaml_config = OmegaConf.load("configs/scene/bfs_pathfinding.yaml")
-
-        # Filter out fields that aren't part of SceneConfig
-        scene_overrides = {k: v for k, v in yaml_config.items() if k != "timing_overrides"}
-
-        # Use the YAML as overrides for a structured config
-        # This is the proper way: structured config + YAML overrides
+        scene_overrides = {
+            k: v for k, v in yaml_config.items() if k != "timing_overrides"
+        }
         scene_config = instantiate(BFSBasicSceneConfig, **scene_overrides)
-
-        # Create SceneEngine with the converted config
-        timing_config = TimingConfig(mode=TimingMode.NORMAL)
-        scene_engine = SceneEngine(scene_config, timing_config)
-
-        # Verify SceneEngine works with YAML-derived config
+        scene_engine = create_scene_engine(scene_config)
         assert scene_engine.get_scene_name() == "bfs_pathfinding"
         assert scene_engine.get_scene_algorithm() == "bfs"
         assert scene_engine.get_widget_count() == 2
@@ -94,73 +71,62 @@ class TestSceneEngineInitialization:
         assert "queue" in scene_engine.widgets
 
 
-class TestWidgetInstantiationFromSceneConfigs:
-    """Test widget instantiation from scene configurations."""
+class TestWidgetInstantiationStructured:
+    """Test widget instantiation from structured configs."""
 
     def test_widget_instantiation_from_structured_configs(self):
         """Test widget instantiation from structured configs."""
-        # Test with BFSBasicSceneConfig
         scene_config = instantiate(BFSBasicSceneConfig)
-        timing_config = TimingConfig(mode=TimingMode.NORMAL)
-        scene_engine = SceneEngine(scene_config, timing_config)
-
-        # Verify widgets were instantiated
+        scene_engine = create_scene_engine(scene_config)
         assert len(scene_engine.widgets) == 2
         assert "grid" in scene_engine.widgets
         assert "queue" in scene_engine.widgets
-
-        # Verify widget types
         from agloviz.widgets.grid import GridWidget
         from agloviz.widgets.queue import QueueWidget
-        assert isinstance(scene_engine.widgets["grid"], GridWidget)
-        assert isinstance(scene_engine.widgets["queue"], QueueWidget)
 
-    def test_widget_instantiation_from_yaml_configs(self):
-        """Test widget instantiation from YAML configs."""
-        # Load YAML as overrides for a structured config
-        yaml_config = OmegaConf.load("configs/scene/bfs_pathfinding.yaml")
-
-        # Filter out fields that aren't part of SceneConfig
-        scene_overrides = {k: v for k, v in yaml_config.items() if k != "timing_overrides"}
-        scene_config = instantiate(BFSBasicSceneConfig, **scene_overrides)
-
-        timing_config = TimingConfig(mode=TimingMode.NORMAL)
-        scene_engine = SceneEngine(scene_config, timing_config)
-
-        # Verify widgets were instantiated
-        assert len(scene_engine.widgets) == 2
-        assert "grid" in scene_engine.widgets
-        assert "queue" in scene_engine.widgets
-
-        # Verify widget types
-        from agloviz.widgets.grid import GridWidget
-        from agloviz.widgets.queue import QueueWidget
         assert isinstance(scene_engine.widgets["grid"], GridWidget)
         assert isinstance(scene_engine.widgets["queue"], QueueWidget)
 
     def test_widget_parameter_passing(self):
         """Test widget parameter passing."""
-        # Test that widget parameters are passed correctly
         scene_config = instantiate(BFSBasicSceneConfig)
-        timing_config = TimingConfig(mode=TimingMode.NORMAL)
-        scene_engine = SceneEngine(scene_config, timing_config)
-
-        # Verify grid widget has correct parameters
+        scene_engine = create_scene_engine(scene_config)
         grid_widget = scene_engine.widgets["grid"]
-        assert hasattr(grid_widget, 'width')
-        assert hasattr(grid_widget, 'height')
-
-        # Verify queue widget exists (don't assume specific attributes)
+        assert hasattr(grid_widget, "width")
+        assert hasattr(grid_widget, "height")
         queue_widget = scene_engine.widgets["queue"]
         assert queue_widget is not None
 
+
+class TestWidgetInstantiationYaml:
+    """Test widget instantiation from YAML configs."""
+
+    def test_widget_instantiation_from_yaml_configs(self):
+        """Test widget instantiation from YAML configs."""
+        yaml_config = OmegaConf.load("configs/scene/bfs_pathfinding.yaml")
+        scene_overrides = {
+            k: v for k, v in yaml_config.items() if k != "timing_overrides"
+        }
+        scene_config = instantiate(BFSBasicSceneConfig, **scene_overrides)
+        scene_engine = create_scene_engine(scene_config)
+        assert len(scene_engine.widgets) == 2
+        assert "grid" in scene_engine.widgets
+        assert "queue" in scene_engine.widgets
+        from agloviz.widgets.grid import GridWidget
+        from agloviz.widgets.queue import QueueWidget
+
+        assert isinstance(scene_engine.widgets["grid"], GridWidget)
+        assert isinstance(scene_engine.widgets["queue"], QueueWidget)
+
+
+class TestWidgetInstantiationErrors:
+    """Test widget instantiation error handling."""
+
     def test_widget_instantiation_errors(self):
         """Test widget instantiation errors."""
-        # Test with invalid widget target in structured config
-        # This should be caught at the structured config level, not SceneEngine level
         from hydra.errors import InstantiationException
+
         with pytest.raises(InstantiationException):
-            # Try to create a config with invalid widget target
             invalid_config = {
                 "name": "test_scene",
                 "algorithm": "bfs",
@@ -168,10 +134,10 @@ class TestWidgetInstantiationFromSceneConfigs:
                     "grid": {
                         "_target_": "agloviz.widgets.nonexistent.GridWidget",
                         "width": 10,
-                        "height": 10
+                        "height": 10,
                     }
                 },
-                "event_bindings": {}
+                "event_bindings": {},
             }
             instantiate(invalid_config)
 
@@ -199,25 +165,17 @@ class TestEventBindingSetup:
 
     def test_event_binding_setup_from_yaml_configs(self):
         """Test event binding setup from YAML configs converted to Pydantic models."""
-        # Load YAML as overrides for a structured config
         yaml_config = OmegaConf.load("configs/scene/bfs_pathfinding.yaml")
-
-        # Filter out fields that aren't part of SceneConfig
-        scene_overrides = {k: v for k, v in yaml_config.items() if k != "timing_overrides"}
+        scene_overrides = {
+            k: v for k, v in yaml_config.items() if k != "timing_overrides"
+        }
         scene_config = instantiate(BFSBasicSceneConfig, **scene_overrides)
-
-        # Create SceneEngine and verify event bindings are set up
         timing_config = TimingConfig(mode=TimingMode.NORMAL)
         scene_engine = SceneEngine(scene_config, timing_config)
-
-        # Verify event bindings were set up correctly
         assert "enqueue" in scene_engine.event_bindings
         assert "dequeue" in scene_engine.event_bindings
-
-        # Verify event binding structure
         enqueue_bindings = scene_engine.event_bindings["enqueue"]
         assert len(enqueue_bindings) == 2
-
         dequeue_bindings = scene_engine.event_bindings["dequeue"]
         assert len(dequeue_bindings) == 1
 
@@ -301,12 +259,8 @@ class TestSceneEngineInternalOmegaConfConversion:
         scene_config = instantiate(BFSBasicSceneConfig)
         timing_config = TimingConfig(mode=TimingMode.NORMAL)
         scene_engine = SceneEngine(scene_config, timing_config)
-
-        # Verify that SceneEngine has created an internal OmegaConf config
-        assert hasattr(scene_engine, 'scene_config')
+        assert hasattr(scene_engine, "scene_config")
         assert scene_engine.scene_config is not None
-
-        # Verify the OmegaConf config has the expected structure
         assert scene_engine.scene_config.name == "bfs_basic"
         assert scene_engine.scene_config.algorithm == "bfs"
         assert "event_bindings" in scene_engine.scene_config
@@ -326,31 +280,17 @@ class TestSceneEngineInternalOmegaConfConversion:
         """Test that SceneEngine can resolve templates using its internal OmegaConf config."""
         from agloviz.core.resolvers import register_custom_resolvers
 
-        # Register custom resolvers
         register_custom_resolvers()
-
-        # Create a scene config with template parameters
         scene_config = instantiate(BFSDynamicSceneConfig)
         timing_config = TimingConfig(mode=TimingMode.NORMAL)
         scene_engine = SceneEngine(scene_config, timing_config)
-
-        # Create a test event
-        test_event = {
-            "node": {"id": "test_node", "position": [1, 2]},
-            "step": 5
-        }
-
-        # Test parameter resolution using SceneEngine's internal OmegaConf
+        test_event = {"node": {"id": "test_node", "position": [1, 2]}, "step": 5}
         test_params = {
             "element": "${event_data:node.id}",
             "position": "${event_data:node.position}",
-            "step": "${event_data:step}"
+            "step": "${event_data:step}",
         }
-
-        # Use SceneEngine's internal resolution method
         resolved_params = scene_engine._resolve_parameters(test_params, test_event)
-
-        # Verify resolution worked
         assert resolved_params["element"] == "test_node"
         assert resolved_params["position"] == [1, 2]
         assert resolved_params["step"] == 5

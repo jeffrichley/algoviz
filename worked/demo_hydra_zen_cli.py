@@ -8,7 +8,8 @@ Run this to see the difference between our current manual approach and hydra-zen
 """
 
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Any
+
 from hydra_zen import builds, store, zen
 from rich.console import Console
 from rich.panel import Panel
@@ -20,7 +21,7 @@ console = Console()
 # MOCK CLASSES (representing our actual ALGOViz components)
 # =====================================================================
 
-@dataclass 
+@dataclass
 class MockRenderConfig:
     """Mock of our RenderConfig"""
     quality: str = "medium"
@@ -39,8 +40,8 @@ class MockRenderer:
     """Mock of our SimpleRenderer"""
     def __init__(self, render_config: MockRenderConfig):
         self.config = render_config
-    
-    def render_video(self, algorithm: str, scenario: Any, output_path: str) -> Dict[str, Any]:
+
+    def render_video(self, algorithm: str, scenario: Any, output_path: str) -> dict[str, Any]:
         return {
             "algorithm": algorithm,
             "output_path": output_path,
@@ -58,27 +59,27 @@ def render_algorithm_video(
     renderer: MockRenderer,           # ← Automatically instantiated by hydra-zen!
     scenario: MockScenarioConfig,     # ← Automatically instantiated by hydra-zen!
     output_path: str = "output.mp4"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Main function - receives fully instantiated objects from hydra-zen.
-    
+
     Compare this to our current render_app.py which manually:
-    - Calls setup_configstore() 
+    - Calls setup_configstore()
     - Calls _load_config_from_store() for each config
     - Calls instantiate() manually
     - Parses --override arguments manually
-    
+
     With hydra-zen, ALL of that is automatic!
     """
     console.print(Panel(f"🎬 Rendering [bold cyan]{algorithm}[/] with hydra-zen", title="ALGOViz Demo"))
-    
+
     console.print("✨ All objects were automatically instantiated by hydra-zen!")
     console.print(f"📊 Renderer: {renderer.config}")
     console.print(f"🗺️  Scenario: {scenario}")
     console.print(f"🚀 Output: [bold green]{output_path}[/]")
-    
+
     # All objects are already configured and ready to use!
     result = renderer.render_video(algorithm, scenario, output_path)
-    
+
     console.print(Panel(
         f"✅ Render complete!\n"
         f"📁 Output: {output_path}\n"
@@ -87,7 +88,7 @@ def render_algorithm_video(
         f"🗺️  Scenario: {scenario.name}",
         title="[green]Success[/]"
     ))
-    
+
     return result
 
 
@@ -102,7 +103,7 @@ DraftRenderer = builds(
 )
 
 MediumRenderer = builds(
-    MockRenderer, 
+    MockRenderer,
     render_config=builds(MockRenderConfig, quality="medium", resolution=(1280, 720), frame_rate=30)
 )
 
@@ -121,7 +122,7 @@ renderer_store(DraftRenderer, name="draft")
 renderer_store(MediumRenderer, name="medium")
 renderer_store(HDRenderer, name="hd")
 
-scenario_store = store(group="scenario") 
+scenario_store = store(group="scenario")
 scenario_store(SmallMaze, name="maze_small")
 scenario_store(LargeMaze, name="maze_large")
 
@@ -143,17 +144,17 @@ app_store(
 if __name__ == "__main__":
     print("🚀 Starting Hydra-zen Demo CLI")
     print("=" * 50)
-    
+
     # Add all configurations to Hydra store
     store.add_to_hydra_store()
-    
+
     # Create CLI using zen().hydra_main() - this replaces ALL our Typer code!
     zen(render_algorithm_video).hydra_main(
         config_name="app/render",  # Use the full path: group/name
-        config_path=None, 
+        config_path=None,
         version_base="1.3"
     )
-    
+
     # This automatically creates a CLI that supports:
     #
     # Basic usage:
@@ -174,5 +175,5 @@ if __name__ == "__main__":
     # Multiple overrides:
     # python demo_hydra_zen_cli.py algorithm=dfs renderer=hd scenario=maze_large
     #
-    # All of this CLI functionality, config loading, instantiation, and override 
+    # All of this CLI functionality, config loading, instantiation, and override
     # handling that we manually implement in render_app.py is AUTOMATIC with hydra-zen!

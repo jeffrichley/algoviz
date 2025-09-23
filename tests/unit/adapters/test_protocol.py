@@ -9,11 +9,13 @@ from agloviz.adapters.protocol import AdapterWrapper
 class TestAlgorithmAdapter:
     """Test AlgorithmAdapter protocol."""
 
-    def test_adapter_protocol_compliance(self, mock_adapter_basic, small_scenario_config):
+    def test_adapter_protocol_compliance(
+        self, mock_adapter_basic, small_scenario_config
+    ):
         """Test that mock adapter satisfies protocol."""
         # Should have required attributes
-        assert hasattr(mock_adapter_basic, 'name')
-        assert hasattr(mock_adapter_basic, 'run')
+        assert hasattr(mock_adapter_basic, "name")
+        assert hasattr(mock_adapter_basic, "run")
         assert mock_adapter_basic.name == "mock"
 
         # Should be callable
@@ -25,27 +27,41 @@ class TestAlgorithmAdapter:
 class TestAdapterWrapper:
     """Test AdapterWrapper step indexing."""
 
-    def test_wrapper_assigns_step_indices(self, mock_wrapper_basic, small_scenario_config):
+    def test_wrapper_assigns_step_indices(
+        self, mock_wrapper_basic, small_scenario_config
+    ):
         """Test that wrapper assigns sequential step indices."""
         result = list(mock_wrapper_basic.run_with_indexing(small_scenario_config))
 
-        # Check that step indices are sequential starting from 0
+        self._verify_step_indices(result)
+        self._verify_event_types(result)
+        self._verify_event_payloads(result)
+
+    def _verify_step_indices(self, result):
+        """Verify step indices are sequential."""
         assert len(result) == 3
         assert result[0].step_index == 0
         assert result[1].step_index == 1
         assert result[2].step_index == 2
 
-        # Check that other fields are preserved
+    def _verify_event_types(self, result):
+        """Verify event types are preserved."""
         assert result[0].type == "enqueue"
         assert result[1].type == "dequeue"
         assert result[2].type == "goal_found"
 
+    def _verify_event_payloads(self, result):
+        """Verify event payloads are preserved."""
         assert result[0].payload == {"node": (0, 0)}
         assert result[2].payload == {"node": (1, 1)}
 
-    def test_wrapper_preserves_metadata(self, mock_wrapper_with_metadata, small_scenario_config):
+    def test_wrapper_preserves_metadata(
+        self, mock_wrapper_with_metadata, small_scenario_config
+    ):
         """Test that wrapper preserves event metadata."""
-        result = list(mock_wrapper_with_metadata.run_with_indexing(small_scenario_config))
+        result = list(
+            mock_wrapper_with_metadata.run_with_indexing(small_scenario_config)
+        )
 
         assert len(result) == 1
         assert result[0].step_index == 0
@@ -53,10 +69,18 @@ class TestAdapterWrapper:
 
     def test_wrapper_handles_empty_stream(self, small_scenario_config):
         """Test wrapper handles empty event stream."""
+        adapter = self._create_empty_mock_adapter()
+        wrapper = AdapterWrapper(adapter)
+        result = list(wrapper.run_with_indexing(small_scenario_config))
+        assert result == []
+
+    def _create_empty_mock_adapter(self):
+        """Create mock adapter with empty event stream."""
         from agloviz.core.events import VizEvent
 
         class MockAdapter:
             """Mock adapter for testing."""
+
             name = "mock"
 
             def __init__(self, events: list[VizEvent]):
@@ -64,10 +88,6 @@ class TestAdapterWrapper:
 
             def run(self, scenario):
                 """Yield mock events."""
-                for event in self.events:
-                    yield event
+                yield from self.events
 
-        adapter = MockAdapter([])
-        wrapper = AdapterWrapper(adapter)
-        result = list(wrapper.run_with_indexing(small_scenario_config))
-        assert result == []
+        return MockAdapter([])
