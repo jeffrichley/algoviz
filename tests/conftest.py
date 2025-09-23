@@ -17,10 +17,11 @@ from agloviz.config.store_manager import StoreManager
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
 @pytest.fixture(autouse=True)
 def clean_store():
     """Ensure clean store state for each test.
-    
+
     This fixture runs before and after each test to ensure
     that the hydra-zen store is in a clean state.
     """
@@ -47,14 +48,15 @@ def initialized_store():
 def mock_store():
     """Provide a mock store manager for tests that need to mock store behavior."""
     from unittest.mock import Mock
+
     mock_manager = Mock(spec=StoreManager)
     mock_manager.is_initialized.return_value = True
     mock_manager.get_registered_groups.return_value = {
-        'renderer': True,
-        'scenario': True,
-        'theme': True,
-        'timing': True,
-        'scene': True
+        "renderer": True,
+        "scenario": True,
+        "theme": True,
+        "timing": True,
+        "scene": True,
     }
     return mock_manager
 
@@ -63,38 +65,29 @@ def mock_store():
 # ScenarioConfig Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def simple_scenario_config():
     """Basic 3x3 scenario for simple tests.
-    
+
     Most common pattern found in tests - used for basic functionality testing.
     """
-    return ScenarioConfig(
-        name="test",
-        start=(0, 0),
-        goal=(2, 2),
-        grid_size=(3, 3)
-    )
+    return ScenarioConfig(name="test", start=(0, 0), goal=(2, 2), grid_size=(3, 3))
 
 
 @pytest.fixture
 def small_scenario_config():
     """2x2 scenario for minimal tests.
-    
+
     Used for testing edge cases and minimal scenarios.
     """
-    return ScenarioConfig(
-        name="test",
-        start=(0, 0),
-        goal=(1, 1),
-        grid_size=(2, 2)
-    )
+    return ScenarioConfig(name="test", start=(0, 0), goal=(1, 1), grid_size=(2, 2))
 
 
 @pytest.fixture
 def complex_scenario_config():
     """5x5 scenario with obstacles for complex tests.
-    
+
     Used for testing algorithms with obstacles and more complex pathfinding.
     """
     return ScenarioConfig(
@@ -102,14 +95,14 @@ def complex_scenario_config():
         start=(0, 0),
         goal=(4, 4),
         grid_size=(5, 5),
-        obstacles=[(1, 1), (2, 2), (3, 1)]
+        obstacles=[(1, 1), (2, 2), (3, 1)],
     )
 
 
 @pytest.fixture
 def unreachable_scenario_config():
     """Scenario with unreachable goal for testing failure cases.
-    
+
     Used for testing algorithm behavior when goal cannot be reached.
     """
     return ScenarioConfig(
@@ -117,28 +110,28 @@ def unreachable_scenario_config():
         start=(0, 0),
         goal=(2, 2),
         grid_size=(3, 3),
-        obstacles=[(1, 0), (1, 1), (1, 2)]  # Wall blocking path
+        obstacles=[(1, 0), (1, 1), (1, 2)],  # Wall blocking path
     )
 
 
 @pytest.fixture
 def start_equals_goal_scenario_config():
     """Scenario where start equals goal.
-    
+
     Used for testing edge case where no pathfinding is needed.
     """
     return ScenarioConfig(
         name="test",
         start=(0, 0),
         goal=(0, 0),  # Same as start
-        grid_size=(1, 1)
+        grid_size=(1, 1),
     )
 
 
 @pytest.fixture
 def large_scenario_config():
     """10x10 scenario for testing larger grids.
-    
+
     Used for testing performance and behavior on larger grids.
     """
     return ScenarioConfig(
@@ -146,49 +139,46 @@ def large_scenario_config():
         start=(0, 0),
         goal=(9, 9),
         grid_size=(10, 10),
-        obstacles=[(1, 1), (2, 2), (3, 3)]
+        obstacles=[(1, 1), (2, 2), (3, 3)],
     )
 
 
 @pytest.fixture
 def out_of_bounds_start_scenario_config():
     """Scenario with out-of-bounds start position.
-    
+
     Used for testing validation and error handling.
     """
     return ScenarioConfig(
         name="test",
         start=(-1, 0),  # Out of bounds
         goal=(2, 2),
-        grid_size=(3, 3)
+        grid_size=(3, 3),
     )
 
 
 @pytest.fixture
 def out_of_bounds_goal_scenario_config():
     """Scenario with out-of-bounds goal position.
-    
+
     Used for testing validation and error handling.
     """
     return ScenarioConfig(
         name="test",
         start=(0, 0),
         goal=(5, 5),  # Out of bounds for 3x3 grid
-        grid_size=(3, 3)
+        grid_size=(3, 3),
     )
 
 
 @pytest.fixture
 def scenario_config_with_custom_name():
     """Scenario with custom name for testing name handling.
-    
+
     Used for testing scenario identification and naming.
     """
     return ScenarioConfig(
-        name="custom_test_scenario",
-        start=(0, 0),
-        goal=(2, 2),
-        grid_size=(3, 3)
+        name="custom_test_scenario", start=(0, 0), goal=(2, 2), grid_size=(3, 3)
     )
 
 
@@ -196,17 +186,14 @@ def scenario_config_with_custom_name():
 # ScenarioConfig Parameterized Fixtures
 # ============================================================================
 
-@pytest.fixture(params=[
-    (0, 0), (1, 1), (2, 2), (0, 2), (2, 0)
-])
+
+@pytest.fixture(params=[(0, 0), (1, 1), (2, 2), (0, 2), (2, 0)])
 def valid_start_position(request):
     """Valid start positions for 3x3 grid."""
     return request.param
 
 
-@pytest.fixture(params=[
-    (0, 0), (1, 1), (2, 2), (0, 2), (2, 0)
-])
+@pytest.fixture(params=[(0, 0), (1, 1), (2, 2), (0, 2), (2, 0)])
 def valid_goal_position(request):
     """Valid goal positions for 3x3 grid."""
     return request.param
@@ -219,13 +206,14 @@ def scenario_config_with_positions(valid_start_position, valid_goal_position):
         name="test",
         start=valid_start_position,
         goal=valid_goal_position,
-        grid_size=(3, 3)
+        grid_size=(3, 3),
     )
 
 
 # ============================================================================
 # Grid Data Fixtures (for GridScenario tests)
 # ============================================================================
+
 
 @pytest.fixture
 def simple_grid_data():
@@ -235,7 +223,7 @@ def simple_grid_data():
         "height": 3,
         "default_cost": 1.0,
         "obstacles": [],
-        "weights": []
+        "weights": [],
     }
 
 
@@ -247,7 +235,7 @@ def grid_data_with_obstacles():
         "height": 3,
         "default_cost": 1.0,
         "obstacles": [[1, 1]],
-        "weights": []
+        "weights": [],
     }
 
 
@@ -259,7 +247,7 @@ def grid_data_with_weights():
         "height": 3,
         "default_cost": 2.0,
         "obstacles": [],
-        "weights": [{"from": [0, 0], "to": [1, 0], "cost": 5.0}]
+        "weights": [{"from": [0, 0], "to": [1, 0], "cost": 5.0}],
     }
 
 
@@ -271,7 +259,7 @@ def large_grid_data():
         "height": 10,
         "default_cost": 1.0,
         "obstacles": [[1, 1], [2, 2], [3, 3]],
-        "weights": []
+        "weights": [],
     }
 
 
@@ -283,7 +271,7 @@ def grid_data_with_multiple_obstacles():
         "height": 3,
         "default_cost": 1.0,
         "obstacles": [[1, 1], [2, 1]],  # Multiple obstacles
-        "weights": []
+        "weights": [],
     }
 
 
@@ -295,7 +283,7 @@ def grid_data_with_custom_default_cost():
         "height": 3,
         "default_cost": 2.0,  # Custom default cost
         "obstacles": [],
-        "weights": []
+        "weights": [],
     }
 
 
@@ -310,8 +298,8 @@ def grid_data_with_complex_weights():
         "weights": [
             {"from": [0, 0], "to": [1, 0], "cost": 5.0},
             {"from": [1, 0], "to": [2, 0], "cost": 3.0},
-            {"from": [0, 0], "to": [0, 1], "cost": 2.0}
-        ]
+            {"from": [0, 0], "to": [0, 1], "cost": 2.0},
+        ],
     }
 
 
@@ -323,13 +311,14 @@ def grid_data_for_validation_tests():
         "height": 3,
         "default_cost": 1.0,
         "obstacles": [],
-        "weights": []
+        "weights": [],
     }
 
 
 # ============================================================================
 # Grid Data Parameterized Fixtures
 # ============================================================================
+
 
 @pytest.fixture(params=[1.0, 2.0, 5.0, 10.0])
 def grid_data_with_variable_cost(request):
@@ -339,16 +328,18 @@ def grid_data_with_variable_cost(request):
         "height": 3,
         "default_cost": request.param,
         "obstacles": [],
-        "weights": []
+        "weights": [],
     }
 
 
-@pytest.fixture(params=[
-    [],  # No obstacles
-    [[1, 1]],  # Single obstacle
-    [[1, 1], [2, 2]],  # Multiple obstacles
-    [[0, 1], [1, 0], [1, 2], [2, 1]]  # Many obstacles
-])
+@pytest.fixture(
+    params=[
+        [],  # No obstacles
+        [[1, 1]],  # Single obstacle
+        [[1, 1], [2, 2]],  # Multiple obstacles
+        [[0, 1], [1, 0], [1, 2], [2, 1]],  # Many obstacles
+    ]
+)
 def grid_data_with_variable_obstacles(request):
     """3x3 grid data with parameterized obstacles."""
     return {
@@ -356,13 +347,14 @@ def grid_data_with_variable_obstacles(request):
         "height": 3,
         "default_cost": 1.0,
         "obstacles": request.param,
-        "weights": []
+        "weights": [],
     }
 
 
 # ============================================================================
 # BFS Adapter and Wrapper Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def bfs_adapter():
@@ -410,10 +402,12 @@ def bfs_events_start_equals_goal(bfs_wrapper, start_equals_goal_scenario_config)
 # Mock Adapter Fixtures (for protocol testing)
 # ============================================================================
 
+
 @pytest.fixture
 def mock_events_basic():
     """Basic mock events for testing."""
     from agloviz.core.events import VizEvent
+
     return [
         VizEvent(type="enqueue", payload={"node": (0, 0)}, step_index=999),
         VizEvent(type="dequeue", payload={"node": (0, 0)}, step_index=999),
@@ -425,12 +419,13 @@ def mock_events_basic():
 def mock_events_with_metadata():
     """Mock events with metadata for testing."""
     from agloviz.core.events import VizEvent
+
     return [
         VizEvent(
             type="enqueue",
             payload={"node": (0, 0)},
             step_index=999,
-            metadata={"complexity": 5}
+            metadata={"complexity": 5},
         )
     ]
 
@@ -443,6 +438,7 @@ def mock_adapter_basic(mock_events_basic):
 
     class MockAdapter:
         """Mock adapter for testing."""
+
         name = "mock"
 
         def __init__(self, events: list[VizEvent]):
@@ -450,8 +446,7 @@ def mock_adapter_basic(mock_events_basic):
 
         def run(self, scenario: ScenarioConfig):
             """Yield mock events."""
-            for event in self.events:
-                yield event
+            yield from self.events
 
     return MockAdapter(mock_events_basic)
 
@@ -464,6 +459,7 @@ def mock_adapter_with_metadata(mock_events_with_metadata):
 
     class MockAdapter:
         """Mock adapter for testing."""
+
         name = "mock"
 
         def __init__(self, events: list[VizEvent]):
@@ -471,8 +467,7 @@ def mock_adapter_with_metadata(mock_events_with_metadata):
 
         def run(self, scenario: ScenarioConfig):
             """Yield mock events."""
-            for event in self.events:
-                yield event
+            yield from self.events
 
     return MockAdapter(mock_events_with_metadata)
 
@@ -492,6 +487,7 @@ def mock_wrapper_with_metadata(mock_adapter_with_metadata):
 # ============================================================================
 # Registry Management Fixtures
 # ============================================================================
+
 
 @pytest.fixture(autouse=True)
 def clean_registries():
@@ -535,10 +531,12 @@ def bfs_wrapper_from_registry(bfs_adapter_from_registry):
 # Scenario Factory Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def contract_test_harness():
     """ContractTestHarness instance for validation testing."""
     from agloviz.core.scenario import ContractTestHarness
+
     return ContractTestHarness()
 
 
@@ -546,12 +544,14 @@ def contract_test_harness():
 def scenario_loader():
     """ScenarioLoader for creating scenarios from configs."""
     from agloviz.core.scenario import ScenarioLoader
+
     return ScenarioLoader
 
 
 # ============================================================================
 # Scenario Creation Factory Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def scenario_from_loader(simple_scenario_config, scenario_loader):
@@ -575,36 +575,53 @@ def scenario_with_obstacles_from_loader(complex_scenario_config, scenario_loader
 # Validation Testing Fixtures
 # ============================================================================
 
+
 @pytest.fixture
-def valid_scenario_for_validation(simple_scenario_config, scenario_loader, contract_test_harness):
+def valid_scenario_for_validation(
+    simple_scenario_config, scenario_loader, contract_test_harness
+):
     """Complete validation setup: valid scenario + harness."""
     scenario = scenario_loader.from_config(simple_scenario_config)
     return {
         "scenario": scenario,
         "harness": contract_test_harness,
-        "violations": contract_test_harness.verify_scenario(scenario)
+        "violations": contract_test_harness.verify_scenario(scenario),
     }
 
 
 @pytest.fixture
-def invalid_start_scenario_for_validation(out_of_bounds_start_scenario_config, grid_data_for_validation_tests, contract_test_harness):
+def invalid_start_scenario_for_validation(
+    out_of_bounds_start_scenario_config,
+    grid_data_for_validation_tests,
+    contract_test_harness,
+):
     """Complete validation setup: invalid start scenario + harness."""
     from agloviz.core.scenario import GridScenario
-    scenario = GridScenario(out_of_bounds_start_scenario_config, grid_data_for_validation_tests)
+
+    scenario = GridScenario(
+        out_of_bounds_start_scenario_config, grid_data_for_validation_tests
+    )
     return {
         "scenario": scenario,
         "harness": contract_test_harness,
-        "violations": contract_test_harness.verify_scenario(scenario)
+        "violations": contract_test_harness.verify_scenario(scenario),
     }
 
 
 @pytest.fixture
-def invalid_goal_scenario_for_validation(out_of_bounds_goal_scenario_config, grid_data_for_validation_tests, contract_test_harness):
+def invalid_goal_scenario_for_validation(
+    out_of_bounds_goal_scenario_config,
+    grid_data_for_validation_tests,
+    contract_test_harness,
+):
     """Complete validation setup: invalid goal scenario + harness."""
     from agloviz.core.scenario import GridScenario
-    scenario = GridScenario(out_of_bounds_goal_scenario_config, grid_data_for_validation_tests)
+
+    scenario = GridScenario(
+        out_of_bounds_goal_scenario_config, grid_data_for_validation_tests
+    )
     return {
         "scenario": scenario,
         "harness": contract_test_harness,
-        "violations": contract_test_harness.verify_scenario(scenario)
+        "violations": contract_test_harness.verify_scenario(scenario),
     }

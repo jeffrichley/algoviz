@@ -17,25 +17,30 @@ from .storyboard import Beat
 
 class EventBinding(BaseModel):
     """Binds algorithm events to widget actions with parameter templates.
-    
+
     Example:
         EventBinding(
             widget="grid",
-            action="highlight_element", 
+            action="highlight_element",
             params={"identifier": "${event_data:event.node}", "style": "frontier"},
             order=1
         )
     """
+
     widget: str = Field(..., description="Target widget name")
     action: str = Field(..., description="Widget method to call")
-    params: dict[str, Any] = Field(default_factory=dict, description="Method parameters with template support")
+    params: dict[str, Any] = Field(
+        default_factory=dict, description="Method parameters with template support"
+    )
     order: int = Field(default=1, description="Execution order for multiple bindings")
-    condition: str | None = Field(default=None, description="Optional condition for execution")
+    condition: str | None = Field(
+        default=None, description="Optional condition for execution"
+    )
 
 
 class WidgetSpec(BaseModel):
     """Hydra-zen widget specification with _target_ support.
-    
+
     Example:
         WidgetSpec(
             name="grid",
@@ -45,6 +50,7 @@ class WidgetSpec(BaseModel):
             cell_size=0.5
         )
     """
+
     name: str = Field(..., description="Unique widget identifier")
     target: str = Field(..., description="Full path to widget class")
 
@@ -57,22 +63,12 @@ class WidgetSpec(BaseModel):
 
 # Hydra-zen structured configs for scene configuration components
 EventBindingConfigZen = builds(
-    EventBinding,
-    zen_partial=True,
-    populate_full_signature=True
+    EventBinding, zen_partial=True, populate_full_signature=True
 )
 
-WidgetSpecConfigZen = builds(
-    WidgetSpec,
-    zen_partial=True,
-    populate_full_signature=True
-)
+WidgetSpecConfigZen = builds(WidgetSpec, zen_partial=True, populate_full_signature=True)
 
-SceneConfigZen = builds(
-    SceneConfig,
-    zen_partial=True,
-    populate_full_signature=True
-)
+SceneConfigZen = builds(SceneConfig, zen_partial=True, populate_full_signature=True)
 
 
 # Scene configuration examples using hydra-zen composition
@@ -81,12 +77,8 @@ BFSSceneConfigZen = make_config(
     name="bfs_pathfinding",
     algorithm="bfs",
     widgets={
-        "grid": {
-            "_target_": "agloviz.widgets.grid.GridWidget"
-        },
-        "queue": {
-            "_target_": "agloviz.widgets.queue.QueueWidget"
-        }
+        "grid": {"_target_": "agloviz.widgets.grid.GridWidget"},
+        "queue": {"_target_": "agloviz.widgets.queue.QueueWidget"},
     },
     event_bindings={
         "enqueue": [
@@ -94,29 +86,26 @@ BFSSceneConfigZen = make_config(
                 "widget": "queue",
                 "action": "add_element",
                 "params": {"element": "node"},
-                "order": 1
+                "order": 1,
             },
             {
                 "widget": "grid",
                 "action": "show_frontier",
                 "params": {"positions": ["pos"]},
-                "order": 2
-            }
+                "order": 2,
+            },
         ],
         "dequeue": [
             {
                 "widget": "queue",
                 "action": "remove_element",
                 "params": {"index": 0},
-                "order": 1
+                "order": 1,
             }
-        ]
+        ],
     },
-    timing_overrides={
-        "events": 0.8,
-        "effects": 0.5
-    },
-    hydra_defaults=["_self_"]
+    timing_overrides={"events": 0.8, "effects": 0.5},
+    hydra_defaults=["_self_"],
 )
 
 
@@ -164,7 +153,9 @@ class SceneEngine:
 
         # Create OmegaConf version for template resolution (excluding widgets that can't serialize)
         config_dict = scene_config.model_dump()
-        config_dict.pop('widgets', None)  # Remove widgets - they're already instantiated
+        config_dict.pop(
+            "widgets", None
+        )  # Remove widgets - they're already instantiated
         self.scene_config = OmegaConf.create(config_dict)
 
         # Initialize scene
@@ -191,6 +182,7 @@ class SceneEngine:
         # Import and register custom resolvers from core.resolvers
         try:
             from agloviz.core.resolvers import register_custom_resolvers
+
             register_custom_resolvers()
         except ImportError:
             # Fallback to basic resolvers if custom ones not available
@@ -201,10 +193,10 @@ class SceneEngine:
         """Initialize scene using hydra-zen instantiation."""
         # Get widgets - handle both dict and OmegaConf access patterns
         widgets = None
-        if hasattr(self.scene_data, 'widgets'):
+        if hasattr(self.scene_data, "widgets"):
             widgets = self.scene_data.widgets
-        elif isinstance(self.scene_data, dict) and 'widgets' in self.scene_data:
-            widgets = self.scene_data['widgets']
+        elif isinstance(self.scene_data, dict) and "widgets" in self.scene_data:
+            widgets = self.scene_data["widgets"]
 
         if widgets is None:
             raise ValueError(f"No widgets found in scene_data: {self.scene_data}")
@@ -214,10 +206,10 @@ class SceneEngine:
 
         # Get event_bindings - handle both dict and OmegaConf access patterns
         event_bindings = None
-        if hasattr(self.scene_data, 'event_bindings'):
+        if hasattr(self.scene_data, "event_bindings"):
             event_bindings = self.scene_data.event_bindings
-        elif isinstance(self.scene_data, dict) and 'event_bindings' in self.scene_data:
-            event_bindings = self.scene_data['event_bindings']
+        elif isinstance(self.scene_data, dict) and "event_bindings" in self.scene_data:
+            event_bindings = self.scene_data["event_bindings"]
 
         if event_bindings:
             # Setup event bindings
@@ -228,32 +220,36 @@ class SceneEngine:
         for widget_name, widget_spec in widget_specs.items():
             try:
                 # Check if widget is already instantiated (from ConfigStore resolution)
-                if hasattr(widget_spec, 'show') and hasattr(widget_spec, 'hide'):
+                if hasattr(widget_spec, "show") and hasattr(widget_spec, "hide"):
                     # Already a widget instance
                     widget_instance = widget_spec
-                elif hasattr(widget_spec, '_target_'):
+                elif hasattr(widget_spec, "_target_"):
                     # Structured config that needs instantiation
                     widget_instance = instantiate(widget_spec)
-                elif isinstance(widget_spec, dict) and '_target_' in widget_spec:
+                elif isinstance(widget_spec, dict) and "_target_" in widget_spec:
                     # Dict config that needs instantiation
                     widget_instance = instantiate(widget_spec)
                 else:
                     # Handle WidgetSpec objects or other structured configs
-                    if hasattr(widget_spec, '_target_'):
+                    if hasattr(widget_spec, "_target_"):
                         widget_instance = instantiate(widget_spec)
                     else:
-                        raise ValueError(f"Widget spec for '{widget_name}' missing _target_ or is not a widget instance")
+                        raise ValueError(
+                            f"Widget spec for '{widget_name}' missing _target_ or is not a widget instance"
+                        )
 
                 self.widgets[widget_name] = widget_instance
             except Exception as e:
-                raise ValueError(f"Failed to initialize widget '{widget_name}': {e}") from e
+                raise ValueError(
+                    f"Failed to initialize widget '{widget_name}': {e}"
+                ) from e
 
     def _setup_event_bindings(self, binding_specs: dict[str, list]):
         """Setup event bindings from structured configs."""
         for event_name, bindings in binding_specs.items():
             resolved_bindings = []
             for binding_spec in bindings:
-                if hasattr(binding_spec, '_target_'):
+                if hasattr(binding_spec, "_target_"):
                     # Structured config event binding
                     binding = instantiate(binding_spec)
                 elif isinstance(binding_spec, dict):
@@ -265,11 +261,13 @@ class SceneEngine:
                 resolved_bindings.append(binding)
 
             # Sort by execution order
-            self.event_bindings[event_name] = sorted(resolved_bindings, key=lambda b: b.order)
+            self.event_bindings[event_name] = sorted(
+                resolved_bindings, key=lambda b: b.order
+            )
 
     def handle_event(self, event: Any):
         """Route algorithm event to appropriate widget actions."""
-        event_type = getattr(event, 'type', str(event))
+        event_type = getattr(event, "type", str(event))
 
         if event_type not in self.event_bindings:
             return
@@ -298,7 +296,9 @@ class SceneEngine:
 
         # Execute action
         if not hasattr(widget, binding.action):
-            raise ValueError(f"Widget '{binding.widget}' has no action '{binding.action}'")
+            raise ValueError(
+                f"Widget '{binding.widget}' has no action '{binding.action}'"
+            )
 
         action_method = getattr(widget, binding.action)
         action_method(**resolved_params)
@@ -316,7 +316,7 @@ class SceneEngine:
             event=event,
             config=self.scene_config,
             timing=self.timing_config,
-            widgets={name: widget for name, widget in self.widgets.items()}
+            widgets=dict(self.widgets),
         )
 
         # Create parameter config for resolution
@@ -338,8 +338,12 @@ class SceneEngine:
 
         from agloviz.core.resolvers import validate_resolver_syntax
 
-        for key, value in params.items():
-            if isinstance(value, str) and value.startswith("${") and value.endswith("}"):
+        for _key, value in params.items():
+            if (
+                isinstance(value, str)
+                and value.startswith("${")
+                and value.endswith("}")
+            ):
                 if not validate_resolver_syntax(value):
                     raise ValueError(f"Invalid parameter template syntax: {value}")
 
@@ -351,17 +355,19 @@ class SceneEngine:
 
         try:
             # Resolve condition template
-            context = {'event': event, 'config': self.scene_config}
+            context = {"event": event, "config": self.scene_config}
             condition_config = OmegaConf.create({"condition": condition})
 
             with OmegaConf.structured(context):
-                resolved_condition = OmegaConf.to_container(condition_config, resolve=True)["condition"]
+                resolved_condition = OmegaConf.to_container(
+                    condition_config, resolve=True
+                )["condition"]
 
             # Simple boolean evaluation
             if isinstance(resolved_condition, bool):
                 return resolved_condition
             elif isinstance(resolved_condition, str):
-                return resolved_condition.lower() == 'true'
+                return resolved_condition.lower() == "true"
             else:
                 return bool(resolved_condition)
         except Exception:
@@ -382,8 +388,10 @@ class SceneEngine:
 
     def _is_algorithm_action(self, action_name: str) -> bool:
         """Check if action is algorithm-specific (place_start, celebrate_goal, etc.)."""
-        return hasattr(self.scene_data, 'action_handlers') and \
-               action_name in self.scene_data.action_handlers
+        return (
+            hasattr(self.scene_data, "action_handlers")
+            and action_name in self.scene_data.action_handlers
+        )
 
     def _is_event_action(self, action_name: str) -> bool:
         """Check if action is event processing (play_events, pause_events, etc.)."""
@@ -393,38 +401,40 @@ class SceneEngine:
     def _get_available_actions(self) -> list[str]:
         """Get list of available actions for error messages."""
         actions = []
-        
+
         # Add scene actions
         actions.extend(["show_title", "outro", "fade_in", "fade_out", "show_widgets"])
-        
+
         # Add algorithm actions from scene config
-        if hasattr(self.scene_data, 'action_handlers'):
+        if hasattr(self.scene_data, "action_handlers"):
             actions.extend(self.scene_data.action_handlers.keys())
-        
+
         # Add event actions
         actions.extend(["play_events", "pause_events", "resume_events"])
-        
+
         return sorted(actions)
 
     def execute_beat(self, beat: Beat, run_time: float, context: dict) -> None:
         """Facade method - handles ALL action types."""
-        
+
         if self._is_scene_action(beat.action):
             self._execute_scene_action(beat.action, beat.args, run_time, context)
-        
+
         elif self._is_algorithm_action(beat.action):
             self._execute_algorithm_action(beat.action, beat.args, run_time, context)
-        
+
         elif self._is_event_action(beat.action):
             self._execute_event_action(beat.action, beat.args, run_time, context)
-        
+
         else:
             available = self._get_available_actions()
             raise ValueError(f"Unknown action '{beat.action}'. Available: {available}")
 
-    def _execute_scene_action(self, action_name: str, args: dict, run_time: float, context: dict):
+    def _execute_scene_action(
+        self, action_name: str, args: dict, run_time: float, context: dict
+    ):
         """Execute scene-level actions."""
-        
+
         if action_name == "show_title":
             self._execute_show_title(args, run_time, context)
         elif action_name == "outro":
@@ -452,25 +462,31 @@ class SceneEngine:
                 if widget:
                     widget.show(self.scene)
 
-    def _execute_algorithm_action(self, action_name: str, args: dict, run_time: float, context: dict):
+    def _execute_algorithm_action(
+        self, action_name: str, args: dict, run_time: float, context: dict
+    ):
         """Execute algorithm-specific actions from scene configuration."""
-        
-        if not hasattr(self.scene_data, 'action_handlers'):
-            raise ValueError(f"Scene configuration has no action handlers")
-        
+
+        if not hasattr(self.scene_data, "action_handlers"):
+            raise ValueError("Scene configuration has no action handlers")
+
         if action_name not in self.scene_data.action_handlers:
             available = list(self.scene_data.action_handlers.keys())
-            raise ValueError(f"Action '{action_name}' not in scene config. Available: {available}")
-        
+            raise ValueError(
+                f"Action '{action_name}' not in scene config. Available: {available}"
+            )
+
         # Get handler from scene configuration
         handler = self.scene_data.action_handlers[action_name]
-        
+
         # Execute with full context
         handler(self.scene, args, run_time, context)
 
-    def _execute_event_action(self, action_name: str, args: dict, run_time: float, context: dict):
+    def _execute_event_action(
+        self, action_name: str, args: dict, run_time: float, context: dict
+    ):
         """Execute event processing actions."""
-        
+
         if action_name == "play_events":
             self._execute_play_events(args, run_time, context)
         else:
@@ -478,27 +494,27 @@ class SceneEngine:
 
     def _execute_play_events(self, args: dict, run_time: float, context: dict):
         """Play algorithm events with scene configuration routing."""
-        
+
         # Get algorithm and scenario
-        algorithm = args.get('algorithm')
-        scenario_name = args.get('scenario')
-        
+        algorithm = args.get("algorithm")
+        scenario_name = args.get("scenario")
+
         if not algorithm:
             raise ValueError("play_events requires 'algorithm' parameter")
-        
+
         # Get adapter using hydra-zen
         from agloviz.adapters.registry import AdapterRegistry
         from agloviz.core.scenario import ScenarioLoader
-        
+
         adapter_class = AdapterRegistry.get(algorithm)
         adapter = adapter_class()
-        
+
         # Load scenario
         scenario = ScenarioLoader.load(scenario_name) if scenario_name else None
-        
+
         # Generate events from algorithm
         events = list(adapter.run(scenario))
-        
+
         # Process each event through scene configuration
         for event in events:
             self.handle_event(event)
@@ -515,7 +531,9 @@ def create_scene_from_config_store(scene_name: str, **overrides) -> SceneEngine:
     scene_config_name = scene_name + ".yaml"
     if scene_config_name not in cs.repo["scene"]:
         available_scenes = list(cs.repo["scene"].keys())
-        raise ValueError(f"Scene '{scene_name}' not found in ConfigStore. Available: {available_scenes}")
+        raise ValueError(
+            f"Scene '{scene_name}' not found in ConfigStore. Available: {available_scenes}"
+        )
 
     scene_config = cs.repo["scene"][scene_config_name].node
 

@@ -6,23 +6,41 @@ with enqueue/dequeue animations and queue state management.
 
 from typing import Any
 
-from manim import *
+from manim import (
+    BLACK,
+    BLUE,
+    DOWN,
+    LEFT,
+    RIGHT,
+    UP,
+    WHITE,
+    FadeIn,
+    FadeOut,
+    Rectangle,
+    Text,
+    VGroup,
+)
 
-# No longer import VizEvent - widgets are pure visual
 from .protocol import Widget
 
 
 class QueueWidget(Widget):
     """Visual representation of BFS queue with enqueue/dequeue animations.
-    
+
     The QueueWidget maintains a visual queue that synchronizes with algorithm
     queue operations through VizEvent updates.
     """
 
-    def __init__(self, max_visible_items: int = 8, item_width: float = 1.0, item_height: float = 0.6, spacing: float = 0.1):
+    def __init__(
+        self,
+        max_visible_items: int = 8,
+        item_width: float = 1.0,
+        item_height: float = 0.6,
+        spacing: float = 0.1,
+    ):
         self.queue_group: VGroup | None = None
         self.queue_items: list = []  # Changed to list for pure visual operations
-        self.queue_data: list = []   # Changed to list for pure visual operations
+        self.queue_data: list = []  # Changed to list for pure visual operations
         self.max_visible_items: int = max_visible_items
         self.item_width: float = item_width
         self.item_height: float = item_height
@@ -30,7 +48,7 @@ class QueueWidget(Widget):
 
     def show(self, scene: Any, **kwargs) -> None:
         """Initialize queue visualization.
-        
+
         Args:
             scene: Manim scene instance
             **kwargs: Optional runtime parameters like run_time
@@ -40,10 +58,9 @@ class QueueWidget(Widget):
         self._create_queue_container(scene)
         scene.play(FadeIn(self.queue_group), run_time=run_time)
 
-
     def hide(self, scene: Any) -> None:
         """Clean teardown of queue visualization.
-        
+
         Args:
             scene: Manim scene instance
         """
@@ -55,7 +72,7 @@ class QueueWidget(Widget):
 
     def _create_queue_container(self, scene: Any) -> None:
         """Create queue container structure.
-        
+
         Args:
             scene: Manim scene instance
         """
@@ -75,7 +92,7 @@ class QueueWidget(Widget):
 
     def add_element(self, element: Any, label: str | None = None):
         """Pure visual operation: add element to queue.
-        
+
         Args:
             element: Element to add (any data)
             label: Optional text label for the element
@@ -88,7 +105,7 @@ class QueueWidget(Widget):
 
         if label:
             item_widget.set_label(label)
-        elif hasattr(element, '__str__'):
+        elif hasattr(element, "__str__"):
             item_widget.set_label(str(element))
 
         # Add to queue state
@@ -104,10 +121,10 @@ class QueueWidget(Widget):
 
     def remove_element(self, index: int = 0):
         """Pure visual operation: remove element from queue.
-        
+
         Args:
             index: Index of element to remove (default: 0 for FIFO)
-            
+
         Returns:
             Tuple of (removed_data, removed_widget) for potential animation
         """
@@ -124,6 +141,7 @@ class QueueWidget(Widget):
         # Rearrange remaining items using Manim's layout
         if self.queue_items:
             from .primitives import ContainerGroup
+
             queue_group = ContainerGroup(*self.queue_items)
             queue_group.arrange_horizontal(spacing=0.1)
 
@@ -131,10 +149,10 @@ class QueueWidget(Widget):
 
     def _get_queue_position(self, index: int) -> list[float]:
         """Calculate position for queue item at given index.
-        
+
         Args:
             index: Queue position index
-            
+
         Returns:
             Position coordinates [x, y, z]
         """
@@ -147,7 +165,7 @@ class QueueWidget(Widget):
 
     def _slide_queue_forward(self, scene: Any, run_time: float) -> None:
         """Slide all queue items forward after dequeue.
-        
+
         Args:
             scene: Manim scene instance
             run_time: Animation duration
@@ -163,7 +181,7 @@ class QueueWidget(Widget):
 
     def _handle_queue_overflow(self, scene: Any, run_time: float) -> None:
         """Handle queue overflow by removing leftmost items.
-        
+
         Args:
             scene: Manim scene instance
             run_time: Animation duration

@@ -12,9 +12,9 @@ from agloviz.core.errors import SuggestionEngine
 
 # Global settings for faster tests
 fast_settings = settings(
-    max_examples=5,   # Very few examples for speed
-    deadline=500,     # 0.5 second deadline per test
-    suppress_health_check=[HealthCheck.filter_too_much, HealthCheck.too_slow]
+    max_examples=5,  # Very few examples for speed
+    deadline=500,  # 0.5 second deadline per test
+    suppress_health_check=[HealthCheck.filter_too_much, HealthCheck.too_slow],
 )
 
 
@@ -23,11 +23,23 @@ class TestSuggestionEngineProperties:
     """Essential property-based tests for SuggestionEngine using Hypothesis."""
 
     @given(
-        input_str=st.text(alphabet=st.characters(whitelist_categories=['L']), min_size=1, max_size=6),
-        valid_options=st.lists(st.text(alphabet=st.characters(whitelist_categories=['L']), min_size=1, max_size=6), min_size=1, max_size=3),
+        input_str=st.text(
+            alphabet=st.characters(whitelist_categories=["L"]), min_size=1, max_size=6
+        ),
+        valid_options=st.lists(
+            st.text(
+                alphabet=st.characters(whitelist_categories=["L"]),
+                min_size=1,
+                max_size=6,
+            ),
+            min_size=1,
+            max_size=3,
+        ),
     )
     @fast_settings
-    def test_suggest_corrections_basic_properties(self, input_str, valid_options):
+    def test_suggest_corrections_basic_properties(
+        self, input_str: str, valid_options: list[str]
+    ) -> None:
         """Test basic suggestion engine properties with generated inputs."""
         # Ensure unique options
         assume(len(set(valid_options)) == len(valid_options))
@@ -45,11 +57,11 @@ class TestSuggestionEngineProperties:
         assert len(suggestions) == len(set(suggestions))
 
     @given(
-        s1=st.text(alphabet=st.characters(whitelist_categories=['L']), max_size=4),
-        s2=st.text(alphabet=st.characters(whitelist_categories=['L']), max_size=4),
+        s1=st.text(alphabet=st.characters(whitelist_categories=["L"]), max_size=4),
+        s2=st.text(alphabet=st.characters(whitelist_categories=["L"]), max_size=4),
     )
     @fast_settings
-    def test_levenshtein_distance_properties(self, s1, s2):
+    def test_levenshtein_distance_properties(self, s1: str, s2: str) -> None:
         """Test Levenshtein distance algorithm properties."""
         engine = SuggestionEngine()
         distance = engine._levenshtein_distance(s1, s2)
@@ -69,28 +81,36 @@ class TestSuggestionEngineProperties:
 
     @given(
         input_str=st.sampled_from(["timing", "render", "config", "test"]),
-        valid_options=st.sampled_from([
-            ["timing", "render", "scenario"],
-            ["config", "setting", "option"],
-            ["test", "spec", "check"]
-        ]),
+        valid_options=st.sampled_from(
+            [
+                ["timing", "render", "scenario"],
+                ["config", "setting", "option"],
+                ["test", "spec", "check"],
+            ]
+        ),
     )
     @fast_settings
-    def test_exact_match_always_suggested(self, input_str, valid_options):
+    def test_exact_match_always_suggested(
+        self, input_str: str, valid_options: list[str]
+    ) -> None:
         """Test that exact matches (case-insensitive) are always suggested."""
         engine = SuggestionEngine()
         suggestions = engine.suggest_corrections(input_str, valid_options)
 
         # If there's an exact case-insensitive match, it should be in suggestions
-        exact_matches = [opt for opt in valid_options if opt.lower() == input_str.lower()]
+        exact_matches = [
+            opt for opt in valid_options if opt.lower() == input_str.lower()
+        ]
         for exact_match in exact_matches:
             assert exact_match in suggestions
 
     @given(
-        input_str=st.text(alphabet=st.characters(whitelist_categories=['L']), min_size=1, max_size=5),
+        input_str=st.text(
+            alphabet=st.characters(whitelist_categories=["L"]), min_size=1, max_size=5
+        ),
     )
     @fast_settings
-    def test_empty_options_returns_empty_suggestions(self, input_str):
+    def test_empty_options_returns_empty_suggestions(self, input_str: str) -> None:
         """Test that empty valid_options returns empty suggestions."""
         engine = SuggestionEngine()
 
@@ -108,12 +128,14 @@ class TestConfigErrorProperties:
             st.sampled_from(["timing", "render", "scenario", "theme", "config"]),
             min_size=1,
             max_size=3,
-            unique=True
+            unique=True,
         ),
         typo_key=st.sampled_from(["tming", "rendr", "scenaro", "thme", "confg"]),
     )
     @fast_settings
-    def test_config_error_suggestion_generation(self, config_keys, typo_key):
+    def test_config_error_suggestion_generation(
+        self, config_keys: list[str], typo_key: str
+    ) -> None:
         """Test ConfigError suggestion generation with various key combinations."""
         assume(typo_key not in config_keys)  # Ensure it's actually a typo
 
@@ -139,7 +161,9 @@ class TestConfigErrorProperties:
         field_names=st.sampled_from(["name", "count", "enabled", "value"]),
     )
     @fast_settings
-    def test_type_mismatch_error_properties(self, field_types, actual_types, field_names):
+    def test_type_mismatch_error_properties(
+        self, field_types: str, actual_types: str, field_names: str
+    ) -> None:
         """Test type mismatch error generation properties."""
         assume(field_types != actual_types)  # Must be different types
 
@@ -165,13 +189,17 @@ class TestErrorMessageProperties:
     """Essential property-based tests for error message formatting."""
 
     @given(
-        categories=st.sampled_from([
-            "ConfigError", "StoryboardError", "AdapterError"
-        ]),
-        issues=st.text(alphabet=st.characters(whitelist_categories=['L', 'P']), min_size=5, max_size=20),
+        categories=st.sampled_from(["ConfigError", "StoryboardError", "AdapterError"]),
+        issues=st.text(
+            alphabet=st.characters(whitelist_categories=["L", "P"]),
+            min_size=5,
+            max_size=20,
+        ),
     )
     @fast_settings
-    def test_error_message_format_consistency(self, categories, issues):
+    def test_error_message_format_consistency(
+        self, categories: str, issues: str
+    ) -> None:
         """Test that error messages have consistent format regardless of content."""
         from agloviz.core.errors import AGLOVizError
 
@@ -188,11 +216,15 @@ class TestErrorMessageProperties:
         assert parts[0] == error.category
 
     @given(
-        file_paths=st.text(alphabet=st.characters(whitelist_categories=['L']), min_size=1, max_size=10),
+        file_paths=st.text(
+            alphabet=st.characters(whitelist_categories=["L"]), min_size=1, max_size=10
+        ),
         line_numbers=st.one_of(st.none(), st.integers(min_value=1, max_value=100)),
     )
     @fast_settings
-    def test_file_context_format_properties(self, file_paths, line_numbers):
+    def test_file_context_format_properties(
+        self, file_paths: str, line_numbers: int | None
+    ) -> None:
         """Test file context formatting properties."""
         from agloviz.core.errors import FileContext
 
